@@ -1,0 +1,64 @@
+@import "tailwindcss";
+@variant dark (.dark &);
+
+/* Light mode */
+:root {
+  --font-geist: 'Geist', sans-serif;
+  --c-bg: #f8fafc;
+  --c-surface: #ffffff;
+  --c-elevated: #f1f5f9;
+  --c-input: #e2e8f0;
+  --c-border: #cbd5e1;
+  --c-border-subtle: #e2e8f0;
+  --c-text: #0f172a;
+  --c-text-secondary: #334155;
+  --c-text-muted: #64748b;
+  --c-text-subtle: #94a3b8;
+}
+
+/* Dark mode */
+.dark {
+  --c-bg: #030712;
+  --c-surface: #111827;
+  --c-elevated: #1f2937;
+  --c-input: #1f2937;
+  --c-border: #374151;
+  --c-border-subtle: #1f2937;
+  --c-text: #ffffff;
+  --c-text-secondary: #e5e7eb;
+  --c-text-muted: #9ca3af;
+  --c-text-subtle: #6b7280;
+}
+
+@theme inline {
+  --color-c-bg: var(--c-bg);
+  --color-c-surface: var(--c-surface);
+  --color-c-elevated: var(--c-elevated);
+  --color-c-input: var(--c-input);
+  --color-c-border: var(--c-border);
+  --color-c-border-subtle: var(--c-border-subtle);
+  --color-c-text: var(--c-text);
+  --color-c-text-secondary: var(--c-text-secondary);
+  --color-c-text-muted: var(--c-text-muted);
+  --color-c-text-subtle: var(--c-text-subtle);
+}
+
+body {
+  font-family: var(--font-geist), Arial, Helvetica, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #111827;
+}
+::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #4b5563;
+}
