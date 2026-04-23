@@ -66,7 +66,6 @@ export default function ImportDeckPage() {
           isPublic,
           deckCards: valid,
         },
-        token,
       );
       router.push(`/decks/${result.id}`);
     } catch (e) {

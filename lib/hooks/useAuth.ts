@@ -10,7 +10,7 @@ interface SessionWithAccessToken extends DefaultSession {
 
 export function useAuth() {
   const { data: session, status } = useSession() as { data: SessionWithAccessToken | null; status: 'loading' | 'authenticated' | 'unauthenticated' };
-  const devToken = useAuthStore((s) => s.token);
+  const { token } = useAuthStore();
 
   if (USE_KEYCLOAK) {
     return {
@@ -23,8 +23,8 @@ export function useAuth() {
 
   return {
     session: null,
-    token: devToken,
-    isAuthenticated: !!devToken,
+    token,
+    isAuthenticated: !!token,
     isLoading: false,
   };
 }

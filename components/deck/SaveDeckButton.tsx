@@ -37,11 +37,9 @@ export default function SaveDeckButton() {
       const format = deck.format?.code ?? null;
 
       if (deck.apiId) {
-        // Mise à jour du deck existant
-        await patchDeck(deck.apiId, { name: deck.name, format, deckCards }, token);
+        await patchDeck(deck.apiId, { name: deck.name, format, deckCards });
       } else {
-        // Création
-        const result = await saveDeck({ name: deck.name, format, isPublic: false, deckCards }, token);
+        const result = await saveDeck({ name: deck.name, format, isPublic: false, deckCards });
         setApiId(result.id);
       }
       setSaved(true);

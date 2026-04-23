@@ -29,7 +29,7 @@ export default function DecksPage() {
     setLoading(true);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null);
-    getDecks(token)
+    getDecks()
       .then(setDecks)
       .catch((e) => setError(e instanceof Error ? e.message : 'Erreur inconnue'))
       .finally(() => setLoading(false));
@@ -40,7 +40,7 @@ export default function DecksPage() {
     if (!confirm(`Supprimer "${deck.name}" ?`)) return;
     setDeleting(deck.id);
     try {
-      await deleteDeck(deck.id, token);
+      await deleteDeck(deck.id);
       setDecks((prev) => prev.filter((d) => d.id !== deck.id));
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur suppression');

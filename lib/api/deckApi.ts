@@ -1,17 +1,14 @@
 import type { ApiDeck, ApiDeckDetail, ApiFormat, SaveDeckPayload } from '@/lib/types/deck';
+import { getValidToken } from '@/store/authStore';
 
 const DECK_API_BASE =
   typeof window === 'undefined'
     ? (process.env.NEXT_PUBLIC_DECK_API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
     : '/deck-api-proxy';
 
-const DEV_AUTH_PAYLOAD = {
-  sub: process.env.NEXT_PUBLIC_DEV_AUTH_SUB ?? '',
-  email: process.env.NEXT_PUBLIC_DEV_AUTH_EMAIL ?? '',
-  username: process.env.NEXT_PUBLIC_DEV_AUTH_USERNAME ?? '',
-};
-
-export function deckFetch(path: string, token: string, options: RequestInit = {}): Promise<Response> {
+async function deckFetch(path: string, options: RequestInit = {}): Promise<Response> {
+  const token = await getValidToken();
+  console.log('[api] fetch', path, 'token:', token.substring(0, 20) + '...');
   return fetch(`${DECK_API_BASE}${path}`, {
     ...options,
     headers: {
@@ -21,19 +18,6 @@ export function deckFetch(path: string, token: string, options: RequestInit = {}
       ...options.headers,
     },
   });
-}
-
-export async function devLogin(): Promise<string> {
-  const res = await fetch(`${DECK_API_BASE}/dev/auth`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(DEV_AUTH_PAYLOAD),
-  });
-  if (!res.ok) throw new Error(`Auth dev échouée : ${res.status}`);
-  const data = await res.json();
-  const token = data.token ?? data.access_token ?? data.bearer ?? data.accessToken;
-  if (!token) throw new Error('Token introuvable dans la réponse');
-  return token;
 }
 
 export async function fetchFormats(): Promise<ApiFormat[]> {
@@ -46,22 +30,22 @@ export async function fetchFormats(): Promise<ApiFormat[]> {
   return data['hydra:member'] ?? data['member'] ?? data['data'] ?? [];
 }
 
-export async function getDecks(token: string): Promise<ApiDeck[]> {
-  const res = await deckFetch('/decks', token);
+export async function getDecks(): Promise<ApiDeck[]> {
+  const res = await deckFetch('/decks');
   if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);
   const data = await res.json();
   if (Array.isArray(data)) return data;
   return data['hydra:member'] ?? data['member'] ?? data['data'] ?? [];
 }
 
-export async function getDeckDetail(id: string, token: string): Promise<ApiDeckDetail> {
-  const res = await deckFetch(`/decks/${id}`, token);
+export async function getDeckDetail(id: string): Promise<ApiDeckDetail> {
+  const res = await deckFetch(`/decks/${id}`);
   if (!res.ok) throw new Error(`Erreur chargement deck : ${res.status}`);
   return res.json();
 }
 
-export async function saveDeck(payload: SaveDeckPayload, token: string): Promise<{ id: string }> {
-  const res = await deckFetch('/decks', token, {
+export async function saveDeck(payload: SaveDeckPayload): Promise<{ id: string }> {
+  const res = await deckFetch('/decks', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
@@ -88,9 +72,8 @@ export async function patchDeck(
   payload: Partial<Pick<ApiDeck, 'name' | 'description' | 'format' | 'isPublic'>> & {
     deckCards?: { cardReference: string; quantity: number }[];
   },
-  token: string,
 ): Promise<ApiDeck> {
-  const res = await deckFetch(`/decks/${id}`, token, {
+  const res = await deckFetch(`/decks/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/merge-patch+json' },
     body: JSON.stringify(payload),
@@ -102,7 +85,7 @@ export async function patchDeck(
   return res.json();
 }
 
-export async function deleteDeck(id: string, token: string): Promise<void> {
-  const res = await deckFetch(`/decks/${id}`, token, { method: 'DELETE' });
+export async function deleteDeck(id: string): Promise<void> {
+  const res = await deckFetch(`/decks/${id}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error(`Suppression échouée : ${res.status}`);
 }

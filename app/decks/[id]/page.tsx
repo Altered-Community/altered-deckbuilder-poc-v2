@@ -144,7 +144,7 @@ export default function DeckEditPage() {
 
   useEffect(() => {
     if (!token) return;
-    getDeckDetail(id, token)
+    getDeckDetail(id)
       .then((d) => {
         setDeck(d);
         setName(d.name);
@@ -194,7 +194,7 @@ export default function DeckEditPage() {
     setSaveError(null);
     setSaved(false);
     try {
-      await patchDeck(id, { name: name.trim(), description: description.trim() || null, format: format || null, isPublic }, token);
+      await patchDeck(id, { name: name.trim(), description: description.trim() || null, format: format || null, isPublic });
       setSaved(true);
     } catch (e) {
       setSaveError(e instanceof Error ? e.message : 'Erreur inconnue');
