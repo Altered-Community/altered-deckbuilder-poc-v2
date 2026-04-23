@@ -34,9 +34,9 @@ const addable = canAddCard(cardGroup) === null;
         </span>
       )}
 
-      {cardGroup.mainCost != null && (
+      {(cardGroup.mainCost != null || cardGroup.recallCost != null) && (
         <span className="text-xs font-mono bg-c-input text-c-text rounded px-1 min-w-[18px] text-center shrink-0">
-          {cardGroup.mainCost}
+          {cardGroup.mainCost ?? '—'}{cardGroup.recallCost != null ? `/${cardGroup.recallCost}` : ''}
         </span>
       )}
 

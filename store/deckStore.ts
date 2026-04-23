@@ -172,9 +172,10 @@ export const useDeckStore = create<DeckState>()(
           if (heroFaction && getCardGroupFaction(group) !== heroFaction) return 'FACTION_MISMATCH';
         }
 
-        // Max copies par nom : Singleton utilise maxCopiesPerRarity (1), sinon maxCopiesPerName ou deckLimit
+        // Max copies par nom (rare et common du même nom = même limite)
         const maxCopies = format?.limits.maxCopiesPerRarity ?? format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
-        const existing = deck.cards.find((dc) => dc.cardGroup.slug === group.slug);
+        const groupName = group.name;
+        const existing = deck.cards.find((dc) => dc.cardGroup.name === groupName);
         if (existing && existing.quantity >= maxCopies) return 'MAX_COPIES';
 
         const { rareCount, uniqueCount, exaltedCount } = deckStats();

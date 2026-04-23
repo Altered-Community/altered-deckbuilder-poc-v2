@@ -8,13 +8,14 @@ import { getCardReference } from '@/lib/utils/card';
 import { MIN_DECK_SIZE } from '@/lib/types/constants';
 
 export default function SaveDeckButton() {
-  const { token } = useAuth();
+  const { token, isLoading } = useAuth();
   const { deck, deckStats, setApiId } = useDeckStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
-  if (!token) return null;
+  if (isLoading) return null;
+  if (!token) return <span className="text-xs text-c-text-muted px-2">Connectez-vous</span>;
 
   const { playableCount } = deckStats();
   const isValid = !!deck.hero && playableCount >= MIN_DECK_SIZE;

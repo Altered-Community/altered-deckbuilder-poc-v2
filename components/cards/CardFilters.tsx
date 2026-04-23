@@ -8,11 +8,12 @@ import type { CardGroupFilters } from '@/lib/types/card';
 interface CardFiltersProps {
   filters: CardGroupFilters;
   onChange: (filters: CardGroupFilters) => void;
+  onReset?: () => void;
 }
 
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-export default function CardFiltersPanel({ filters, onChange }: CardFiltersProps) {
+export default function CardFiltersPanel({ filters, onChange, onReset }: CardFiltersProps) {
   const { data: sets = [] } = useQuery({
     queryKey: ['sets'],
     queryFn: fetchSets,
@@ -40,8 +41,19 @@ export default function CardFiltersPanel({ filters, onChange }: CardFiltersProps
 
   const selectClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500';
 
+  const inputClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-full';
+
   return (
     <div className="flex flex-col gap-2 p-3 bg-c-elevated rounded-lg">
+      {/* Recherche */}
+      <input
+        type="text"
+        value={filters.name ?? ''}
+        onChange={(e) => update('name', e.target.value)}
+        placeholder="Rechercher une carte..."
+        className={inputClass}
+      />
+
       {/* Ligne 1 : Type + Faction */}
       <div className="grid grid-cols-2 gap-2">
         <select value={filters.cardType ?? ''} onChange={(e) => update('cardType', e.target.value)} className={selectClass}>
@@ -60,7 +72,7 @@ export default function CardFiltersPanel({ filters, onChange }: CardFiltersProps
       </div>
 
       {/* Ligne 1b : Set */}
-      <select value={filters['set.reference'] ?? ''} onChange={(e) => update('set.reference', e.target.value)} className={selectClass}>
+      <select value={filters['cards.set.reference'] ?? ''} onChange={(e) => update('cards.set.reference', e.target.value)} className={selectClass}>
         <option value="">Tous sets</option>
         {sets.map((s) => (
           <option key={s.reference} value={s.reference}>{s.name}</option>
@@ -92,7 +104,7 @@ export default function CardFiltersPanel({ filters, onChange }: CardFiltersProps
 
       {hasActiveFilters && (
         <button
-          onClick={() => onChange({ page: 1, 'faction.code': filters['faction.code'] })}
+          onClick={onReset}
           className="text-xs text-c-text-subtle hover:text-c-text underline text-left"
         >
           Réinitialiser les filtres

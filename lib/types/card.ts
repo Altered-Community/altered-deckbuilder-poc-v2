@@ -41,6 +41,7 @@ export interface CardGroup {
 }
 
 export interface CardGroupFilters {
+  name?: string;
   'faction.code'?: string;
   cardType?: string;
   'rarity.reference'?: string | string[];
@@ -49,7 +50,7 @@ export interface CardGroupFilters {
   mountainPower?: string;
   forestPower?: string;
   'order[set.date]'?: 'asc' | 'desc';
-  'set.reference'?: string;
+  'cards.set.reference'?: string;
   promo?: string;
   page?: number;
 }
