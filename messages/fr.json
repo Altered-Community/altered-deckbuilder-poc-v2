@@ -30,7 +30,15 @@
   "deckBuilder": {
     "cardLibrary": "Bibliothèque de cartes",
     "myDeck": "Mon Deck",
-    "change": "Changer"
+    "change": "Changer",
+    "filters": "Filtres",
+    "selectFaction": "Sélectionnez une faction pour voir les cartes",
+    "faction": "Faction",
+    "hero": "Héros",
+    "noHeroes": "Aucun héros",
+    "legality": "Légalité",
+    "tags": "Tags",
+    "tagsPlaceholder": "Filtrer par tag…"
   },
   "cards": {
     "search": "Rechercher une carte...",
@@ -38,6 +46,8 @@
     "allFactions": "Toutes factions",
     "allSets": "Tous sets",
     "mainCost": "Coût main",
+    "recallCost": "Réserve",
+    "allRarities": "Toutes raretés",
     "oceanPower": "Force mer",
     "mountainPower": "Force mont.",
     "forestPower": "Force forêt",

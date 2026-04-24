@@ -25,7 +25,7 @@ export function cardGroupFromDeckCard(dc: ApiDeckCard): CardGroup {
     cardType: { id: 0, reference: dc.cardTypeReference ?? '', name: dc.cardTypeReference ?? '' },
     cardSubTypes: [],
     mainCost: dc.mainCost,
-    recallCost: null,
+    recallCost: dc.recallCost ?? null,
     deckLimit: 3,
     cards: [{ id: 0, reference: dc.cardReference, variation: 'standard', set: { reference: '' }, imagePath: dc.imagePath ?? null }],
     mainEffect: null,

@@ -6,7 +6,6 @@ import { useTranslations } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupFaction } from '@/lib/utils/card';
 import type { CardGroupFilters, CardGroup } from '@/lib/types/card';
-import { RARITIES } from '@/lib/types/constants';
 import { useDeckStore } from '@/store/deckStore';
 import CardFiltersPanel from './CardFilters';
 import CardItem from './CardItem';
@@ -62,42 +61,36 @@ export default function CardBrowser({ initialFaction }: Props) {
 
   return (
     <div className="flex flex-col h-full gap-2">
-      <CardFiltersPanel filters={filters} onChange={handleFiltersChange} />
+      <CardFiltersPanel
+        filters={filters}
+        onChange={handleFiltersChange}
+        selectedRarities={selectedRarities}
+        onToggleRarity={toggleRarity}
+      />
 
-      <div className="flex items-center gap-4 px-1">
-        {RARITIES.map((r) => (
-          <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={selectedRarities.includes(r.value)}
-              onChange={() => toggleRarity(r.value)}
-              className="w-3.5 h-3.5 accent-blue-500"
-            />
-            <span className="text-xs text-c-text-secondary">{t(`rarities.${r.value}`)}</span>
-          </label>
-        ))}
-        <span className="ml-auto text-xs text-c-text-subtle">{t('count', { count: totalItems })}</span>
+      {/* Pagination — au-dessus des cartes */}
+      <div className="shrink-0 flex items-center justify-between gap-2 text-xs text-c-text-muted px-1 pb-1 border-b border-c-border-subtle">
+        <span className="text-c-text-subtle">{t('count', { count: totalItems })}</span>
+        <div className="flex items-center gap-2">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => setFilters((f) => ({ ...f, page: currentPage - 1 }))}
+            className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
+          >
+            ‹
+          </button>
+          <span>{t('page', { current: currentPage, last: lastPage })}</span>
+          <button
+            disabled={currentPage >= lastPage}
+            onClick={() => setFilters((f) => ({ ...f, page: currentPage + 1 }))}
+            className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
+          >
+            ›
+          </button>
+        </div>
       </div>
 
-      <div className="flex items-center justify-end gap-2 text-xs text-c-text-muted px-1">
-        <button
-          disabled={currentPage <= 1}
-          onClick={() => setFilters((f) => ({ ...f, page: currentPage - 1 }))}
-          className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
-        >
-          ‹
-        </button>
-        <span>{t('page', { current: currentPage, last: lastPage })}</span>
-        <button
-          disabled={currentPage >= lastPage}
-          onClick={() => setFilters((f) => ({ ...f, page: currentPage + 1 }))}
-          className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
-        >
-          ›
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400" />
@@ -121,6 +114,28 @@ export default function CardBrowser({ initialFaction }: Props) {
             ))}
           </div>
         )}
+      </div>
+
+      {/* Pagination — sous les cartes */}
+      <div className="shrink-0 flex items-center justify-between gap-2 text-xs text-c-text-muted px-1 pt-1 border-t border-c-border-subtle">
+        <span className="text-c-text-subtle">{t('count', { count: totalItems })}</span>
+        <div className="flex items-center gap-2">
+          <button
+            disabled={currentPage <= 1}
+            onClick={() => setFilters((f) => ({ ...f, page: currentPage - 1 }))}
+            className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
+          >
+            ‹
+          </button>
+          <span>{t('page', { current: currentPage, last: lastPage })}</span>
+          <button
+            disabled={currentPage >= lastPage}
+            onClick={() => setFilters((f) => ({ ...f, page: currentPage + 1 }))}
+            className="px-2 py-0.5 bg-c-input rounded disabled:opacity-30 hover:bg-c-border"
+          >
+            ›
+          </button>
+        </div>
       </div>
     </div>
   );

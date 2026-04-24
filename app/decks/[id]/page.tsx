@@ -11,10 +11,17 @@ import { getDeckDetail, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getRarityFromSlug } from '@/lib/utils/card';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
+import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS } from '@/lib/types/constants';
 
 const TYPE_ORDER = ['HERO', 'CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
+
+function getFactionCode(heroRef: string | undefined): string | null {
+  if (!heroRef) return null;
+  const parts = heroRef.split('_');
+  return parts.length > 3 ? parts[3] : null;
+}
 
 function groupByType(deckCards: ApiDeckCard[]) {
   const groups: Record<string, ApiDeckCard[]> = {};
@@ -30,8 +37,6 @@ function groupByType(deckCards: ApiDeckCard[]) {
 
 function CardRow({ dc }: { dc: ApiDeckCard }) {
   const name = dc.name ?? dc.cardReference;
-  const faction = dc.factionCode ?? '';
-  const badge = FACTION_BADGE_COLORS[faction] ?? 'bg-gray-600';
   const rarity = getRarityFromSlug(dc.cardReference);
   const image = dc.imagePath;
 
@@ -40,14 +45,10 @@ function CardRow({ dc }: { dc: ApiDeckCard }) {
       {image && (
         <Image src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" fill sizes="(max-width: 768px) 50vw, 33vw" />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-gray-950/20 to-transparent" />
       <div className="relative z-10 px-2 pb-2 flex flex-col gap-0.5">
         <span className="text-xs text-white font-medium leading-tight line-clamp-2">{name}</span>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1">
-            {faction && (
-              <span className={`text-[9px] font-bold px-1 rounded text-white ${badge}`}>{faction}</span>
-            )}
             {dc.mainCost != null && (
               <span className="text-[10px] font-mono bg-gray-800/80 text-white rounded px-1">{dc.mainCost}</span>
             )}
@@ -66,7 +67,7 @@ function ListRow({ dc }: { dc: ApiDeckCard }) {
   const badge = FACTION_BADGE_COLORS[faction] ?? 'bg-gray-600';
 
   return (
-    <div className="flex items-center gap-2 py-1 border-b border-c-border-subtle last:border-0">
+    <div className="flex items-center gap-2 py-1.5 border-b border-c-border-subtle last:border-0">
       {faction && (
         <span className={`text-[9px] font-bold px-1 rounded text-white shrink-0 ${badge}`}>
           {faction}
@@ -96,7 +97,7 @@ function DeckCards({ deckCards, view }: { deckCards: ApiDeckCard[]; view: 'cards
             </span>
           </p>
           {view === 'cards' ? (
-            <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))' }}>
+            <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
               {g.cards.map((dc) => <CardRow key={dc.cardReference} dc={dc} />)}
             </div>
           ) : (
@@ -197,111 +198,177 @@ export default function DeckEditPage() {
     }
   };
 
-  const inputClass = 'w-full bg-c-elevated border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
+  const heroImage   = deck?.stats?.hero?.imagePath ?? null;
+  const heroName    = deck?.stats?.hero?.name ?? null;
+  const factionCode = getFactionCode(deck?.stats?.hero?.reference);
+  const totalCards  = deck?.cards.reduce((s, dc) => s + dc.quantity, 0) ?? 0;
+
+  const inputClass = 'w-full bg-c-surface border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-amber-400';
+
+  const bannerStyle: React.CSSProperties = heroImage
+    ? {
+        borderTop: '3px solid var(--primary-400)',
+        backgroundImage: `linear-gradient(to right, rgba(140,67,42,0.50) 35%, rgba(140,67,42,0.05) 100%), url(${heroImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'left -460px',
+      }
+    : { borderTop: '3px solid var(--primary-400)' };
 
   return (
-    <div className="bg-c-bg flex flex-col overflow-hidden" style={{ height: 'calc(100vh - var(--nav-h))' }}>
-      <div className="shrink-0 flex items-center gap-3 px-6 py-2 bg-c-surface border-b border-c-border-subtle text-sm">
-        <Link href="/decks" className="text-c-text-muted hover:text-c-text transition">{tn('backMyDecks')}</Link>
-        <span className="text-c-border">|</span>
-        <span className="font-bold text-c-text">{loading ? '...' : (deck?.name ?? t('editing'))}</span>
-      </div>
+    <SiteLayout>
+      <div className="w-full max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
 
-      <main className="flex-1 flex overflow-hidden">
-        {!token && <p className="text-red-400 text-sm p-6">{t('mustLogin')}</p>}
-        {token && loading && <p className="text-c-text-muted text-sm p-6">{tc('loading')}</p>}
-        {token && error && <p className="text-red-400 text-sm p-6">{error}</p>}
+        {/* ── En-tête ── */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm">
+            <Link href="/decks" className="text-c-text-muted hover:text-c-text transition">
+              {tn('backMyDecks')}
+            </Link>
+            <span className="text-c-border">›</span>
+            <span className="font-bold text-c-text truncate max-w-xs">
+              {loading ? '…' : (deck?.name ?? '')}
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            {loadError && <span className="text-xs text-red-400">{loadError}</span>}
+            <button
+              onClick={handleOpenInBuilder}
+              disabled={loadingBuilder}
+              className="btn-primary-altered btn-sm disabled:opacity-40"
+              style={{ background: 'var(--primary-500, var(--primary-400))' }}
+            >
+              <i className="fa-solid fa-pen-to-square" />
+              {loadingBuilder ? '…' : t('builder')}
+            </button>
+          </div>
+        </div>
+
+        {/* ── États ── */}
+        {!token && <p className="text-red-400 text-sm">{t('mustLogin')}</p>}
+        {token && loading && <p className="text-c-text-muted text-sm">{tc('loading')}</p>}
+        {token && error && <p className="text-red-400 text-sm">{error}</p>}
 
         {token && !loading && deck && (
           <>
-            {/* ── Colonne gauche : formulaire ── */}
-            <div className="w-80 shrink-0 flex flex-col border-r border-c-border-subtle">
-              <div className="h-12 shrink-0 flex items-center justify-between px-5 border-b border-c-border-subtle">
-                <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
-                <div className="flex items-center gap-2">
-                  {loadError && <span className="text-xs text-red-400">{loadError}</span>}
-                  <button
-                    onClick={handleOpenInBuilder}
-                    disabled={loadingBuilder}
-                    className="text-xs px-2 py-1 bg-yellow-900/40 hover:bg-yellow-800/60 text-yellow-400 hover:text-yellow-300 rounded border border-yellow-800/50 transition disabled:opacity-40"
+            {/* ── Bannière héro ── */}
+            <div className="news-card" style={bannerStyle}>
+              <div className="news-card-body">
+                <div className="flex flex-wrap gap-1 items-center">
+                  {deck.format && (
+                    <span className="ac-badge" style={{ background: 'var(--primary-400)', color: '#fff' }}>
+                      {deck.format}
+                    </span>
+                  )}
+                  <span
+                    className="ac-badge ml-auto"
+                    style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#444' }}
                   >
-                    {loadingBuilder ? '...' : t('builder')}
-                  </button>
-                </div>
-              </div>
-              <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-c-text-muted">{t('name')}</label>
-                  <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
+                    <i className={`fa-solid ${deck.isPublic ? 'fa-globe' : 'fa-lock'}`} />
+                    {deck.isPublic ? tc('public') : 'Privé'}
+                  </span>
                 </div>
 
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-c-text-muted">{t('description')}</label>
-                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={inputClass + ' resize-none'} />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                  <label className="text-xs text-c-text-muted">{t('format')}</label>
-                  <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
-                    <option value="">{tc('noFormat')}</option>
-                    {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
-                  </select>
-                </div>
-
-                <label className="flex items-center gap-2 cursor-pointer select-none">
-                  <div onClick={() => setIsPublic((v) => !v)} className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-blue-600' : 'bg-c-input'} relative`}>
-                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
-                  </div>
-                  <span className="text-sm text-c-text-muted">{t('public')}</span>
-                </label>
-
-                <div className="flex items-center gap-3">
-                  <button onClick={handleSave} disabled={saving || !name.trim()} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
-                    {saving ? tc('saving') : tc('save')}
-                  </button>
-                  {saved && <span className="text-sm text-green-400">{tc('saved')}</span>}
-                  {saveError && <span className="text-xs text-red-400">{saveError}</span>}
-                </div>
+                <h1 className="news-card-title">
+                  {factionCode && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={`https://alteredcore.org/assets/faction/${factionCode}.png`}
+                      alt={factionCode}
+                      style={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
+                    />
+                  )}
+                  {deck.name}
+                </h1>
+                {heroName && (
+                  <p style={{ fontSize: '.8rem', opacity: 0.75, color: '#fff', margin: 0 }}>{heroName}</p>
+                )}
               </div>
             </div>
 
-            {/* ── Colonne centrale : cartes ── */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="h-12 shrink-0 flex items-center justify-between px-5 border-b border-c-border-subtle">
-                <span className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">
-                  {t('cards', { count: deck.cards.reduce((s, dc) => s + dc.quantity, 0) })}
-                </span>
-                <div className="flex border border-c-border rounded-lg overflow-hidden">
-                  {(['cards', 'list'] as const).map((v) => (
-                    <button
-                      key={v}
-                      onClick={() => setCardView(v)}
-                      className={`px-3 py-1 text-xs transition ${cardView === v ? 'bg-c-input text-c-text' : 'text-c-text-subtle hover:text-c-text-secondary'}`}
-                    >
-                      {v === 'cards' ? t('byType') : t('list')}
-                    </button>
-                  ))}
+            {/* ── Contenu principal ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+
+              {/* Cartes (2/3) */}
+              <div className="lg:col-span-2 card-altered p-4 flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">
+                    {t('cards', { count: totalCards })}
+                  </h2>
+                  <div className="flex border border-c-border rounded-lg overflow-hidden">
+                    {(['cards', 'list'] as const).map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setCardView(v)}
+                        className={`px-3 py-1 text-xs transition ${cardView === v ? 'bg-c-input text-c-text font-semibold' : 'text-c-text-subtle hover:text-c-text-secondary'}`}
+                      >
+                        {v === 'cards' ? t('byType') : t('list')}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex-1 overflow-y-auto px-5 py-5">
                 <DeckCards deckCards={deck.cards} view={cardView} />
               </div>
-            </div>
 
-            {/* ── Colonne droite : statistiques ── */}
-            <div className="w-72 shrink-0 flex flex-col border-l border-c-border-subtle bg-c-elevated">
-              <div className="h-12 shrink-0 flex items-center px-5 border-b border-c-border-subtle">
-                <span className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">
-                  {t('statsTitle')}
-                </span>
-              </div>
-              <div className="flex-1 overflow-hidden">
-                <DeckDetailStats cards={deck.cards} />
+              {/* Sidebar droite (1/3) */}
+              <div className="flex flex-col gap-4">
+
+                {/* Formulaire */}
+                <div className="card-altered p-4 flex flex-col gap-4">
+                  <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-c-text-muted">{t('name')}</label>
+                    <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-c-text-muted">{t('description')}</label>
+                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputClass + ' resize-none'} />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-xs text-c-text-muted">{t('format')}</label>
+                    <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
+                      <option value="">{tc('noFormat')}</option>
+                      {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
+                    </select>
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <div
+                      onClick={() => setIsPublic((v) => !v)}
+                      className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-amber-500' : 'bg-c-input'} relative`}
+                    >
+                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
+                    </div>
+                    <span className="text-sm text-c-text-muted">{t('public')}</span>
+                  </label>
+
+                  <div className="flex items-center gap-3 pt-1">
+                    <button
+                      onClick={handleSave}
+                      disabled={saving || !name.trim()}
+                      className="btn-primary-altered btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {saving ? tc('saving') : tc('save')}
+                    </button>
+                    {saved && <span className="text-sm text-green-600 dark:text-green-400 font-medium">{tc('saved')}</span>}
+                    {saveError && <span className="text-xs text-red-500">{saveError}</span>}
+                  </div>
+                </div>
+
+                {/* Statistiques */}
+                <div className="card-altered overflow-hidden">
+                  <div className="px-4 py-3 border-b border-c-border-subtle">
+                    <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('statsTitle')}</h2>
+                  </div>
+                  <DeckDetailStats cards={deck.cards} />
+                </div>
               </div>
             </div>
           </>
         )}
-      </main>
-    </div>
+      </div>
+    </SiteLayout>
   );
 }

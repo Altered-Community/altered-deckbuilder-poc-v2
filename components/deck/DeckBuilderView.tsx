@@ -18,6 +18,8 @@ export default function DeckBuilderView({ initialFaction }: Props) {
   const t = useTranslations();
   const router = useRouter();
   const hero = useDeckStore((s) => s.deck.hero);
+  const deckStats = useDeckStore((s) => s.deckStats);
+  const { playableCount } = deckStats();
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
 
   useEffect(() => {
@@ -32,7 +34,7 @@ export default function DeckBuilderView({ initialFaction }: Props) {
   const factionBadge = factionCode ? (FACTION_BADGE_COLORS[factionCode] ?? 'bg-gray-600') : 'bg-gray-700';
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - var(--nav-h))' }}>
+    <div className="flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
 
       {/* Sous-barre héros */}
       <div className="shrink-0 flex items-center gap-2 px-4 py-1.5 bg-c-surface border-b border-c-border-subtle text-xs">
@@ -59,8 +61,13 @@ export default function DeckBuilderView({ initialFaction }: Props) {
         </div>
 
         <div className="flex-[1] flex flex-col p-4 overflow-hidden">
-          <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest mb-3">
-            {t('deckBuilder.myDeck')}
+          <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest mb-3 flex items-center justify-between">
+            <span>{t('deckBuilder.myDeck')}</span>
+            {playableCount > 0 && (
+              <span className="text-xs font-bold text-c-text tabular-nums normal-case tracking-normal">
+                {playableCount}
+              </span>
+            )}
           </h2>
           <div className="flex-1 overflow-hidden">
             <DeckPanel />

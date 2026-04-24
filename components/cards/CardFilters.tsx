@@ -3,18 +3,20 @@
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { fetchSets, fetchFactions } from '@/lib/api/cardApi';
-import { FACTIONS, CARD_TYPES } from '@/lib/types/constants';
+import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
 import type { CardGroupFilters } from '@/lib/types/card';
 
 interface CardFiltersProps {
   filters: CardGroupFilters;
   onChange: (filters: CardGroupFilters) => void;
   onReset?: () => void;
+  selectedRarities?: string[];
+  onToggleRarity?: (ref: string) => void;
 }
 
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-export default function CardFiltersPanel({ filters, onChange, onReset }: CardFiltersProps) {
+export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity }: CardFiltersProps) {
   const t = useTranslations('cards');
 
   const { data: sets = [] } = useQuery({
@@ -47,6 +49,7 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
 
   return (
     <div className="flex flex-col gap-2 p-3 bg-c-elevated rounded-lg">
+      {/* Recherche */}
       <input
         type="text"
         value={filters.name ?? ''}
@@ -55,7 +58,8 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
         className={inputClass}
       />
 
-      <div className="grid grid-cols-2 gap-2">
+      {/* Ligne 1 : Type · Faction · Set */}
+      <div className="grid grid-cols-3 gap-2">
         <select value={filters.cardType ?? ''} onChange={(e) => update('cardType', e.target.value)} className={selectClass}>
           <option value="">{t('allTypes')}</option>
           {CARD_TYPES.map((type) => (
@@ -69,18 +73,24 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
+
+        <select value={filters['cards.set.reference'] ?? ''} onChange={(e) => update('cards.set.reference', e.target.value)} className={selectClass}>
+          <option value="">{t('allSets')}</option>
+          {sets.map((s) => (
+            <option key={s.reference} value={s.reference}>{s.name}</option>
+          ))}
+        </select>
       </div>
 
-      <select value={filters['cards.set.reference'] ?? ''} onChange={(e) => update('cards.set.reference', e.target.value)} className={selectClass}>
-        <option value="">{t('allSets')}</option>
-        {sets.map((s) => (
-          <option key={s.reference} value={s.reference}>{s.name}</option>
-        ))}
-      </select>
-
-      <div className="grid grid-cols-3 gap-2">
+      {/* Ligne 2 : Coût main · Réserve · Mer · Montagne · Forêt */}
+      <div className="grid grid-cols-5 gap-2">
         <select value={filters.mainCost ?? ''} onChange={(e) => update('mainCost', e.target.value)} className={selectClass}>
           <option value="">{t('mainCost')}</option>
+          {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+
+        <select value={filters.recallCost ?? ''} onChange={(e) => update('recallCost', e.target.value)} className={selectClass}>
+          <option value="">{t('recallCost')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
 
@@ -94,10 +104,25 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
 
-        <select value={filters.forestPower ?? ''} onChange={(e) => update('forestPower', e.target.value)} className={`${selectClass} col-span-3`}>
+        <select value={filters.forestPower ?? ''} onChange={(e) => update('forestPower', e.target.value)} className={selectClass}>
           <option value="">{t('forestPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
+      </div>
+
+      {/* Ligne 3 : Rareté (multi-select) */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {RARITIES.map((r) => (
+          <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={selectedRarities.includes(r.value)}
+              onChange={() => onToggleRarity?.(r.value)}
+              className="w-3.5 h-3.5 accent-blue-500"
+            />
+            <span className="text-xs text-c-text-secondary">{t(`rarities.${r.value}`)}</span>
+          </label>
+        ))}
       </div>
 
       {hasActiveFilters && (

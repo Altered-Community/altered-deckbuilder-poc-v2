@@ -83,7 +83,10 @@ export default function CardItem({ card }: CardItemProps) {
         )}
         <span className="text-[10px] text-c-text-secondary truncate flex-1">{name}</span>
         {card.mainCost != null && (
-          <span className="text-[10px] text-c-text-muted font-mono shrink-0">{card.mainCost}</span>
+          <span className="text-[10px] text-c-text-muted font-mono shrink-0" title="Main cost">{card.mainCost}</span>
+        )}
+        {card.recallCost != null && (
+          <span className="text-[10px] text-c-text-subtle font-mono shrink-0" title="Reserve cost">/{card.recallCost}</span>
         )}
       </div>
     </div>

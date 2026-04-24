@@ -46,6 +46,7 @@ export interface CardGroupFilters {
   cardType?: string;
   'rarity.reference'?: string | string[];
   mainCost?: string;
+  recallCost?: string;
   oceanPower?: string;
   mountainPower?: string;
   forestPower?: string;
@@ -53,6 +54,7 @@ export interface CardGroupFilters {
   'cards.set.reference'?: string;
   promo?: string;
   page?: number;
+  itemsPerPage?: number;
 }
 
 export interface ApiSet {

@@ -183,9 +183,11 @@ export default function DeckPanel() {
                     ({cards.reduce((s, dc) => s + dc.quantity, 0)})
                   </span>
                 </p>
-                {cards.map((dc) => (
-                  <DeckCardItem key={dc.cardGroup.slug} deckCard={dc} />
-                ))}
+                <div className="grid grid-cols-3 gap-1.5">
+                  {cards.map((dc) => (
+                    <DeckCardItem key={dc.cardGroup.slug} deckCard={dc} />
+                  ))}
+                </div>
               </div>
             ))}
           </div>

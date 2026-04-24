@@ -168,8 +168,9 @@ export default function SiteHeader() {
         <div className="navbar-inner">
 
           {/* Brand */}
-          <Link href="/" className="navbar-brand-ac" title="Altered Deck Builder">
-            <span className="navbar-site-name-ac">Altered Deck Builder</span>
+          <Link href="/" className="navbar-brand-ac" title="AlteredCore">
+            <img src="https://alteredcore.org/assets/logo/site_logo.png" alt="AlteredCore" className="navbar-logo-custom" />
+            <span className="navbar-site-name-ac">AlteredCore</span>
           </Link>
 
           {/* Burger (mobile) */}

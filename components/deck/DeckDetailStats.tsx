@@ -158,7 +158,7 @@ export default function DeckDetailStats({ cards }: Props) {
     .map((r) => [r, byRarity[r]] as [string, number]);
 
   return (
-    <div className="h-full overflow-y-auto px-5 py-5 flex flex-col gap-6">
+    <div className="px-4 py-4 flex flex-col gap-6">
 
       {/* Courbe de main */}
       <div>
