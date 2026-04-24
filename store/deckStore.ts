@@ -16,6 +16,7 @@ export type AddCardError =
 
 interface DeckState {
   deck: Deck;
+  setDeck: (deck: Deck) => void;
   setDeckName: (name: string) => void;
   setHero: (group: CardGroup | null) => void;
   setFormat: (format: ApiFormat | null) => void;
@@ -60,6 +61,8 @@ export const useDeckStore = create<DeckState>()(
   persist(
     (set, get) => ({
       deck: createEmptyDeck(),
+
+      setDeck: (deck) => set({ deck }),
 
       setDeckName: (name) =>
         set((state) => ({ deck: { ...state.deck, name, updatedAt: new Date().toISOString() } })),

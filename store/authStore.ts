@@ -31,15 +31,15 @@ export const useAuthStore = create<AuthState>()(
           const now = Date.now();
           const timeLeft = expiresAt ? expiresAt - now : 0;
           if (token && expiresAt && now < expiresAt - 30_000) {
-            console.log('[auth] Keycloak token OK (expires in', Math.round(timeLeft / 1000), 's)');
+            
             return token;
           }
-          console.log('[auth] Keycloak token expiré ou absent, refresh...');
+          
           const res = await fetch('/api/auth/session');
           const session = await res.json();
           const newToken = session?.accessToken;
           if (newToken) {
-            console.log('[auth] Keycloak token rafraîchi, expires in', Math.round((session.expires - now) / 1000), 's');
+            
             set({
               token: newToken,
               tokenExpiresAt: session.expires ?? null,
@@ -51,13 +51,13 @@ export const useAuthStore = create<AuthState>()(
         }
 
         if (token) {
-          console.log('[auth] Dev token OK:', token.substring(0, 20) + '...');
+          
           return token;
         }
 
-        console.log('[auth] Pas de dev token, login...');
+        
         const promise = devLogin().then((token) => {
-          console.log('[auth] Dev login OK:', token.substring(0, 20) + '...');
+          
           set({ token, refreshTokenPromise: null });
           return token;
         }).catch((err) => {

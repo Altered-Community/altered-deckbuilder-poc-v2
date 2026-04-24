@@ -8,7 +8,7 @@ const DECK_API_BASE =
 
 async function deckFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = await getValidToken();
-  console.log('[api] fetch', path, 'token:', token.substring(0, 20) + '...');
+  
   return fetch(`${DECK_API_BASE}${path}`, {
     ...options,
     headers: {
@@ -44,27 +44,33 @@ export async function getDeckDetail(id: string): Promise<ApiDeckDetail> {
   return res.json();
 }
 
-export async function saveDeck(payload: SaveDeckPayload): Promise<{ id: string }> {
+export interface SaveDeckResponse {
+  id: string;
+  unknownCards?: string[];
+}
+
+export async function saveDeck(payload: SaveDeckPayload): Promise<SaveDeckResponse> {
   const res = await deckFetch('/decks', {
     method: 'POST',
     body: JSON.stringify(payload),
   });
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    let detail = text || 'Erreur inconnue';
-    try {
-      const json = JSON.parse(text);
-      if (Array.isArray(json.violations) && json.violations.length > 0) {
-        detail = json.violations
-          .map((v: { propertyPath: string; message: string }) => `${v.propertyPath}: ${v.message}`)
-          .join('\n');
-      } else {
-        detail = (json.detail ?? json.title ?? text) || 'Erreur inconnue';
-      }
-    } catch {}
-    throw new Error(`${res.status} — ${detail}`);
+  const data = await res.json().catch(() => ({}));
+  const unknownCards = data.unknownCards as string[] | undefined;
+
+  if (res.ok) {
+    return { id: data.id ?? data['@id'] ?? '', unknownCards };
   }
-  return res.json();
+
+  let detail = (data.detail ?? data.title ?? '') || 'Erreur inconnue';
+  if (Array.isArray(data.violations) && data.violations.length > 0) {
+    detail = data.violations
+      .map((v: { propertyPath: string; message: string }) => `${v.propertyPath}: ${v.message}`)
+      .join('\n');
+  } else if (unknownCards?.length) {
+    detail = 'Cartes non trouvées: ' + unknownCards.join(', ');
+  }
+
+  throw new Error(`${res.status} — ${detail}`);
 }
 
 export async function patchDeck(

@@ -58,3 +58,30 @@ export async function fetchFactions(): Promise<ApiFaction[]> {
   if (!res.ok) throw new Error('Erreur lors de la récupération des factions');
   return normalizeList<ApiFaction>(await res.json());
 }
+
+export async function verifyCardReferences(references: string[]): Promise<{ found: string[]; notFound: string[] }> {
+  if (references.length === 0) return { found: [], notFound: [] };
+
+  const found: string[] = [];
+  const params = references.map((ref) => `cards.reference[]=${encodeURIComponent(ref)}`).join('&');
+  const res = await fetch(`${API_BASE}/card_groups?${params}&locale=fr&itemsPerPage=250`);
+  if (!res.ok) throw new Error('Erreur lors de la vérification des cartes');
+
+  const data = await res.json();
+  (data.member ?? []).forEach((c: { reference?: string; cards?: Array<{ reference?: string }> }) => {
+    if (c.reference) found.push(c.reference);
+    c.cards?.forEach((v) => v.reference && found.push(v.reference));
+  });
+
+  const notFound = references.filter((ref) => !found.includes(ref));
+
+  for (const ref of notFound) {
+    try {
+      const res = await fetch(`https://cards.alteredcore.org/api/cards/scrape/${ref}`);
+      if (res.ok) found.push(ref);
+    } catch {}
+  }
+
+  const finalNotFound = references.filter((ref) => !found.includes(ref));
+  return { found, notFound: finalNotFound };
+}

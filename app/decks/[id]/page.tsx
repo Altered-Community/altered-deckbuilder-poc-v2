@@ -214,7 +214,7 @@ export default function DeckEditPage() {
         <div className="ml-auto"><ThemeToggle /></div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex overflow-hidden px-6 py-4">
         {!token && <p className="text-red-400 text-sm p-6">Vous devez être connecté.</p>}
         {token && loading && <p className="text-c-text-muted text-sm p-6">Chargement...</p>}
         {token && error && <p className="text-red-400 text-sm p-6">{error}</p>}

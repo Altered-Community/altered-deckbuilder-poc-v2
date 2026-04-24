@@ -9,18 +9,19 @@ const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 
 export default function LoginButton() {
   const { data: session, status } = useSession();
-  const { token, logout } = useAuthStore();
+  const { token, setToken, logout } = useAuthStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loadingAuth = status === 'loading' || loading;
 
-  console.log('[LoginButton] render:', { status, hasSession: !!session, hasToken: !!token });
+  
 
   const handleDevLogin = async () => {
     setLoading(true);
     setError(null);
     try {
       const t = await devLogin();
+      setToken(t);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Erreur inconnue');
     } finally {
@@ -29,10 +30,10 @@ export default function LoginButton() {
   };
 
   const handleLogout = async () => {
-    console.log('[auth] logout', USE_KEYCLOAK ? 'keycloak' : 'dev');
+    
     if (USE_KEYCLOAK) {
       const result = await signOut({ redirect: false });
-      console.log('[auth] signOut result', result);
+      
       logout();
       window.location.href = '/';
     } else {
@@ -63,7 +64,7 @@ export default function LoginButton() {
   }
 
   const handleLogin = () => {
-    console.log('[auth] handleLogin, USE_KEYCLOAK:', USE_KEYCLOAK);
+    
     if (USE_KEYCLOAK) {
       signIn('keycloak');
     } else {

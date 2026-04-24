@@ -60,6 +60,12 @@ export default function DecksPage() {
         <div className="ml-auto flex items-center gap-3">
           <ThemeToggle />
           <Link
+            href="/decks/import/altered"
+            className="text-xs px-3 py-1.5 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-800/60 text-purple-700 dark:text-purple-400 rounded border border-purple-300 dark:border-purple-800/50 transition"
+          >
+            Importer depuis Altered
+          </Link>
+          <Link
             href="/decks/import"
             className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-700 dark:text-blue-400 rounded border border-blue-300 dark:border-blue-800/50 transition"
           >
