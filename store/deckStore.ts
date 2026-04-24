@@ -25,7 +25,6 @@ interface DeckState {
   removeCard: (slug: string) => void;
   decrementCard: (slug: string) => void;
   clearDeck: () => void;
-  totalPlayableCards: () => number;
   canAddCard: (group: CardGroup) => AddCardError;
   deckFaction: () => string | null;
   deckStats: () => { rareCount: number; uniqueCount: number; exaltedCount: number; playableCount: number };
@@ -134,13 +133,6 @@ export const useDeckStore = create<DeckState>()(
         })),
 
       clearDeck: () => set({ deck: createEmptyDeck() }),
-
-      totalPlayableCards: () => {
-        const { deck } = get();
-        return deck.cards
-          .filter((dc) => !isToken(dc.cardGroup))
-          .reduce((sum, dc) => sum + dc.quantity, 0);
-      },
 
       deckFaction: () => {
         const { deck } = get();

@@ -2,14 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDecks, deleteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('fr-FR', {
+function formatDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleDateString(locale, {
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -17,6 +19,7 @@ function formatDate(iso: string) {
 }
 
 export default function DecksPage() {
+  const t = useTranslations();
   const { token } = useAuth();
   const [decks, setDecks] = useState<ApiDeck[]>([]);
   const [loading, setLoading] = useState(false);
@@ -31,19 +34,19 @@ export default function DecksPage() {
     setError(null);
     getDecks()
       .then(setDecks)
-      .catch((e) => setError(e instanceof Error ? e.message : 'Erreur inconnue'))
+      .catch((e) => setError(e instanceof Error ? e.message : t('common.unknownError')))
       .finally(() => setLoading(false));
-  }, [token]);
+  }, [token, t]);
 
   const handleDelete = async (deck: ApiDeck) => {
     if (!token) return;
-    if (!confirm(`Supprimer "${deck.name}" ?`)) return;
+    if (!confirm(t('decks.deleteConfirm', { name: deck.name }))) return;
     setDeleting(deck.id);
     try {
       await deleteDeck(deck.id);
       setDecks((prev) => prev.filter((d) => d.id !== deck.id));
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Erreur suppression');
+      setError(e instanceof Error ? e.message : t('common.unknownError'));
     } finally {
       setDeleting(null);
     }
@@ -53,23 +56,24 @@ export default function DecksPage() {
     <div className="min-h-screen bg-c-bg flex flex-col">
       <header className="flex items-center gap-3 px-6 py-3 bg-c-surface border-b border-c-border-subtle">
         <Link href="/" className="text-c-text-muted hover:text-c-text transition text-sm">
-          ← Accueil
+          {t('nav.home')}
         </Link>
         <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">Mes decks</span>
+        <span className="text-sm font-bold text-c-text">{t('decks.title')}</span>
         <div className="ml-auto flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <Link
             href="/decks/import/altered"
             className="text-xs px-3 py-1.5 bg-purple-100 dark:bg-purple-900/40 hover:bg-purple-200 dark:hover:bg-purple-800/60 text-purple-700 dark:text-purple-400 rounded border border-purple-300 dark:border-purple-800/50 transition"
           >
-            Importer depuis Altered
+            {t('nav.importFromAltered')}
           </Link>
           <Link
             href="/decks/import"
             className="text-xs px-3 py-1.5 bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/60 text-blue-700 dark:text-blue-400 rounded border border-blue-300 dark:border-blue-800/50 transition"
           >
-            Importer
+            {t('nav.import')}
           </Link>
           <LoginButton />
         </div>
@@ -78,16 +82,16 @@ export default function DecksPage() {
       <main className="flex-1 w-full px-6 py-8">
         {!token && (
           <div className="text-center text-c-text-muted mt-20">
-            <p className="mb-4">Connectez-vous pour voir vos decks.</p>
+            <p className="mb-4">{t('decks.loginRequired')}</p>
             <LoginButton />
           </div>
         )}
-        {token && loading && <p className="text-c-text-muted text-sm">Chargement...</p>}
+        {token && loading && <p className="text-c-text-muted text-sm">{t('common.loading')}</p>}
         {token && error && <p className="text-red-400 text-sm">{error}</p>}
         {token && !loading && !error && decks.length === 0 && (
           <div className="text-center text-c-text-muted mt-20">
-            <p className="mb-4">Aucun deck sauvegardé.</p>
-            <Link href="/" className="text-blue-500 hover:underline text-sm">Créer un deck</Link>
+            <p className="mb-4">{t('decks.noDecks')}</p>
+            <Link href="/" className="text-blue-500 hover:underline text-sm">{t('decks.createFirst')}</Link>
           </div>
         )}
 
@@ -128,7 +132,7 @@ export default function DecksPage() {
                         )}
                         {deck.isPublic && (
                           <span className="text-xs bg-green-800/60 text-green-300 px-1.5 py-0.5 rounded">
-                            Public
+                            {t('common.public')}
                           </span>
                         )}
                       </div>
@@ -137,7 +141,7 @@ export default function DecksPage() {
                     <div>
                       <div className="flex gap-2 mb-3">
                         <span className="text-xs text-gray-300">
-                          <span className="font-bold text-white">{totalCards}</span> cartes
+                          <span className="font-bold text-white">{totalCards}</span> {t('decks.cards')}
                         </span>
                         {rareCount > 0 && (
                           <span className="text-xs text-blue-300">
@@ -152,7 +156,7 @@ export default function DecksPage() {
                       </div>
 
                       <p className="text-xs text-gray-400 mb-3 drop-shadow">
-                        {formatDate(deck.updatedAt ?? deck.createdAt)}
+                        {formatDate(deck.updatedAt ?? deck.createdAt, 'fr-FR')}
                       </p>
 
                       <div className="flex gap-2">
@@ -160,13 +164,12 @@ export default function DecksPage() {
                           href={`/decks/${deck.id}`}
                           className="flex-1 text-center text-xs bg-white/20 hover:bg-white/30 text-white px-2 py-1.5 rounded border border-white/30 transition backdrop-blur-sm"
                         >
-                          Éditer
+                          {t('decks.edit')}
                         </Link>
                         <button
                           onClick={() => handleDelete(deck)}
                           disabled={deleting === deck.id}
                           className="text-xs text-white/60 hover:text-red-300 px-2 py-1.5 rounded border border-white/20 hover:border-red-400/50 transition disabled:opacity-40"
-                          title="Supprimer"
                         >
                           {deleting === deck.id ? '...' : '✕'}
                         </button>

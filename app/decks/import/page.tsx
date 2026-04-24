@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck, fetchFormats } from '@/lib/api/deckApi';
 import LoginButton from '@/components/auth/LoginButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface ParsedLine {
   quantity: number;
@@ -39,6 +41,9 @@ function parseDecklist(text: string): ParseResult {
 }
 
 export default function ImportDeckPage() {
+  const t = useTranslations('importDeck');
+  const tc = useTranslations('common');
+  const tn = useTranslations('nav');
   const router = useRouter();
   const { token } = useAuth();
 
@@ -59,14 +64,12 @@ export default function ImportDeckPage() {
     setError(null);
     setSaving(true);
     try {
-      const result = await saveDeck(
-        {
-          name: name.trim() || 'Deck importé',
-          format: format || null,
-          isPublic,
-          deckCards: valid,
-        },
-      );
+      const result = await saveDeck({
+        name: name.trim() || t('deckNamePlaceholder'),
+        format: format || null,
+        isPublic,
+        deckCards: valid,
+      });
       router.push(`/decks/${result.id}`);
     } catch (e) {
       console.error('[import] error', e);
@@ -83,11 +86,12 @@ export default function ImportDeckPage() {
     <div className="min-h-screen bg-c-bg flex flex-col">
       <header className="flex items-center gap-3 px-6 py-3 bg-c-surface border-b border-c-border-subtle">
         <Link href="/decks" className="text-c-text-muted hover:text-c-text transition text-sm">
-          ← Mes decks
+          {tn('backMyDecks')}
         </Link>
         <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">Importer un deck</span>
+        <span className="text-sm font-bold text-c-text">{t('title')}</span>
         <div className="ml-auto flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <LoginButton />
         </div>
@@ -96,31 +100,30 @@ export default function ImportDeckPage() {
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
         {!token && (
           <div className="text-center text-c-text-muted mt-20">
-            <p className="mb-4">Connectez-vous pour importer un deck.</p>
+            <p className="mb-4">{t('loginRequired')}</p>
             <LoginButton />
           </div>
         )}
 
         {token && (
           <>
-            {/* Métadonnées */}
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-c-text-muted">Nom du deck</label>
+                <label className="text-xs text-c-text-muted">{t('deckName')}</label>
                 <input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={150}
-                  placeholder="Deck importé"
+                  placeholder={t('deckNamePlaceholder')}
                   className={inputClass}
                 />
               </div>
 
               <div className="flex gap-4">
                 <div className="flex flex-col gap-1 flex-1">
-                  <label className="text-xs text-c-text-muted">Format</label>
+                  <label className="text-xs text-c-text-muted">{t('format')}</label>
                   <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
-                    <option value="">— Aucun —</option>
+                    <option value="">{tc('noFormat')}</option>
                     {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
                   </select>
                 </div>
@@ -133,17 +136,16 @@ export default function ImportDeckPage() {
                     >
                       <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
                     </div>
-                    <span className="text-sm text-c-text-muted">Public</span>
+                    <span className="text-sm text-c-text-muted">{tc('public')}</span>
                   </label>
                 </div>
               </div>
             </div>
 
-            {/* Textarea */}
             <div className="flex flex-col gap-2">
               <label className="text-xs text-c-text-muted">
-                Liste de cartes{' '}
-                <span className="text-c-text-subtle">(format : quantité référence, une par ligne)</span>
+                {t('listLabel')}{' '}
+                <span className="text-c-text-subtle">{t('listHint')}</span>
               </label>
               <textarea
                 value={text}
@@ -154,22 +156,19 @@ export default function ImportDeckPage() {
               />
             </div>
 
-            {/* Preview */}
             {text.trim() && (
               <div className="flex items-center gap-4 text-xs">
                 <span className="text-green-400">
-                  <span className="font-bold">{valid.length}</span> ligne{valid.length > 1 ? 's' : ''} valide{valid.length > 1 ? 's' : ''}
-                  {' '}({valid.reduce((s, l) => s + l.quantity, 0)} cartes)
+                  {t('validLines', { count: valid.length, cards: valid.reduce((s, l) => s + l.quantity, 0) })}
                 </span>
                 {invalid.length > 0 && (
                   <span className="text-red-400">
-                    <span className="font-bold">{invalid.length}</span> ligne{invalid.length > 1 ? 's' : ''} ignorée{invalid.length > 1 ? 's' : ''}
+                    {t('ignoredLines', { count: invalid.length })}
                   </span>
                 )}
               </div>
             )}
 
-            {/* Lignes invalides */}
             {invalid.length > 0 && (
               <ul className="flex flex-col gap-1">
                 {invalid.map((line, i) => (
@@ -180,14 +179,13 @@ export default function ImportDeckPage() {
               </ul>
             )}
 
-            {/* Submit */}
             <div className="flex items-center gap-3">
               <button
                 onClick={handleImport}
                 disabled={saving || valid.length === 0}
                 className="px-5 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                {saving ? 'Import en cours...' : 'Importer le deck'}
+                {saving ? t('importing') : t('importBtn')}
               </button>
               {error && <span className="text-sm text-red-400">{error}</span>}
             </div>

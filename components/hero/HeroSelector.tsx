@@ -5,6 +5,7 @@ import { useQuery, useQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupName, getCardGroupFaction } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
@@ -12,8 +13,10 @@ import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import type { CardGroup } from '@/lib/types/card';
 import LoginButton from '@/components/auth/LoginButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
 export default function HeroSelector() {
+  const t = useTranslations();
   const router = useRouter();
   const { setHero, deck } = useDeckStore();
   const [factionFilter, setFactionFilter] = useState('');
@@ -45,7 +48,6 @@ export default function HeroSelector() {
   const isLoading = results.some((r) => r.isLoading);
   const allHeroes = results.flatMap((r) => r.data?.data ?? []);
 
-  // Déduplication
   const seen = new Set<string>();
   const heroes = allHeroes.filter((h) => {
     if (seen.has(h.slug)) return false;
@@ -65,48 +67,47 @@ export default function HeroSelector() {
     <div className="min-h-screen bg-c-bg flex flex-col">
       <header className="shrink-0 px-8 pt-10 pb-5 text-center relative">
         <div className="absolute top-4 right-6 flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <Link href="/decks" className="text-xs text-c-text-subtle hover:text-c-text transition">
-            Mes decks
+            {t('nav.myDecks')}
           </Link>
           <LoginButton />
         </div>
         <h1 className="text-3xl font-bold text-c-text tracking-tight mb-1">
-          Altered — Deck Builder
+          {t('hero.title')}
         </h1>
-        <p className="text-c-text-subtle text-sm">Choisissez votre héros pour commencer</p>
+        <p className="text-c-text-subtle text-sm">{t('hero.subtitle')}</p>
       </header>
 
       {deck.hero && (
         <div className="mx-auto mb-4 flex items-center gap-3 bg-yellow-100/80 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700/40 rounded-xl px-5 py-3">
           <span className="text-yellow-500 dark:text-yellow-400">★</span>
           <span className="text-yellow-800 dark:text-yellow-200 text-sm">
-            Héros actuel : <strong>{getCardGroupName(deck.hero)}</strong>
+            {t('hero.current', { name: getCardGroupName(deck.hero) })}
           </span>
           <button
             onClick={() => router.push('/deck')}
             className="ml-4 px-3 py-1 bg-yellow-600 hover:bg-yellow-500 text-black text-xs font-bold rounded"
           >
-            Continuer
+            {t('hero.continue')}
           </button>
         </div>
       )}
 
-      {/* Filtres */}
       <div className="w-full px-6 mb-4 flex flex-wrap gap-3 items-center">
         <select value={factionFilter} onChange={(e) => setFactionFilter(e.target.value)} className={selectClass}>
-          <option value="">Toutes les factions</option>
+          <option value="">{t('hero.allFactions')}</option>
           {Object.entries(FACTIONS).map(([code, name]) => (
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
 
         {heroes.length > 0 && (
-          <span className="text-xs text-c-text-subtle ml-auto">{heroes.length} héros</span>
+          <span className="text-xs text-c-text-subtle ml-auto">{t('hero.heroCount', { count: heroes.length })}</span>
         )}
       </div>
 
-      {/* Grille */}
       <div className="flex-1 overflow-y-auto px-6 pb-8">
         {isLoading ? (
           <div className="flex justify-center py-20">
@@ -114,7 +115,7 @@ export default function HeroSelector() {
           </div>
         ) : heroes.length === 0 ? (
           <div className="flex justify-center py-20 text-c-text-muted text-sm">
-            Aucun héros trouvé
+            {t('hero.notFound')}
           </div>
         ) : (
           <div

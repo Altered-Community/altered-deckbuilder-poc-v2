@@ -3,10 +3,12 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import CardBrowser from '@/components/cards/CardBrowser';
 import DeckPanel from '@/components/deck/DeckPanel';
 import LoginButton from '@/components/auth/LoginButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 import { useDeckStore } from '@/store/deckStore';
 import { getCardGroupFaction } from '@/lib/utils/card';
 import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
@@ -16,6 +18,7 @@ interface Props {
 }
 
 export default function DeckBuilderView({ initialFaction }: Props) {
+  const t = useTranslations();
   const router = useRouter();
   const hero = useDeckStore((s) => s.deck.hero);
   const mounted = useSyncExternalStore(() => () => {}, () => true, () => false);
@@ -23,8 +26,6 @@ export default function DeckBuilderView({ initialFaction }: Props) {
   useEffect(() => {
     if (mounted && !hero) router.replace('/');
   }, [mounted, hero, router]);
-
-
 
   if (!mounted) return null;
   if (!hero) return null;
@@ -37,16 +38,17 @@ export default function DeckBuilderView({ initialFaction }: Props) {
     <div className="flex flex-col h-screen">
       <header className="shrink-0 flex items-center gap-3 px-4 py-2.5 bg-c-surface border-b border-c-border-subtle">
         <Link href="/" className="text-c-text-muted hover:text-c-text transition text-sm">
-          ← Héros
+          {t('nav.backHero')}
         </Link>
         <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">Altered</span>
-        <span className="text-xs text-c-text-muted">Deck Builder</span>
+        <span className="text-sm font-bold text-c-text">{t('nav.appName')}</span>
+        <span className="text-xs text-c-text-muted">{t('nav.deckBuilder')}</span>
 
         <div className="ml-auto flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <Link href="/decks" className="text-xs text-c-text-muted hover:text-c-text transition">
-            Mes decks
+            {t('nav.myDecks')}
           </Link>
           <LoginButton />
           {factionCode && (
@@ -58,7 +60,7 @@ export default function DeckBuilderView({ initialFaction }: Props) {
           <span className="text-sm text-yellow-700 dark:text-yellow-200 font-medium">{hero.name}</span>
           <span className="text-xs text-c-text-muted">{factionName}</span>
           <Link href="/" className="text-xs text-c-text-subtle hover:text-c-text-muted ml-2 underline">
-            Changer
+            {t('deckBuilder.change')}
           </Link>
         </div>
       </header>
@@ -66,16 +68,16 @@ export default function DeckBuilderView({ initialFaction }: Props) {
       <main className="flex-1 flex overflow-hidden">
         <div className="flex-[3] flex flex-col p-4 border-r border-c-border-subtle overflow-hidden">
           <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest mb-3">
-            Bibliothèque de cartes
+            {t('deckBuilder.cardLibrary')}
           </h2>
           <div className="flex-1 overflow-hidden">
             <CardBrowser key={factionCode ?? initialFaction} initialFaction={factionCode ?? initialFaction} />
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col p-4 overflow-hidden">
+        <div className="flex-[1] flex flex-col p-4 overflow-hidden">
           <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest mb-3">
-            Mon Deck
+            {t('deckBuilder.myDeck')}
           </h2>
           <div className="flex-1 overflow-hidden">
             <DeckPanel />

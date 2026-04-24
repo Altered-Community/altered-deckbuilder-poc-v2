@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { fetchSets, fetchFactions } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES } from '@/lib/types/constants';
 import type { CardGroupFilters } from '@/lib/types/card';
@@ -14,6 +15,8 @@ interface CardFiltersProps {
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
 export default function CardFiltersPanel({ filters, onChange, onReset }: CardFiltersProps) {
+  const t = useTranslations('cards');
+
   const { data: sets = [] } = useQuery({
     queryKey: ['sets'],
     queryFn: fetchSets,
@@ -40,64 +43,59 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
   );
 
   const selectClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500';
-
   const inputClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-full';
 
   return (
     <div className="flex flex-col gap-2 p-3 bg-c-elevated rounded-lg">
-      {/* Recherche */}
       <input
         type="text"
         value={filters.name ?? ''}
         onChange={(e) => update('name', e.target.value)}
-        placeholder="Rechercher une carte..."
+        placeholder={t('search')}
         className={inputClass}
       />
 
-      {/* Ligne 1 : Type + Faction */}
       <div className="grid grid-cols-2 gap-2">
         <select value={filters.cardType ?? ''} onChange={(e) => update('cardType', e.target.value)} className={selectClass}>
-          <option value="">Tous types</option>
-          {CARD_TYPES.map((t) => (
-            <option key={t.value} value={t.value}>{t.label}</option>
+          <option value="">{t('allTypes')}</option>
+          {CARD_TYPES.map((type) => (
+            <option key={type.value} value={type.value}>{type.label}</option>
           ))}
         </select>
 
         <select value={filters['faction.code'] ?? ''} onChange={(e) => update('faction.code', e.target.value)} className={selectClass}>
-          <option value="">Toutes factions</option>
+          <option value="">{t('allFactions')}</option>
           {factions.map(({ code, name }) => (
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
       </div>
 
-      {/* Ligne 1b : Set */}
       <select value={filters['cards.set.reference'] ?? ''} onChange={(e) => update('cards.set.reference', e.target.value)} className={selectClass}>
-        <option value="">Tous sets</option>
+        <option value="">{t('allSets')}</option>
         {sets.map((s) => (
           <option key={s.reference} value={s.reference}>{s.name}</option>
         ))}
       </select>
 
-      {/* Ligne 2 : Coûts */}
       <div className="grid grid-cols-3 gap-2">
         <select value={filters.mainCost ?? ''} onChange={(e) => update('mainCost', e.target.value)} className={selectClass}>
-          <option value="">Coût main</option>
+          <option value="">{t('mainCost')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <select value={filters.oceanPower ?? ''} onChange={(e) => update('oceanPower', e.target.value)} className={selectClass}>
-          <option value="">Force mer</option>
+          <option value="">{t('oceanPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <select value={filters.mountainPower ?? ''} onChange={(e) => update('mountainPower', e.target.value)} className={selectClass}>
-          <option value="">Force mont.</option>
+          <option value="">{t('mountainPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
 
         <select value={filters.forestPower ?? ''} onChange={(e) => update('forestPower', e.target.value)} className={`${selectClass} col-span-3`}>
-          <option value="">Force forêt</option>
+          <option value="">{t('forestPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
@@ -107,7 +105,7 @@ export default function CardFiltersPanel({ filters, onChange, onReset }: CardFil
           onClick={onReset}
           className="text-xs text-c-text-subtle hover:text-c-text underline text-left"
         >
-          Réinitialiser les filtres
+          {t('resetFilters')}
         </button>
       )}
     </div>

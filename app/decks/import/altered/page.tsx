@@ -3,11 +3,13 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck } from '@/lib/api/deckApi';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface AlteredCard {
   reference: string;
@@ -79,11 +81,13 @@ function parseAlteredJson(data: unknown): AlteredDeck[] {
 }
 
 export default function ImportFromAlteredPage() {
+  const t = useTranslations('importAltered');
+  const tc = useTranslations('common');
   const router = useRouter();
   const { token, isLoading } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [file, setFile] = useState<File | null>(null);
+  const [, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [parseError, setParseError] = useState<string | null>(null);
   const [decks, setDecks] = useState<AlteredDeck[]>([]);
@@ -121,7 +125,7 @@ export default function ImportFromAlteredPage() {
         const json = JSON.parse(text);
         const parsedDecks = parseAlteredJson(json);
         setDecks(parsedDecks);
-        setTimeout(() => handleVerify(), 100);
+        handleVerify(parsedDecks);
       } catch (err) {
         setParseError(err instanceof Error ? err.message : 'Impossible de lire le fichier JSON.');
       }
@@ -133,7 +137,7 @@ export default function ImportFromAlteredPage() {
     const match = urlInput.match(/https?:\/\/(?:www\.)?altered\.(?:gg|com)\/en-us\/decks\/(\w+)/i);
     const id = match?.[1] ?? urlInput.trim();
     if (!id) {
-      setParseError('URL ou ID invalide');
+      setParseError(t('urlError'));
       return;
     }
 
@@ -142,26 +146,27 @@ export default function ImportFromAlteredPage() {
 
     try {
       const res = await fetch(`https://api.altered.gg/deck_user_lists/${id}`);
-      if (!res.ok) throw new Error('Deck non trouvé');
+      if (!res.ok) throw new Error(t('deckNotFound'));
 
       const json = await res.json();
       const parsedDecks = parseAlteredJson([json]);
       setDecks(parsedDecks);
       setUrlInput('');
-      setTimeout(() => handleVerify(), 100);
+      handleVerify(parsedDecks);
     } catch (err) {
-      setParseError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+      setParseError(err instanceof Error ? err.message : t('loadError'));
     } finally {
       setLoadingUrl(false);
     }
   };
 
-  const handleVerify = async () => {
-    if (decks.length === 0) return;
+  const handleVerify = async (decksToVerify?: AlteredDeck[]) => {
+    const target = decksToVerify ?? decks;
+    if (target.length === 0) return;
     setVerifying(true);
     setVerifiedRefs(new Map());
 
-    const allRefs = decks.flatMap((d) => [
+    const allRefs = target.flatMap((d) => [
       d.hero.reference,
       ...d.cards.map((c) => c.reference),
     ]);
@@ -169,7 +174,7 @@ export default function ImportFromAlteredPage() {
     const uniqueRefs = [...new Set(allRefs.filter(Boolean))];
 
     try {
-      const { found, notFound } = await verifyCardReferences(uniqueRefs);
+      const { found } = await verifyCardReferences(uniqueRefs);
       const refMap = new Map<string, boolean>();
       uniqueRefs.forEach((ref) => {
         refMap.set(ref, found.includes(ref));
@@ -177,7 +182,7 @@ export default function ImportFromAlteredPage() {
       setVerifiedRefs(refMap);
     } catch (err) {
       console.error('[verify] error:', err);
-      setSaveError("Erreur lors de la vérification des cartes");
+      setSaveError(t('verifyError'));
     } finally {
       setVerifying(false);
     }
@@ -205,7 +210,7 @@ export default function ImportFromAlteredPage() {
 
       router.push(`/decks/${result.id}`);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Erreur lors de la sauvegarde.');
+      setSaveError(err instanceof Error ? err.message : tc('unknownError'));
     } finally {
       setSaving(false);
     }
@@ -215,6 +220,7 @@ export default function ImportFromAlteredPage() {
     setSavingAll(true);
     setSaveError(null);
     const saved: (string | null)[] = [];
+    let localError: string | null = null;
 
     for (let i = 0; i < decks.length; i++) {
       const deck = decks[i];
@@ -232,13 +238,14 @@ export default function ImportFromAlteredPage() {
         saved.push(result.id);
         setSavedIds([...saved]);
       } catch (err) {
-        setSaveError(`Erreur sur "${deck.name}": ${err instanceof Error ? err.message : 'Erreur'}`);
+        localError = `Erreur sur "${deck.name}": ${err instanceof Error ? err.message : tc('unknownError')}`;
+        setSaveError(localError);
         break;
       }
     }
 
     setSavingAll(false);
-    if (saved.length > 0 && !saveError) {
+    if (saved.length > 0 && !localError) {
       setTimeout(() => router.push('/decks'), 1500);
     }
   };
@@ -255,8 +262,9 @@ export default function ImportFromAlteredPage() {
           ← Mes decks
         </Link>
         <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">Importer depuis Altered</span>
+        <span className="text-sm font-bold text-c-text">{t('title')}</span>
         <div className="ml-auto flex items-center gap-3">
+          <LanguageToggle />
           <ThemeToggle />
           <LoginButton />
         </div>
@@ -264,31 +272,29 @@ export default function ImportFromAlteredPage() {
 
       <main className="flex-1 max-w-3xl mx-auto w-full px-20 py-8 flex flex-col gap-6">
         <div className="bg-c-surface border border-c-border rounded-lg p-5">
-          <h2 className="text-lg font-bold text-c-text mb-3">Comment exporter depuis Altered ?</h2>
+          <h2 className="text-lg font-bold text-c-text mb-3">{t('howTo')}</h2>
           <ol className="flex flex-col gap-2 text-sm text-c-text-secondary list-decimal list-inside">
-            <li>Ouvrez l'application Altered sur votre téléphone ou ordinateur.</li>
-            <li>
-              Allez dans <strong className="text-c-text">Paramètres → Mes decks</strong> et sélectionnez un deck.
-            </li>
-            <li>
-              Appuyez sur le bouton <strong className="text-c-text">Exporter</strong> et choisissez{" "}
-              <strong className="text-c-text">Format JSON</strong>.
-            </li>
-            <li>Enregistrez le fichier sur votre appareil.</li>
-            <li>Transférez le fichier sur votre ordinateur (par email, AirDrop, etc.).</li>
-            <li>Cliquez sur le bouton <strong className="text-c-text">Importer</strong> ci-dessous et sélectionnez le fichier.</li>
+            <li>{t('step1')}</li>
+            <li>{t.rich('step2', { settings: (c) => <strong className="text-c-text">{c}</strong> })}</li>
+            <li>{t.rich('step3', {
+              export: (c) => <strong className="text-c-text">{c}</strong>,
+              format: (c) => <strong className="text-c-text">{c}</strong>,
+            })}</li>
+            <li>{t('step4')}</li>
+            <li>{t('step5')}</li>
+            <li>{t.rich('step6', { import: (c) => <strong className="text-c-text">{c}</strong> })}</li>
           </ol>
         </div>
 
         {isLoading && (
           <div className="text-center text-c-text-muted mt-8">
-            <p>Chargement...</p>
+            <p>{tc('loading')}</p>
           </div>
         )}
 
         {!isLoading && !token && (
           <div className="text-center text-c-text-muted mt-8">
-            <p className="mb-4">Connectez-vous pour importer un deck.</p>
+            <p className="mb-4">{t('loginRequired')}</p>
             <LoginButton />
           </div>
         )}
@@ -296,14 +302,14 @@ export default function ImportFromAlteredPage() {
         {!isLoading && token && (
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-sm text-c-text-muted">Importer depuis une URL Altered</label>
+              <label className="text-sm text-c-text-muted">{t('urlLabel')}</label>
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={urlInput}
                   onChange={(e) => setUrlInput(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleUrlImport()}
-                  placeholder="https://www.altered.gg/en-us/decks/01J9BAVM..."
+                  placeholder={t('urlPlaceholder')}
                   className="flex-1 bg-c-elevated border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
@@ -311,7 +317,7 @@ export default function ImportFromAlteredPage() {
                   disabled={loadingUrl || !urlInput.trim()}
                   className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-50"
                 >
-                  {loadingUrl ? '...' : 'Importer'}
+                  {loadingUrl ? '...' : t('urlImport')}
                 </button>
               </div>
             </div>
@@ -321,7 +327,7 @@ export default function ImportFromAlteredPage() {
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm text-c-text-muted">Fichier JSON exporté depuis Altered</label>
+              <label className="text-sm text-c-text-muted">{t('fileLabel')}</label>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -338,13 +344,11 @@ export default function ImportFromAlteredPage() {
               </div>
             )}
 
-            
-
             {deck && (
               <>
                 {decks.length > 1 && (
                   <div className="flex flex-col gap-2">
-                    <label className="text-sm text-c-text-muted">Sélectionnez un deck</label>
+                    <label className="text-sm text-c-text-muted">{t('selectDeck')}</label>
                     <select
                       value={selectedIndex}
                       onChange={(e) => setSelectedIndex(Number(e.target.value))}
@@ -371,34 +375,34 @@ export default function ImportFromAlteredPage() {
                     <div className="flex items-center gap-3">
                       {saveError && <span className="text-xs text-red-400 max-w-[200px]">{saveError}</span>}
                       <button
-                        onClick={handleVerify}
+                        onClick={() => handleVerify()}
                         disabled={verifying}
                         className="px-4 py-2 text-sm bg-yellow-600 hover:bg-yellow-500 text-white rounded-lg transition disabled:opacity-50"
                       >
-                        {verifying ? '...' : 'Vérifier'}
+                        {verifying ? '...' : t('verify')}
                       </button>
                       <button
                         onClick={handleSave}
                         disabled={saving}
                         className="px-5 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition disabled:opacity-50"
                       >
-                        {saving ? '...' : 'Sauvegarder'}
+                        {saving ? '...' : t('save')}
                       </button>
                     </div>
                   </div>
 
                   <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
                     <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 border-b border-c-border pb-1">
-                      <span className="w-10 text-right">Qté</span>
-                      <span className="w-24">Type</span>
-                      <span className="w-48">Référence</span>
-                      <span className="flex-1">Nom</span>
-                      <span className="w-16 text-right">Coût</span>
+                      <span className="w-10 text-right">{t('colQty')}</span>
+                      <span className="w-24">{t('colType')}</span>
+                      <span className="w-48">{t('colRef')}</span>
+                      <span className="flex-1">{t('colName')}</span>
+                      <span className="w-16 text-right">{t('colCost')}</span>
                     </div>
 
                     <div className="flex items-center gap-2 text-xs text-purple-300 font-medium py-1">
                       <span className="w-10 text-right">×1</span>
-                      <span className="w-24">Héros</span>
+                      <span className="w-24">{t('hero')}</span>
                       <span className="w-48 font-mono text-c-text-subtle">{deck.hero.reference}</span>
                       <span className={`flex-1 truncate ${!verifiedRefs.get(deck.hero.reference) ? 'text-red-400' : ''}`}>
                         {deck.hero.name}
@@ -432,20 +436,20 @@ export default function ImportFromAlteredPage() {
 
                   <div className="flex flex-wrap gap-4 text-xs text-c-text-muted border-t border-c-border pt-4">
                     <span>
-                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'CHARACTER').reduce((s, c) => s + c.quantity, 0)}</strong> Personnages
+                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'CHARACTER').reduce((s, c) => s + c.quantity, 0)}</strong> {t('characters')}
                     </span>
                     <span>
-                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'SPELL').reduce((s, c) => s + c.quantity, 0)}</strong> Sorts
+                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'SPELL').reduce((s, c) => s + c.quantity, 0)}</strong> {t('spells')}
                     </span>
                     <span>
-                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'SITUATION').reduce((s, c) => s + c.quantity, 0)}</strong> Situations
+                      <strong className="text-c-text">{deck.cards.filter((c) => c.cardType === 'SITUATION').reduce((s, c) => s + c.quantity, 0)}</strong> {t('situations')}
                     </span>
                   </div>
 
                   {decks.length > 1 && (
                     <div className="flex items-center justify-center gap-3 pt-4 border-t border-c-border">
                       {savedIds.length > 0 && (
-                        <span className="text-sm text-green-400">{savedIds.length}/{decks.length} sauvegardés</span>
+                        <span className="text-sm text-green-400">{t('savedCount', { saved: savedIds.length, total: decks.length })}</span>
                       )}
                       {saveError && <span className="text-sm text-red-400">{saveError}</span>}
                       <button
@@ -453,7 +457,7 @@ export default function ImportFromAlteredPage() {
                         disabled={savingAll}
                         className="px-5 py-2 text-sm bg-green-600 hover:bg-green-500 text-white rounded-lg transition disabled:opacity-50"
                       >
-                        {savingAll ? 'Sauvegarde...' : `Sauvegarder tout (${decks.length})`}
+                        {savingAll ? tc('saving') : t('saveAll', { count: decks.length })}
                       </button>
                     </div>
                   )}

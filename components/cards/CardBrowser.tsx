@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupFaction } from '@/lib/utils/card';
 import type { CardGroupFilters, CardGroup } from '@/lib/types/card';
@@ -17,6 +18,7 @@ interface Props {
 }
 
 export default function CardBrowser({ initialFaction }: Props) {
+  const t = useTranslations('cards');
   const hero = useDeckStore((s) => s.deck.hero);
 
   const [filters, setFilters] = useState<CardGroupFilters>({
@@ -25,8 +27,6 @@ export default function CardBrowser({ initialFaction }: Props) {
     'rarity.reference': DEFAULT_RARITIES,
     ...(initialFaction ? { 'faction.code': initialFaction } : {}),
   });
-
-
 
   const factionCode = hero ? getCardGroupFaction(hero) : initialFaction;
 
@@ -40,8 +40,6 @@ export default function CardBrowser({ initialFaction }: Props) {
     enabled: !!factionCode,
     placeholderData: (prev) => prev,
   });
-
-
 
   const cards: CardGroup[] = data?.data ?? [];
   const totalItems = data?.pagination?.totalItems ?? 0;
@@ -66,7 +64,6 @@ export default function CardBrowser({ initialFaction }: Props) {
     <div className="flex flex-col h-full gap-2">
       <CardFiltersPanel filters={filters} onChange={handleFiltersChange} />
 
-      {/* Checkboxes rareté */}
       <div className="flex items-center gap-4 px-1">
         {RARITIES.map((r) => (
           <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -76,13 +73,12 @@ export default function CardBrowser({ initialFaction }: Props) {
               onChange={() => toggleRarity(r.value)}
               className="w-3.5 h-3.5 accent-blue-500"
             />
-            <span className="text-xs text-c-text-secondary">{r.label}</span>
+            <span className="text-xs text-c-text-secondary">{t(`rarities.${r.value}`)}</span>
           </label>
         ))}
-        <span className="ml-auto text-xs text-c-text-subtle">{totalItems} cartes</span>
+        <span className="ml-auto text-xs text-c-text-subtle">{t('count', { count: totalItems })}</span>
       </div>
 
-      {/* Pagination */}
       <div className="flex items-center justify-end gap-2 text-xs text-c-text-muted px-1">
         <button
           disabled={currentPage <= 1}
@@ -91,7 +87,7 @@ export default function CardBrowser({ initialFaction }: Props) {
         >
           ‹
         </button>
-        <span>Page {currentPage} / {lastPage}</span>
+        <span>{t('page', { current: currentPage, last: lastPage })}</span>
         <button
           disabled={currentPage >= lastPage}
           onClick={() => setFilters((f) => ({ ...f, page: currentPage + 1 }))}
@@ -101,7 +97,6 @@ export default function CardBrowser({ initialFaction }: Props) {
         </button>
       </div>
 
-      {/* Grille */}
       <div className="flex-1 overflow-y-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-32">
@@ -110,11 +105,11 @@ export default function CardBrowser({ initialFaction }: Props) {
         ) : isError ? (
           <div className="flex flex-col items-center justify-center h-32 gap-2 text-c-text-muted">
             <span className="text-2xl">⚠️</span>
-            <p className="text-sm">Impossible de joindre l&apos;API</p>
+            <p className="text-sm">{t('apiError')}</p>
           </div>
         ) : cards.length === 0 ? (
           <div className="flex items-center justify-center h-32 text-c-text-muted text-sm">
-            Aucune carte trouvée
+            {t('notFound')}
           </div>
         ) : (
           <div

@@ -43,7 +43,8 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('order:', d['pagination']\\); [print\\(x['slug'], x['cards'][0]['set']['reference'] if x['cards'] else ''\\) for x in d['data'][:4]]\")",
       "Bash(curl -s \"https://altered-core-cards-api.toxicity.be/api/card_groups?locale=fr&name=Sierra&page=1\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('name only:', d['pagination']\\)\")",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run *)"
     ]
   }
 }

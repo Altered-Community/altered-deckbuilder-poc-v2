@@ -35,15 +35,17 @@ export function cardGroupFromDeckCard(dc: ApiDeckCard): CardGroup {
   };
 }
 
+function getStandardCard(group: CardGroup) {
+  return group.cards.find((c) => c.variation === 'standard') ?? group.cards[0];
+}
+
 export function getCardReference(group: CardGroup): string {
-  const standard = group.cards.find((c) => c.variation === 'standard') ?? group.cards[0];
-  return standard?.reference ?? group.slug;
+  return getStandardCard(group)?.reference ?? group.slug;
 }
 
 export function getCardGroupImage(group: CardGroup): string | null {
   if (!group.cards.length) return null;
-  const standard = group.cards.find((c) => c.variation === 'standard') ?? group.cards[0];
-  return standard.imagePath ?? null;
+  return getStandardCard(group)?.imagePath ?? null;
 }
 
 export function getCardGroupName(group: CardGroup): string {

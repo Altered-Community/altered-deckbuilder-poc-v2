@@ -1,6 +1,12 @@
 import type { ApiDeck, ApiDeckDetail, ApiFormat, SaveDeckPayload } from '@/lib/types/deck';
 import { getValidToken } from '@/store/authStore';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function normalizeArray<T>(data: any): T[] {
+  if (Array.isArray(data)) return data;
+  return data['hydra:member'] ?? data['member'] ?? data['data'] ?? [];
+}
+
 const DECK_API_BASE =
   typeof window === 'undefined'
     ? (process.env.NEXT_PUBLIC_DECK_API_URL ?? 'http://localhost:4000').replace(/\/$/, '')
@@ -25,17 +31,13 @@ export async function fetchFormats(): Promise<ApiFormat[]> {
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`Erreur formats : ${res.status}`);
-  const data = await res.json();
-  if (Array.isArray(data)) return data;
-  return data['hydra:member'] ?? data['member'] ?? data['data'] ?? [];
+  return normalizeArray<ApiFormat>(await res.json());
 }
 
 export async function getDecks(): Promise<ApiDeck[]> {
   const res = await deckFetch('/decks');
   if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);
-  const data = await res.json();
-  if (Array.isArray(data)) return data;
-  return data['hydra:member'] ?? data['member'] ?? data['data'] ?? [];
+  return normalizeArray<ApiDeck>(await res.json());
 }
 
 export async function getDeckDetail(id: string): Promise<ApiDeckDetail> {

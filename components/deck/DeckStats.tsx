@@ -1,22 +1,22 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTIONS, FACTION_BADGE_COLORS, MIN_DECK_SIZE } from '@/lib/types/constants';
 import { getCardGroupName, getCardGroupFaction } from '@/lib/utils/card';
 
 export default function DeckStats() {
+  const t = useTranslations('deck');
   const { deck, deckStats } = useDeckStore();
   const { playableCount: total } = deckStats();
   const minCards = deck.format?.minCards ?? MIN_DECK_SIZE;
 
-  // Faction distribution
   const factionCounts: Record<string, number> = {};
   deck.cards.forEach(({ cardGroup, quantity }) => {
     const code = getCardGroupFaction(cardGroup);
     if (code) factionCounts[code] = (factionCounts[code] ?? 0) + quantity;
   });
 
-  // Cost curve (main cost 0–8+)
   const costCurve: Record<number, number> = {};
   deck.cards.forEach(({ cardGroup, quantity }) => {
     if (cardGroup.mainCost != null) {
@@ -28,17 +28,15 @@ export default function DeckStats() {
 
   return (
     <div className="flex flex-col gap-4 p-3 bg-c-elevated rounded-lg text-sm">
-      {/* Hero */}
       <div>
-        <p className="text-c-text-muted text-xs uppercase tracking-wide mb-1">Héros</p>
+        <p className="text-c-text-muted text-xs uppercase tracking-wide mb-1">{t('hero')}</p>
         {deck.hero ? (
           <p className="text-c-text font-medium">{getCardGroupName(deck.hero)}</p>
         ) : (
-          <p className="text-c-text-subtle italic text-xs">Aucun héros sélectionné</p>
+          <p className="text-c-text-subtle italic text-xs">{t('noHero')}</p>
         )}
       </div>
 
-      {/* Progress bar */}
       <div className="flex items-center gap-2">
         <div className="flex-1 h-2 bg-c-input rounded-full overflow-hidden">
           <div
@@ -51,10 +49,9 @@ export default function DeckStats() {
         </span>
       </div>
 
-      {/* Faction distribution */}
       {Object.keys(factionCounts).length > 0 && (
         <div>
-          <p className="text-c-text-muted text-xs uppercase tracking-wide mb-2">Factions</p>
+          <p className="text-c-text-muted text-xs uppercase tracking-wide mb-2">{t('factions')}</p>
           <div className="flex flex-col gap-1.5">
             {Object.entries(factionCounts)
               .sort(([, a], [, b]) => b - a)
@@ -82,10 +79,9 @@ export default function DeckStats() {
         </div>
       )}
 
-      {/* Cost curve */}
       {Object.keys(costCurve).length > 0 && (
         <div>
-          <p className="text-c-text-muted text-xs uppercase tracking-wide mb-2">Courbe de coût</p>
+          <p className="text-c-text-muted text-xs uppercase tracking-wide mb-2">{t('costCurve')}</p>
           <div className="flex items-end gap-1 h-14">
             {Array.from({ length: 9 }, (_, i) => {
               const count = costCurve[i] ?? 0;

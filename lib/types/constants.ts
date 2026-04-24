@@ -32,4 +32,16 @@ export const CARD_TYPES = [
   { value: 'TOKEN', label: 'Token' },
 ];
 
+export const CARD_TYPE_LABELS: Record<string, string> = {
+  HERO: 'Héros',
+  CHARACTER: 'Personnages',
+  SPELL: 'Sorts',
+  PERMANENT: 'Permanents',
+  LANDMARK_PERMANENT: 'Hauts lieux',
+  EXPEDITION_PERMANENT: 'Expéditions',
+  TOKEN: 'Tokens',
+  TOKEN_MANA: 'Tokens mana',
+  OTHER: 'Autres',
+};
+
 export const MIN_DECK_SIZE = 39;

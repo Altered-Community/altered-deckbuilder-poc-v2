@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useTranslations } from 'next-intl';
 import { useDeckStore } from '@/store/deckStore';
 import { MIN_DECK_SIZE } from '@/lib/types/constants';
 import { fetchFormats } from '@/lib/api/deckApi';
@@ -9,17 +10,6 @@ import { getUniqueLimit } from '@/lib/utils/format';
 import DeckCardItem from './DeckCardItem';
 import DeckStats from './DeckStats';
 import SaveDeckButton from './SaveDeckButton';
-
-const TYPE_LABELS: Record<string, string> = {
-  CHARACTER: 'Personnages',
-  SPELL: 'Sorts',
-  PERMANENT: 'Permanents',
-  LANDMARK_PERMANENT: 'Hauts lieux',
-  EXPEDITION_PERMANENT: 'Expéditions',
-  TOKEN: 'Tokens',
-  TOKEN_MANA: 'Tokens mana',
-  OTHER: 'Autres',
-};
 
 function LimitBadge({ current, max, label, colorOver = 'text-red-400', colorOk = 'text-c-text-muted' }: {
   current: number;
@@ -39,6 +29,7 @@ function LimitBadge({ current, max, label, colorOver = 'text-red-400', colorOk =
 }
 
 export default function DeckPanel() {
+  const t = useTranslations('deck');
   const { deck, setDeckName, setFormat, clearDeck, deckStats } = useDeckStore();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(deck.name);
@@ -79,7 +70,6 @@ export default function DeckPanel() {
 
   return (
     <div className="flex flex-col h-full bg-c-surface rounded-xl border border-c-border overflow-hidden">
-      {/* Header */}
       <div className="px-3 py-2.5 border-b border-c-border bg-c-elevated">
         <div className="flex items-center gap-2 mb-2">
           {editingName ? (
@@ -102,14 +92,13 @@ export default function DeckPanel() {
           )}
           <SaveDeckButton />
           <button
-            onClick={() => { if (confirm('Vider le deck ?')) clearDeck(); }}
+            onClick={() => { if (confirm(t('clearConfirm'))) clearDeck(); }}
             className="shrink-0 text-xs bg-red-100 dark:bg-red-900/40 hover:bg-red-200 dark:hover:bg-red-800/60 text-red-600 dark:text-red-400 px-2 py-1 rounded border border-red-300 dark:border-red-800/50 transition"
           >
-            Vider
+            {t('clearDeck')}
           </button>
         </div>
 
-        {/* Format selector */}
         <div className="flex items-center gap-2 mb-2">
           <select
             value={format?.code ?? ''}
@@ -119,16 +108,14 @@ export default function DeckPanel() {
             }}
             className={selectClass}
           >
-            <option value="">— Format —</option>
+            <option value="">{t('formatPlaceholder')}</option>
             {formats.map((f) => (
               <option key={f.code} value={f.code}>{f.label}</option>
             ))}
           </select>
         </div>
 
-        {/* Récap format-aware */}
         <div className="flex items-center gap-2 flex-wrap">
-          {/* Total cartes */}
           <div className={`flex items-center gap-1 text-xs px-1.5 py-0.5 rounded ${
             playableCount < minCards || (maxCards != null && playableCount > maxCards)
               ? 'bg-red-900/40 text-red-400'
@@ -142,11 +129,10 @@ export default function DeckPanel() {
           {maxU != null && <LimitBadge current={uniqueCount} max={maxU} label="U" colorOver="text-red-400" />}
           {maxE != null && <LimitBadge current={exaltedCount} max={maxE} label="E" colorOver="text-red-400" />}
 
-          {isValid && <span className="text-xs text-green-400 ml-auto">✓ Valide</span>}
+          {isValid && <span className="text-xs text-green-400 ml-auto">{t('valid')}</span>}
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex border-b border-c-border bg-c-elevated">
         {(['cards', 'stats'] as const).map((tab) => (
           <button
@@ -158,25 +144,24 @@ export default function DeckPanel() {
                 : 'text-c-text-subtle hover:text-c-text-secondary'
             }`}
           >
-            {tab === 'cards' ? `Cartes (${playableCount})` : 'Stats'}
+            {tab === 'cards' ? t('cardsTab', { count: playableCount }) : t('statsTab')}
           </button>
         ))}
       </div>
 
-      {/* Content */}
       <div className="flex-1 overflow-y-auto p-3">
         {activeTab === 'stats' ? (
           <DeckStats />
         ) : deck.cards.length === 0 && !deck.hero ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-c-text-muted">
             <span className="text-4xl">🃏</span>
-            <p className="text-sm text-center">Cliquez sur une carte pour l&apos;ajouter</p>
+            <p className="text-sm text-center">{t('emptyHint')}</p>
           </div>
         ) : (
           <div className="flex flex-col gap-3">
             {deck.hero && (
               <div className="flex flex-col gap-1">
-                <p className="text-xs text-c-text-muted uppercase tracking-wide px-1">Héros</p>
+                <p className="text-xs text-c-text-muted uppercase tracking-wide px-1">{t('hero')}</p>
                 <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-yellow-100/80 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700/50">
                   <span className="text-yellow-500 dark:text-yellow-400 text-sm">★</span>
                   <span className="flex-1 text-sm text-yellow-800 dark:text-yellow-200">{deck.hero.name}</span>
@@ -193,7 +178,7 @@ export default function DeckPanel() {
             {Object.entries(groupedCards).map(([type, cards]) => (
               <div key={type} className="flex flex-col gap-1">
                 <p className="text-xs text-c-text-muted uppercase tracking-wide px-1">
-                  {TYPE_LABELS[type] ?? type}
+                  {t(`typeLabels.${type}`, { default: type })}
                   <span className="ml-1 text-c-text-subtle">
                     ({cards.reduce((s, dc) => s + dc.quantity, 0)})
                   </span>
