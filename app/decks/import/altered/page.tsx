@@ -1,15 +1,13 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck } from '@/lib/api/deckApi';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
-import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 interface AlteredCard {
   reference: string;
@@ -256,20 +254,7 @@ export default function ImportFromAlteredPage() {
   const deck = decks[selectedIndex];
 
   return (
-    <div className="min-h-screen bg-c-bg flex flex-col">
-      <header className="flex items-center gap-3 px-6 py-3 bg-c-surface border-b border-c-border-subtle">
-        <Link href="/decks" className="text-c-text-muted hover:text-c-text transition text-sm">
-          ← Mes decks
-        </Link>
-        <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">{t('title')}</span>
-        <div className="ml-auto flex items-center gap-3">
-          <LanguageToggle />
-          <ThemeToggle />
-          <LoginButton />
-        </div>
-      </header>
-
+    <div className="flex flex-col" style={{ flex: 1 }}>
       <main className="flex-1 max-w-3xl mx-auto w-full px-20 py-8 flex flex-col gap-6">
         <div className="bg-c-surface border border-c-border rounded-lg p-5">
           <h2 className="text-lg font-bold text-c-text mb-3">{t('howTo')}</h2>
@@ -467,6 +452,7 @@ export default function ImportFromAlteredPage() {
           </div>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

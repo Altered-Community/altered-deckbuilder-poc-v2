@@ -3,14 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getRarityFromSlug } from '@/lib/utils/card';
-import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS } from '@/lib/types/constants';
@@ -39,7 +38,7 @@ function CardRow({ dc }: { dc: ApiDeckCard }) {
   return (
     <div className="relative rounded-lg overflow-hidden border border-c-border bg-c-surface aspect-[2/3] flex flex-col justify-end">
       {image && (
-        <img src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" />
+        <Image src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" fill sizes="(max-width: 768px) 50vw, 33vw" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-gray-950/90 via-gray-950/20 to-transparent" />
       <div className="relative z-10 px-2 pb-2 flex flex-col gap-0.5">
@@ -201,16 +200,12 @@ export default function DeckEditPage() {
   const inputClass = 'w-full bg-c-elevated border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
-    <div className="h-screen bg-c-bg flex flex-col overflow-hidden">
-      <header className="flex items-center gap-3 px-6 py-3 bg-c-surface border-b border-c-border-subtle">
-        <Link href="/decks" className="text-c-text-muted hover:text-c-text transition text-sm">{tn('backMyDecks')}</Link>
+    <div className="bg-c-bg flex flex-col overflow-hidden" style={{ height: 'calc(100vh - var(--nav-h))' }}>
+      <div className="shrink-0 flex items-center gap-3 px-6 py-2 bg-c-surface border-b border-c-border-subtle text-sm">
+        <Link href="/decks" className="text-c-text-muted hover:text-c-text transition">{tn('backMyDecks')}</Link>
         <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">{loading ? '...' : (deck?.name ?? t('editing'))}</span>
-        <div className="ml-auto flex items-center gap-2">
-          <LanguageToggle />
-          <ThemeToggle />
-        </div>
-      </header>
+        <span className="font-bold text-c-text">{loading ? '...' : (deck?.name ?? t('editing'))}</span>
+      </div>
 
       <main className="flex-1 flex overflow-hidden">
         {!token && <p className="text-red-400 text-sm p-6">{t('mustLogin')}</p>}

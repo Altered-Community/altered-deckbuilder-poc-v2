@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck, fetchFormats } from '@/lib/api/deckApi';
 import LoginButton from '@/components/auth/LoginButton';
-import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 interface ParsedLine {
   quantity: number;
@@ -43,7 +41,6 @@ function parseDecklist(text: string): ParseResult {
 export default function ImportDeckPage() {
   const t = useTranslations('importDeck');
   const tc = useTranslations('common');
-  const tn = useTranslations('nav');
   const router = useRouter();
   const { token } = useAuth();
 
@@ -83,20 +80,7 @@ export default function ImportDeckPage() {
     'w-full bg-c-elevated border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
-    <div className="min-h-screen bg-c-bg flex flex-col">
-      <header className="flex items-center gap-3 px-6 py-3 bg-c-surface border-b border-c-border-subtle">
-        <Link href="/decks" className="text-c-text-muted hover:text-c-text transition text-sm">
-          {tn('backMyDecks')}
-        </Link>
-        <span className="text-c-border">|</span>
-        <span className="text-sm font-bold text-c-text">{t('title')}</span>
-        <div className="ml-auto flex items-center gap-3">
-          <LanguageToggle />
-          <ThemeToggle />
-          <LoginButton />
-        </div>
-      </header>
-
+    <div className="flex flex-col" style={{ flex: 1 }}>
       <main className="flex-1 max-w-2xl mx-auto w-full px-6 py-8 flex flex-col gap-6">
         {!token && (
           <div className="text-center text-c-text-muted mt-20">
@@ -192,6 +176,7 @@ export default function ImportDeckPage() {
           </>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

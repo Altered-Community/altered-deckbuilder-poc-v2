@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import Providers from './providers';
+import SiteHeader from '@/components/layout/SiteHeader';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
 
@@ -18,9 +19,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang={locale} className={`${geist.variable} h-full`} suppressHydrationWarning>
-      <body className="min-h-full bg-c-bg text-c-text antialiased">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="text-c-text antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Providers>{children}</Providers>
+          <Providers>
+            <SiteHeader />
+            {children}
+          </Providers>
         </NextIntlClientProvider>
       </body>
     </html>

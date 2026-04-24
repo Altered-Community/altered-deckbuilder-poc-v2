@@ -32,8 +32,8 @@ export default function LoginButton() {
   const handleLogout = async () => {
     
     if (USE_KEYCLOAK) {
-      const result = await signOut({ redirect: false });
-      
+      await signOut({ redirect: false });
+
       logout();
       window.location.href = '/';
     } else {

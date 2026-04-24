@@ -4,16 +4,13 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupName, getCardGroupFaction } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import type { CardGroup } from '@/lib/types/card';
-import LoginButton from '@/components/auth/LoginButton';
-import ThemeToggle from '@/components/ThemeToggle';
-import LanguageToggle from '@/components/LanguageToggle';
+import SiteFooter from '@/components/layout/SiteFooter';
 
 export default function HeroSelector() {
   const t = useTranslations();
@@ -64,16 +61,8 @@ export default function HeroSelector() {
   const selectClass = 'px-3 py-2 bg-c-elevated border border-c-border rounded-lg text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500';
 
   return (
-    <div className="min-h-screen bg-c-bg flex flex-col">
-      <header className="shrink-0 px-8 pt-10 pb-5 text-center relative">
-        <div className="absolute top-4 right-6 flex items-center gap-3">
-          <LanguageToggle />
-          <ThemeToggle />
-          <Link href="/decks" className="text-xs text-c-text-subtle hover:text-c-text transition">
-            {t('nav.myDecks')}
-          </Link>
-          <LoginButton />
-        </div>
+    <div className="flex flex-col" style={{ flex: 1 }}>
+      <header className="shrink-0 px-8 pt-10 pb-5 text-center">
         <h1 className="text-3xl font-bold text-c-text tracking-tight mb-1">
           {t('hero.title')}
         </h1>
@@ -133,6 +122,7 @@ export default function HeroSelector() {
           </div>
         )}
       </div>
+      <SiteFooter />
     </div>
   );
 }
