@@ -29,7 +29,7 @@ function parseAlteredJson(data: unknown): AlteredDeck[] {
   if (!Array.isArray(data)) throw new Error('Le fichier doit contenir un tableau de decks.');
 
   return data.map((deckItem: Record<string, unknown>) => {
-    const inner = deckItem.data as Record<string, unknown> | undefined;
+    const inner = (deckItem.data ?? deckItem) as Record<string, unknown>;
     if (!inner) throw new Error('Structure de deck invalide.');
 
     const alterator = inner.alterator as Record<string, unknown> | undefined;
@@ -94,6 +94,8 @@ export default function ImportFromAlteredPage() {
   const [savingAll, setSavingAll] = useState(false);
   const [verifiedRefs, setVerifiedRefs] = useState<Map<string, boolean>>(new Map());
   const [verifying, setVerifying] = useState(false);
+  const [urlInput, setUrlInput] = useState('');
+  const [loadingUrl, setLoadingUrl] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
@@ -125,6 +127,33 @@ export default function ImportFromAlteredPage() {
       }
     };
     reader.readAsText(f);
+  };
+
+  const handleUrlImport = async () => {
+    const match = urlInput.match(/https?:\/\/(?:www\.)?altered\.(?:gg|com)\/en-us\/decks\/(\w+)/i);
+    const id = match?.[1] ?? urlInput.trim();
+    if (!id) {
+      setParseError('URL ou ID invalide');
+      return;
+    }
+
+    setLoadingUrl(true);
+    setParseError(null);
+
+    try {
+      const res = await fetch(`https://api.altered.gg/deck_user_lists/${id}`);
+      if (!res.ok) throw new Error('Deck non trouvé');
+
+      const json = await res.json();
+      const parsedDecks = parseAlteredJson([json]);
+      setDecks(parsedDecks);
+      setUrlInput('');
+      setTimeout(() => handleVerify(), 100);
+    } catch (err) {
+      setParseError(err instanceof Error ? err.message : 'Erreur lors du chargement');
+    } finally {
+      setLoadingUrl(false);
+    }
   };
 
   const handleVerify = async () => {
@@ -266,6 +295,31 @@ export default function ImportFromAlteredPage() {
 
         {!isLoading && token && (
           <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label className="text-sm text-c-text-muted">Importer depuis une URL Altered</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleUrlImport()}
+                  placeholder="https://www.altered.gg/en-us/decks/01J9BAVM..."
+                  className="flex-1 bg-c-elevated border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button
+                  onClick={handleUrlImport}
+                  disabled={loadingUrl || !urlInput.trim()}
+                  className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-50"
+                >
+                  {loadingUrl ? '...' : 'Importer'}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-c-text-subtle">ou</span>
+            </div>
+
             <div className="flex flex-col gap-2">
               <label className="text-sm text-c-text-muted">Fichier JSON exporté depuis Altered</label>
               <input
