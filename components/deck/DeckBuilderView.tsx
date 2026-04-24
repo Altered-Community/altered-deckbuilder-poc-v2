@@ -34,7 +34,7 @@ export default function DeckBuilderView({ initialFaction }: Props) {
   const factionBadge = factionCode ? (FACTION_BADGE_COLORS[factionCode] ?? 'bg-gray-600') : 'bg-gray-700';
 
   return (
-    <div className="flex flex-col overflow-hidden" style={{ flex: 1, minHeight: 0 }}>
+    <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100vh - var(--nav-h))', minHeight: 0 }}>
 
       {/* Sous-barre héros */}
       <div className="shrink-0 flex items-center gap-2 px-4 py-1.5 bg-c-surface border-b border-c-border-subtle text-xs">
