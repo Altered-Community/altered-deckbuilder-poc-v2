@@ -94,6 +94,7 @@
     "editing": "Edit",
     "mustLogin": "You must be logged in.",
     "info": "Information",
+    "statsTitle": "Statistics",
     "builder": "✏️ Builder",
     "name": "Name",
     "description": "Description",
@@ -136,6 +137,21 @@
     "urlError": "Invalid URL or ID",
     "deckNotFound": "Deck not found",
     "loadError": "Error loading deck"
+  },
+  "deckDetailStats": {
+    "mainCostCurve": "Main cost curve",
+    "recallCostCurve": "Reserve curve",
+    "noRecallData": "No reserve data",
+    "bySet": "By set",
+    "byType": "By type",
+    "byRarity": "By rarity",
+    "cards": "cards",
+    "rarities": {
+      "COMMON": "Common",
+      "RARE": "Rare",
+      "UNIQUE": "Unique",
+      "EXALTED": "Exalted"
+    }
   },
   "importDeck": {
     "title": "Import a deck",

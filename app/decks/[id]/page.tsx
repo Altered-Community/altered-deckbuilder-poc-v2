@@ -11,6 +11,7 @@ import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getRarityFromSlug } from '@/lib/utils/card';
 import ThemeToggle from '@/components/ThemeToggle';
 import LanguageToggle from '@/components/LanguageToggle';
+import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS } from '@/lib/types/constants';
 
@@ -211,15 +212,16 @@ export default function DeckEditPage() {
         </div>
       </header>
 
-      <main className="flex-1 flex overflow-hidden px-6 py-4">
+      <main className="flex-1 flex overflow-hidden">
         {!token && <p className="text-red-400 text-sm p-6">{t('mustLogin')}</p>}
         {token && loading && <p className="text-c-text-muted text-sm p-6">{tc('loading')}</p>}
         {token && error && <p className="text-red-400 text-sm p-6">{error}</p>}
 
         {token && !loading && deck && (
           <>
-            <div className="w-80 shrink-0 flex flex-col gap-5 px-6 py-6 border-r border-c-border-subtle overflow-y-auto">
-              <div className="flex items-center justify-between">
+            {/* ── Colonne gauche : formulaire ── */}
+            <div className="w-80 shrink-0 flex flex-col border-r border-c-border-subtle">
+              <div className="h-12 shrink-0 flex items-center justify-between px-5 border-b border-c-border-subtle">
                 <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
                 <div className="flex items-center gap-2">
                   {loadError && <span className="text-xs text-red-400">{loadError}</span>}
@@ -232,43 +234,45 @@ export default function DeckEditPage() {
                   </button>
                 </div>
               </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-c-text-muted">{t('name')}</label>
-                <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-c-text-muted">{t('description')}</label>
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={inputClass + ' resize-none'} />
-              </div>
-
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-c-text-muted">{t('format')}</label>
-                <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
-                  <option value="">{tc('noFormat')}</option>
-                  {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
-                </select>
-              </div>
-
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <div onClick={() => setIsPublic((v) => !v)} className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-blue-600' : 'bg-c-input'} relative`}>
-                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
+              <div className="flex-1 overflow-y-auto px-5 py-5 flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-c-text-muted">{t('name')}</label>
+                  <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
                 </div>
-                <span className="text-sm text-c-text-muted">{t('public')}</span>
-              </label>
 
-              <div className="flex items-center gap-3">
-                <button onClick={handleSave} disabled={saving || !name.trim()} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
-                  {saving ? tc('saving') : tc('save')}
-                </button>
-                {saved && <span className="text-sm text-green-400">{tc('saved')}</span>}
-                {saveError && <span className="text-xs text-red-400">{saveError}</span>}
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-c-text-muted">{t('description')}</label>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} className={inputClass + ' resize-none'} />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-c-text-muted">{t('format')}</label>
+                  <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
+                    <option value="">{tc('noFormat')}</option>
+                    {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
+                  </select>
+                </div>
+
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <div onClick={() => setIsPublic((v) => !v)} className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-blue-600' : 'bg-c-input'} relative`}>
+                    <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
+                  </div>
+                  <span className="text-sm text-c-text-muted">{t('public')}</span>
+                </label>
+
+                <div className="flex items-center gap-3">
+                  <button onClick={handleSave} disabled={saving || !name.trim()} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition disabled:opacity-40 disabled:cursor-not-allowed">
+                    {saving ? tc('saving') : tc('save')}
+                  </button>
+                  {saved && <span className="text-sm text-green-400">{tc('saved')}</span>}
+                  {saveError && <span className="text-xs text-red-400">{saveError}</span>}
+                </div>
               </div>
             </div>
 
+            {/* ── Colonne centrale : cartes ── */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="flex items-center justify-between px-6 py-3 border-b border-c-border-subtle shrink-0">
+              <div className="h-12 shrink-0 flex items-center justify-between px-5 border-b border-c-border-subtle">
                 <span className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">
                   {t('cards', { count: deck.cards.reduce((s, dc) => s + dc.quantity, 0) })}
                 </span>
@@ -284,8 +288,20 @@ export default function DeckEditPage() {
                   ))}
                 </div>
               </div>
-              <div className="flex-1 overflow-y-auto px-6 py-6">
+              <div className="flex-1 overflow-y-auto px-5 py-5">
                 <DeckCards deckCards={deck.cards} view={cardView} />
+              </div>
+            </div>
+
+            {/* ── Colonne droite : statistiques ── */}
+            <div className="w-72 shrink-0 flex flex-col border-l border-c-border-subtle bg-c-elevated">
+              <div className="h-12 shrink-0 flex items-center px-5 border-b border-c-border-subtle">
+                <span className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">
+                  {t('statsTitle')}
+                </span>
+              </div>
+              <div className="flex-1 overflow-hidden">
+                <DeckDetailStats cards={deck.cards} />
               </div>
             </div>
           </>

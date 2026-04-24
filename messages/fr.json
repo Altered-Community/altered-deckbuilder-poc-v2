@@ -94,6 +94,7 @@
     "editing": "Édition",
     "mustLogin": "Vous devez être connecté.",
     "info": "Informations",
+    "statsTitle": "Statistiques",
     "builder": "✏️ Builder",
     "name": "Nom",
     "description": "Description",
@@ -136,6 +137,21 @@
     "urlError": "URL ou ID invalide",
     "deckNotFound": "Deck non trouvé",
     "loadError": "Erreur lors du chargement"
+  },
+  "deckDetailStats": {
+    "mainCostCurve": "Courbe de main",
+    "recallCostCurve": "Courbe de réserve",
+    "noRecallData": "Aucune donnée de réserve",
+    "bySet": "Par set",
+    "byType": "Par type",
+    "byRarity": "Par rareté",
+    "cards": "cartes",
+    "rarities": {
+      "COMMON": "Commun",
+      "RARE": "Rare",
+      "UNIQUE": "Unique",
+      "EXALTED": "Exalté"
+    }
   },
   "importDeck": {
     "title": "Importer un deck",

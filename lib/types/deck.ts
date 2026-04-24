@@ -47,6 +47,8 @@ export interface ApiDeckCard {
   factionCode: string | null;
   cardTypeReference: string | null;
   mainCost: number | null;
+  recallCost?: number | null;
+  setReference?: string | null;
   imagePath: string | null;
 }
 
