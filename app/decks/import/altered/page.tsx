@@ -255,7 +255,7 @@ export default function ImportFromAlteredPage() {
 
   return (
     <div className="flex flex-col" style={{ flex: 1 }}>
-      <main className="flex-1 max-w-3xl mx-auto w-full px-20 py-8 flex flex-col gap-6">
+      <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-6 sm:py-8 flex flex-col gap-6">
         <div className="bg-c-surface border border-c-border rounded-lg p-5">
           <h2 className="text-lg font-bold text-c-text mb-3">{t('howTo')}</h2>
           <ol className="flex flex-col gap-2 text-sm text-c-text-secondary list-decimal list-inside">
@@ -349,7 +349,7 @@ export default function ImportFromAlteredPage() {
                 )}
 
                 <div className="bg-c-surface border border-c-border rounded-lg p-5 flex flex-col gap-5">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
                       <h3 className="font-bold text-c-text text-lg">{deck.name}</h3>
                       <p className="text-sm text-c-text-muted">
@@ -376,11 +376,12 @@ export default function ImportFromAlteredPage() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col gap-1 max-h-96 overflow-y-auto">
+                  <div className="overflow-x-auto">
+                  <div className="flex flex-col gap-1 max-h-96 overflow-y-auto min-w-[480px]">
                     <div className="flex items-center gap-2 text-xs font-semibold text-purple-400 border-b border-c-border pb-1">
                       <span className="w-10 text-right">{t('colQty')}</span>
                       <span className="w-24">{t('colType')}</span>
-                      <span className="w-48">{t('colRef')}</span>
+                      <span className="hidden sm:block w-48">{t('colRef')}</span>
                       <span className="flex-1">{t('colName')}</span>
                       <span className="w-16 text-right">{t('colCost')}</span>
                     </div>
@@ -388,7 +389,7 @@ export default function ImportFromAlteredPage() {
                     <div className="flex items-center gap-2 text-xs text-purple-300 font-medium py-1">
                       <span className="w-10 text-right">×1</span>
                       <span className="w-24">{t('hero')}</span>
-                      <span className="w-48 font-mono text-c-text-subtle">{deck.hero.reference}</span>
+                      <span className="hidden sm:block w-48 font-mono text-c-text-subtle">{deck.hero.reference}</span>
                       <span className={`flex-1 truncate ${!verifiedRefs.get(deck.hero.reference) ? 'text-red-400' : ''}`}>
                         {deck.hero.name}
                         {!verifiedRefs.get(deck.hero.reference) && verifiedRefs.size > 0 && (
@@ -406,7 +407,7 @@ export default function ImportFromAlteredPage() {
                         <div key={i} className={`flex items-center gap-2 text-xs py-0.5 ${isNotFound ? 'bg-red-900/30 text-red-400' : 'text-c-text-secondary'}`}>
                           <span className="w-10 text-right font-mono">×{card.quantity}</span>
                           <span className="w-24 text-c-text-muted">{card.cardType}</span>
-                          <span className="w-48 font-mono text-c-text-subtle">{card.reference}</span>
+                          <span className="hidden sm:block w-48 font-mono text-c-text-subtle">{card.reference}</span>
                           <span className="flex-1 truncate">
                             {card.name}
                             {isNotFound && <span className="ml-2 text-red-500">✗</span>}
@@ -417,6 +418,7 @@ export default function ImportFromAlteredPage() {
                         </div>
                       );
                     })}
+                  </div>
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-xs text-c-text-muted border-t border-c-border pt-4">

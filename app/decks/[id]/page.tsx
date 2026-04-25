@@ -216,7 +216,7 @@ export default function DeckEditPage() {
 
   return (
     <SiteLayout>
-      <div className="w-full max-w-7xl mx-auto px-6 py-8 flex flex-col gap-6">
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col gap-6">
 
         {/* ── En-tête ── */}
         <div className="flex flex-wrap items-center justify-between gap-3">

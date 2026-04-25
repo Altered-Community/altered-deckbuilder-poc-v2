@@ -62,7 +62,7 @@ export default function HeroSelector() {
 
   return (
     <div className="flex flex-col" style={{ flex: 1 }}>
-      <header className="shrink-0 px-8 pt-10 pb-5 text-center">
+      <header className="shrink-0 px-4 sm:px-8 pt-6 sm:pt-10 pb-4 sm:pb-5 text-center">
         <h1 className="text-3xl font-bold text-c-text tracking-tight mb-1">
           {t('hero.title')}
         </h1>
@@ -84,7 +84,7 @@ export default function HeroSelector() {
         </div>
       )}
 
-      <div className="w-full px-6 mb-4 flex flex-wrap gap-3 items-center">
+      <div className="w-full px-4 sm:px-6 mb-4 flex flex-wrap gap-3 items-center">
         <select value={factionFilter} onChange={(e) => setFactionFilter(e.target.value)} className={selectClass}>
           <option value="">{t('hero.allFactions')}</option>
           {Object.entries(FACTIONS).map(([code, name]) => (
@@ -97,7 +97,7 @@ export default function HeroSelector() {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-6 pb-8">
+      <div className="flex-1 overflow-y-auto px-4 sm:px-6 pb-8">
         {isLoading ? (
           <div className="flex justify-center py-20">
             <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-400" />

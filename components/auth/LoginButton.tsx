@@ -73,14 +73,14 @@ export default function LoginButton() {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-col items-center gap-2">
       {error && <span className="text-xs text-red-400">{error}</span>}
       <button
         onClick={handleLogin}
         disabled={loadingAuth}
         className="text-xs px-2.5 py-1 rounded border border-blue-600 text-blue-400 hover:bg-blue-600 hover:text-white transition disabled:opacity-50"
       >
-        {loadingAuth ? '...' : USE_KEYCLOAK ? 'Connexion Keycloak' : 'Connexion (dev)'}
+        {loadingAuth ? '...' : 'Connexion'}
       </button>
     </div>
   );

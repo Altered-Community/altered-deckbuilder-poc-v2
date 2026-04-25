@@ -358,8 +358,18 @@ body {
 
 /* ── Mobile breakpoint ── */
 @media (max-width: 767px) {
-  .navbar-toggler-ac   { display: flex; }
+  .navbar-toggler-ac { display: flex; }
+
+  /* Première rangée : logo + burger côte à côte, sans descente */
+  .navbar-inner {
+    flex-wrap: wrap;
+    align-content: flex-start;
+  }
+
+  /* Le collapse occupe toute la largeur sur une 2e rangée */
   .navbar-collapse-ac {
+    /* Annule flex:1 du desktop pour que width:100% force le wrapping */
+    flex: none;
     display: none;
     flex-direction: column;
     align-items: flex-start;
@@ -370,6 +380,7 @@ body {
   }
   .dark .navbar-collapse-ac { border-top-color: rgba(255,255,255,0.08); }
   .navbar-collapse-ac.open { display: flex; }
+
   .navbar-nav-ac {
     flex-direction: column;
     align-items: flex-start;
@@ -385,7 +396,6 @@ body {
     border-top: 1px solid var(--neutral-200);
   }
   .dark .navbar-right-ac { border-top-color: rgba(255,255,255,0.08); }
-  .navbar-inner { flex-wrap: wrap; }
 }
 
 /* ── Footer ── */
@@ -655,6 +665,20 @@ body {
   font-size: 0.72rem;
   font-weight: 600;
   line-height: 1;
+}
+
+/* ── Mobile ── */
+@media (max-width: 640px) {
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .site-footer::before,
+  .site-footer::after {
+    width: 20%;
+  }
+  .section-title span {
+    font-size: 1.25rem;
+  }
 }
 
 /* Custom scrollbar */
