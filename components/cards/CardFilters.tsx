@@ -67,14 +67,14 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
           ))}
         </select>
 
-        <select value={filters['faction.code'] ?? ''} onChange={(e) => update('faction.code', e.target.value)} className={selectClass}>
+        <select value={filters['faction'] ?? ''} onChange={(e) => update('faction', e.target.value)} className={selectClass}>
           <option value="">{t('allFactions')}</option>
           {factions.map(({ code, name }) => (
             <option key={code} value={code}>{name}</option>
           ))}
         </select>
 
-        <select value={filters['cards.set.reference'] ?? ''} onChange={(e) => update('cards.set.reference', e.target.value)} className={selectClass}>
+        <select value={filters['set.reference'] ?? ''} onChange={(e) => update('set.reference', e.target.value)} className={selectClass}>
           <option value="">{t('allSets')}</option>
           {sets.map((s) => (
             <option key={s.reference} value={s.reference}>{s.name}</option>

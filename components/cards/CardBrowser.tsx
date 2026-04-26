@@ -23,8 +23,8 @@ export default function CardBrowser({ initialFaction }: Props) {
   const [filters, setFilters] = useState<CardGroupFilters>({
     page: 1,
     'order[set.date]': 'desc',
-    'rarity.reference': DEFAULT_RARITIES,
-    ...(initialFaction ? { 'faction.code': initialFaction } : {}),
+    'rarity': DEFAULT_RARITIES,
+    ...(initialFaction ? { 'faction': initialFaction } : {}),
   });
 
   const factionCode = hero ? getCardGroupFaction(hero) : initialFaction;
@@ -34,7 +34,7 @@ export default function CardBrowser({ initialFaction }: Props) {
     queryFn: () =>
         fetchCardGroups({
           ...filters,
-          'faction.code': factionCode,
+          'faction': factionCode,
         }),
     enabled: !!factionCode,
     placeholderData: (prev) => prev,
@@ -45,18 +45,18 @@ export default function CardBrowser({ initialFaction }: Props) {
   const currentPage = filters.page ?? 1;
   const lastPage = data?.pagination?.lastPage ?? 1;
 
-  const rarityFilter = filters['rarity.reference'];
+  const rarityFilter = filters['rarity'];
   const selectedRarities = Array.isArray(rarityFilter) ? rarityFilter : rarityFilter ? [rarityFilter] : [];
 
   const toggleRarity = (ref: string) => {
     const next = selectedRarities.includes(ref)
       ? selectedRarities.filter((r) => r !== ref)
       : [...selectedRarities, ref];
-    setFilters((f) => ({ ...f, 'rarity.reference': next, page: 1 }));
+    setFilters((f) => ({ ...f, 'rarity': next, page: 1 }));
   };
 
   const handleFiltersChange = (newFilters: CardGroupFilters) => {
-    setFilters({ ...newFilters, 'rarity.reference': selectedRarities });
+    setFilters({ ...newFilters, 'rarity': selectedRarities });
   };
 
   return (

@@ -28,7 +28,7 @@ export async function fetchCardGroups(filters: CardGroupFilters = {}): Promise<P
   searchParams.set('locale', 'fr');
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === '') return;
-    const paramKey = key === 'cards.set.reference' ? 'cards.set.reference[]' : key;
+    const paramKey = key;
     if (Array.isArray(value)) {
       value.forEach((v) => searchParams.append(`${paramKey}[]`, v));
     } else {

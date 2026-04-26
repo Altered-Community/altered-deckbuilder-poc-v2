@@ -42,16 +42,16 @@ export interface CardGroup {
 
 export interface CardGroupFilters {
   name?: string;
-  'faction.code'?: string;
+  faction?: string;
   cardType?: string;
-  'rarity.reference'?: string | string[];
+  rarity?: string | string[];
   mainCost?: string;
   recallCost?: string;
   oceanPower?: string;
   mountainPower?: string;
   forestPower?: string;
   'order[set.date]'?: 'asc' | 'desc';
-  'cards.set.reference'?: string;
+  'set.reference'?: string;
   promo?: string;
   page?: number;
   itemsPerPage?: number;

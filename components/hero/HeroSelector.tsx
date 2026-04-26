@@ -21,7 +21,7 @@ export default function HeroSelector() {
   const baseFilters = {
     cardType: 'HERO',
     'order[set.date]': 'desc' as const,
-    ...(factionFilter ? { 'faction.code': factionFilter } : {}),
+    ...(factionFilter ? { 'faction': factionFilter } : {}),
   };
 
   const heroCache = { staleTime: 1000 * 60 * 60, gcTime: 1000 * 60 * 60 * 24 };
