@@ -5,6 +5,7 @@ import { getLocale, getMessages } from 'next-intl/server';
 import './globals.css';
 import Providers from './providers';
 import SiteHeader from '@/components/layout/SiteHeader';
+import { getAlteredCoreLayout } from '@/lib/api/alteredcoreLayout';
 
 const geist = Geist({ subsets: ['latin'], variable: '--font-geist' });
 
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  const layout = await getAlteredCoreLayout();
 
   return (
     <html lang={locale} className={`${geist.variable} h-full`} suppressHydrationWarning>
@@ -29,7 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="text-c-text antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
-            <SiteHeader />
+            <SiteHeader navItems={layout.nav} logoUrl={layout.site.logo_url} />
             {children}
           </Providers>
         </NextIntlClientProvider>

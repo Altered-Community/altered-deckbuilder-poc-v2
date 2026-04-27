@@ -1,65 +1,92 @@
 'use client';
 
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
+import { useEffect, useState } from 'react';
 import { ThemeBtn, LangBtn } from './SiteHeader';
+import type { FooterColumn, AlteredCoreLayout } from '@/lib/api/alteredcoreLayout';
+
+const LOCAL_LINKS = [
+  { href: '/',                     icon: 'fa-solid fa-hammer',           label: { en: 'Deck Builder',   fr: 'Deckbuilder'   } },
+  { href: '/decks',                icon: 'fa-solid fa-layer-group',      label: { en: 'My Decks',       fr: 'Mes Decks'     } },
+  { href: '/decks/import',         icon: 'fa-solid fa-file-import',      label: { en: 'Import',         fr: 'Importer'      } },
+  { href: '/decks/import/altered', icon: 'fa-solid fa-cloud-arrow-down', label: { en: 'Import Altered', fr: 'Import Altered' } },
+];
+
+function FooterApiColumn({ col, locale }: { col: FooterColumn; locale: 'en' | 'fr' }) {
+  const title = col.title[locale];
+  const raw   = col.content[locale];
+  const safeContent = raw && raw.length < 600
+    ? raw
+    : col.content['fr'] && col.content['fr'].length < 600
+      ? col.content['fr']
+      : null;
+
+  return (
+    <div>
+      {title && <div className="footer-col-title-ac">{title}</div>}
+      {safeContent && (
+        <div className="footer-col-content-ac" dangerouslySetInnerHTML={{ __html: safeContent }} />
+      )}
+      {col.links.length > 0 && (
+        <ul className="footer-links-ac">
+          {col.links.map((link) => (
+            <li key={link.url}>
+              <a href={link.url} target="_blank" rel="noopener noreferrer">
+                <i className={link.icon} />
+                {link.label[locale]}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
 
 export default function SiteFooter() {
+  const locale = useLocale() as 'en' | 'fr';
+  const [columns, setColumns] = useState<FooterColumn[]>([]);
+
+  useEffect(() => {
+    fetch('https://alteredcore.org/api.php')
+      .then<AlteredCoreLayout>((r) => r.json())
+      .then((data) => setColumns(data.footer.columns))
+      .catch(() => {});
+  }, []);
+
+  const [brandCol, ...restCols] = columns;
+
   return (
     <footer className="site-footer">
       <div className="footer-container">
 
         <div className="footer-grid">
-          <div>
-            <div className="footer-brand-ac">Altered Deck Builder</div>
-            <div className="footer-tagline-ac">Outil communautaire non officiel</div>
-          </div>
+
+          {brandCol && <FooterApiColumn col={brandCol} locale={locale} />}
 
           <div>
+            <div className="footer-col-title-ac">Deck Builder</div>
             <ul className="footer-links-ac">
-              <li>
-                <Link href="/decks">
-                  <i className="fa-solid fa-layer-group" />
-                  Decks
-                </Link>
-              </li>
-              <li>
-                <Link href="/decks/import">
-                  <i className="fa-solid fa-file-import" />
-                  Importer
-                </Link>
-              </li>
-              <li>
-                <Link href="/decks/import/altered">
-                  <i className="fa-solid fa-cloud-arrow-down" />
-                  Import Altered
-                </Link>
-              </li>
+              {LOCAL_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href}>
+                    <i className={link.icon} />
+                    {link.label[locale]}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
-          <div>
-            <ul className="footer-links-ac">
-              <li>
-                <a href="https://altered.gg" target="_blank" rel="noopener">
-                  <i className="fa-solid fa-arrow-up-right-from-square" />
-                  altered.gg
-                </a>
-              </li>
-            </ul>
-          </div>
+          {restCols.map((col) => (
+            <FooterApiColumn key={col.num} col={col} locale={locale} />
+          ))}
 
-          <div className="footer-fan-col">
-            <a href="https://altered.gg" target="_blank" rel="noopener" className="footer-fan-badge-ac">
-              <span style={{ fontWeight: 700, fontSize: '.82rem' }}>Altered</span>
-              <span style={{ fontSize: '.78rem', opacity: .75 }}>
-                Outil non officiel — non affilié à Equinox.
-              </span>
-            </a>
-          </div>
         </div>
 
         <div className="footer-bottom-ac">
-          <span>© 2026 Altered Deck Builder — Tous droits réservés.</span>
+          <span>© 2026 Altered Core — Deck Builder</span>
           <div className="footer-bottom-controls">
             <ThemeBtn />
             <LangBtn />

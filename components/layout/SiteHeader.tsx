@@ -10,16 +10,13 @@ import { signIn, signOut, useSession } from 'next-auth/react';
 import { setLocale } from '@/lib/actions/locale';
 import { useAuthStore } from '@/store/authStore';
 import { devLogin } from '@/lib/api/authDev';
+import type { NavItem } from '@/lib/api/alteredcoreLayout';
 
 const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 
-const NAV_LINKS = [
-  { href: 'https://alteredcore.org',                                           label: 'Accueil', icon: 'fa-house',      external: false },
-  { href: 'https://alteredcore.org/pages/altered.php',   label: 'Altered', icon: 'fa-dragon',     external: true  },
-  { href: 'https://alteredcore.org/pages/cards.php',     label: 'Cartes',  icon: 'fa-list-check', external: true  },
-  { href: '/',                                           label: 'Deckbuilder', icon: 'fa-layer-group',external: false },
-  { href: '/decks',                                      label: 'Decks',   icon: 'fa-layer-group',external: false },
-  { href: 'https://alteredcore.org/pages/projects.php',  label: 'Projets', icon: 'fa-briefcase',  external: true  },
+const LOCAL_NAV: { label: { en: string; fr: string }; url: string; icon: string }[] = [
+  { label: { en: 'Deck Builder', fr: 'Deckbuilder' }, url: '/',      icon: 'fa-solid fa-hammer' },
+  { label: { en: 'My Decks',    fr: 'Mes Decks'    }, url: '/decks', icon: 'fa-solid fa-layer-group' },
 ];
 
 /* ── Theme toggle ── */
@@ -59,7 +56,7 @@ export function LangBtn() {
   );
 }
 
-/* ── User dropdown (matches .btn-user-badge template) ── */
+/* ── User dropdown ── */
 function UserDropdown() {
   const { data: session, status } = useSession();
   const { token, setToken, logout } = useAuthStore();
@@ -77,7 +74,6 @@ function UserDropdown() {
 
   const email = isKeycloak ? (session?.user?.email ?? '') : '';
 
-  /* close on outside click */
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -158,9 +154,23 @@ function UserDropdown() {
 }
 
 /* ── Main header ── */
-export default function SiteHeader() {
+export default function SiteHeader({
+  navItems = [],
+  logoUrl = 'https://alteredcore.org/assets/logo/site_logo.png',
+}: {
+  navItems?: NavItem[];
+  logoUrl?: string;
+}) {
   const pathname = usePathname();
+  const locale = useLocale() as 'en' | 'fr';
   const [menuOpen, setMenuOpen] = useState(false);
+
+  // API items (skip "Decks" pointing to alteredcore since we have local equivalent)
+  const apiItems = navItems.filter((item) => item.id !== 4);
+
+  // Inject local items after the first API item (Home)
+  const [home, ...rest] = apiItems;
+  const mergedNav = home ? [home, ...LOCAL_NAV.map((l, i) => ({ ...l, id: -1 - i, is_blank: false, children: [] })), ...rest] : LOCAL_NAV.map((l, i) => ({ ...l, id: -1 - i, is_blank: false, children: [] }));
 
   return (
     <header className="site-header">
@@ -168,10 +178,10 @@ export default function SiteHeader() {
         <div className="navbar-inner">
 
           {/* Brand */}
-          <Link href="/" className="navbar-brand-ac" title="AlteredCore">
-            <img src="https://alteredcore.org/assets/logo/site_logo.png" alt="AlteredCore" className="navbar-logo-custom" />
+          <a href="https://alteredcore.org" className="navbar-brand-ac" title="AlteredCore">
+            <img src={logoUrl} alt="AlteredCore" className="navbar-logo-custom" />
             <span className="navbar-site-name-ac">AlteredCore</span>
-          </Link>
+          </a>
 
           {/* Burger (mobile) */}
           <button
@@ -186,33 +196,44 @@ export default function SiteHeader() {
           {/* Collapsible content */}
           <div className={`navbar-collapse-ac${menuOpen ? ' open' : ''}`}>
 
-            {/* Nav links — centred */}
             <ul className="navbar-nav-ac">
-              {NAV_LINKS.map((link) =>
-                link.external ? (
-                  <li key={link.href} className="nav-item">
+              {mergedNav.map((item) => {
+                const label = 'label' in item && typeof item.label === 'object'
+                  ? (item.label as { en: string; fr: string })[locale]
+                  : '';
+                const isLocal = item.id < 0;
+                const isActive = isLocal && pathname === item.url;
+
+                if (isLocal) {
+                  return (
+                    <li key={item.url} className="nav-item nav-item-local">
+                      <Link
+                        href={item.url}
+                        className={`nav-link-ac${isActive ? ' active' : ''}`}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <i className={item.icon} />
+                        <span>{label}</span>
+                      </Link>
+                    </li>
+                  );
+                }
+
+                return (
+                  <li key={item.id} className="nav-item">
                     <a
-                      href={link.href}
+                      href={item.url}
                       className="nav-link-ac"
+                      target={item.is_blank ? '_blank' : undefined}
+                      rel={item.is_blank ? 'noopener noreferrer' : undefined}
                       onClick={() => setMenuOpen(false)}
                     >
-                      <i className={`fa-solid ${link.icon}`} />
-                      <span>{link.label}</span>
+                      <i className={item.icon} />
+                      <span>{label}</span>
                     </a>
                   </li>
-                ) : (
-                  <li key={link.href} className="nav-item">
-                    <Link
-                      href={link.href}
-                      className={`nav-link-ac${pathname === link.href ? ' active' : ''}`}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      <i className={`fa-solid ${link.icon}`} />
-                      <span>{link.label}</span>
-                    </Link>
-                  </li>
-                )
-              )}
+                );
+              })}
             </ul>
 
             {/* Right side */}

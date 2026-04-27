@@ -466,6 +466,25 @@ body {
   line-height: 1.4;
 }
 
+/* API-sourced footer columns */
+.footer-col-title-ac {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ac-footer-link);
+  margin-bottom: 0.75rem;
+}
+.footer-col-content-ac {
+  font-size: 0.85rem;
+  color: var(--ac-footer-text);
+  line-height: 1.5;
+}
+/* Classes used inside API HTML content */
+.footer-brand  { font-size: 1.05rem; font-weight: 800; color: var(--ac-footer-link); margin-bottom: 0.3rem; }
+.footer-tagline{ font-size: 0.78rem; color: var(--ac-footer-text); line-height: 1.4; }
+.footer-col-content-ac img { max-width: 100%; height: auto; margin-bottom: 0.5rem; }
+
 .footer-links-ac {
   list-style: none;
   margin: 0;
