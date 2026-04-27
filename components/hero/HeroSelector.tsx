@@ -107,10 +107,7 @@ export default function HeroSelector() {
             {t('hero.notFound')}
           </div>
         ) : (
-          <div
-            className="grid gap-3"
-            style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))' }}
-          >
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
             {heroes.map((hero) => (
               <HeroCard
                 key={hero.slug}
@@ -168,7 +165,7 @@ function HeroCard({ hero, isSelected, onSelect }: {
     >
       <div className="aspect-[2/3] relative bg-c-elevated">
         {currentImage ? (
-          <Image src={currentImage} alt={name} fill className="object-cover" sizes="220px" unoptimized />
+          <Image src={currentImage} alt={name} fill className="object-cover" sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw" unoptimized />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center">
             <span className="text-c-text-muted text-sm text-center px-2">{name}</span>
