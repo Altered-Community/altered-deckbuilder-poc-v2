@@ -129,7 +129,7 @@ body {
   background-color: var(--sand-100);
   border: 4px solid var(--sand-200);
   border-radius: 1.5rem;
-  padding: 0.25rem 0.75rem;
+  padding: 0.5rem 0.75rem;
 }
 .dark .navbar-inner {
   background-color: #1a1710;

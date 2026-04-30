@@ -170,7 +170,8 @@ export default function SiteHeader({
 
   // Inject local items after the first API item (Home)
   const [home, ...rest] = apiItems;
-  const mergedNav = home ? [home, ...LOCAL_NAV.map((l, i) => ({ ...l, id: -1 - i, is_blank: false, children: [] })), ...rest] : LOCAL_NAV.map((l, i) => ({ ...l, id: -1 - i, is_blank: false, children: [] }));
+  const localItems = LOCAL_NAV.map((l, i) => ({ ...l, id: -1 - i, is_blank: false, hide_label: false, pos: 0, children: [] as NavItem[] }));
+  const mergedNav = home ? [home, ...localItems, ...rest] : localItems;
 
   return (
     <header className="site-header">
