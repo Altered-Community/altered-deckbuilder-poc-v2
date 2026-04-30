@@ -49,9 +49,13 @@ export default function SiteFooter() {
   const [columns, setColumns] = useState<FooterColumn[]>([]);
 
   useEffect(() => {
-    fetch('https://alteredcore.org/api.php')
-      .then<AlteredCoreLayout>((r) => r.json())
-      .then((data) => setColumns(data.footer.columns))
+    fetch('https://alteredcore.org/api/footer')
+      .then((r) => r.json())
+      .then((data) => {
+        if (Array.isArray(data)) setColumns(data);
+        else if (Array.isArray(data?.columns)) setColumns(data.columns);
+        else if (Array.isArray(data?.footer?.columns)) setColumns(data.footer.columns);
+      })
       .catch(() => {});
   }, []);
 

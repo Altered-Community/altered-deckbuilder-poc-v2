@@ -107,7 +107,7 @@ export default function HeroSelector() {
             {t('hero.notFound')}
           </div>
         ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 md:gap-3">
+          <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-7 lg:grid-cols-8 xl:grid-cols-8 gap-2 md:gap-3">
             {heroes.map((hero) => (
               <HeroCard
                 key={hero.slug}
@@ -153,10 +153,13 @@ function HeroCard({ hero, isSelected, onSelect }: {
   }, [images.length]);
 
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(hero)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(hero); }}
       className={`
-        group relative flex flex-col rounded-xl overflow-hidden border-2 transition-all duration-150 text-left
+        group relative flex flex-col rounded-xl overflow-hidden border-2 transition-all duration-150 text-left cursor-pointer
         ${isSelected
           ? 'border-yellow-400 ring-2 ring-yellow-400/40 scale-[1.02]'
           : 'border-c-border hover:border-c-text-muted hover:scale-[1.02]'
@@ -219,6 +222,6 @@ function HeroCard({ hero, isSelected, onSelect }: {
           )}
         </div>
       </div>
-    </button>
+    </div>
   );
 }

@@ -258,17 +258,22 @@ export default function ImportFromAlteredPage() {
       <main className="flex-1 max-w-3xl mx-auto w-full px-4 sm:px-8 py-6 sm:py-8 flex flex-col gap-6">
         <div className="bg-c-surface border border-c-border rounded-lg p-5">
           <h2 className="text-lg font-bold text-c-text mb-3">{t('howTo')}</h2>
-          <ol className="flex flex-col gap-2 text-sm text-c-text-secondary list-decimal list-inside">
-            <li>{t('step1')}</li>
-            <li>{t.rich('step2', { settings: (c) => <strong className="text-c-text">{c}</strong> })}</li>
-            <li>{t.rich('step3', {
-              export: (c) => <strong className="text-c-text">{c}</strong>,
-              format: (c) => <strong className="text-c-text">{c}</strong>,
-            })}</li>
-            <li>{t('step4')}</li>
-            <li>{t('step5')}</li>
-            <li>{t.rich('step6', { import: (c) => <strong className="text-c-text">{c}</strong> })}</li>
-          </ol>
+          <div className="flex flex-col gap-4 text-sm text-c-text-secondary">
+            <div>
+              <div className="font-semibold text-c-text mb-1">{t('option1Label')}</div>
+              <ol className="flex flex-col gap-1 list-decimal list-inside ml-1">
+                <li>{t('step1')}</li>
+                <li>{t('step2')}</li>
+              </ol>
+            </div>
+            <div>
+              <div className="font-semibold text-c-text mb-1">{t('option2Label')}</div>
+              <ol className="flex flex-col gap-1 list-decimal list-inside ml-1">
+                <li>{t('step3')}</li>
+                <li>{t('step4')}</li>
+              </ol>
+            </div>
+          </div>
         </div>
 
         {isLoading && (
