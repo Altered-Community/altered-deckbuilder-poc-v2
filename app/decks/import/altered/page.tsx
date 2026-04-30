@@ -132,7 +132,7 @@ export default function ImportFromAlteredPage() {
   };
 
   const handleUrlImport = async () => {
-    const match = urlInput.match(/https?:\/\/(?:www\.)?altered\.(?:gg|com)\/en-us\/decks\/(\w+)/i);
+    const match = urlInput.match(/https?:\/\/(?:www\.)?altered\.(?:gg|com)\/(?:[a-z]{2}-[a-z]{2}\/)?decks\/(\w+)/i);
     const id = match?.[1] ?? urlInput.trim();
     if (!id) {
       setParseError(t('urlError'));
