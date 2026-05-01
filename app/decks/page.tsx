@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDecks, deleteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
@@ -18,6 +18,7 @@ function getFactionCode(heroRef: string | undefined): string | null {
 
 export default function DecksPage() {
   const t = useTranslations();
+  const locale = useLocale();
   const { token } = useAuth();
   const [decks, setDecks] = useState<ApiDeck[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +35,7 @@ export default function DecksPage() {
   useEffect(() => {
     if (!token) return;
     mounted.current = true;
-    getDecks()
+    getDecks(locale)
       .then((data) => { if (mounted.current) setDecks(data); })
       .catch((e) => { if (mounted.current) setError(e instanceof Error ? e.message : t('common.unknownError')); })
       .finally(() => { if (mounted.current) setLoading(false); });
@@ -103,7 +104,7 @@ export default function DecksPage() {
           <div className="flex items-center gap-3">
             <Link href="/" className="btn-primary-altered btn-sm">
               <i className="fa-solid fa-plus" />
-              Nouveau deck
+              {t('decks.newDeck')}
             </Link>
             <Link href="/decks/import/altered" className="btn-primary-altered btn-sm" style={{ background: 'var(--neutral-600)' }}>
               <i className="fa-solid fa-cloud-arrow-down" />
@@ -133,7 +134,7 @@ export default function DecksPage() {
                   onChange={(e) => setFilterFormat(e.target.value)}
                   className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-32"
                 >
-                  <option value="">Tous formats</option>
+                  <option value="">{t('decks.allFormats')}</option>
                   {formats.map((f) => <option key={f} value={f}>{f}</option>)}
                 </select>
               </>
@@ -143,7 +144,7 @@ export default function DecksPage() {
                 onClick={() => { setFilterFaction(null); setFilterHero(null); setFilterFormat(''); setFilterSearch(''); }}
                 className="ml-auto text-xs text-c-text-subtle hover:text-amber-500 underline transition"
               >
-                Réinitialiser
+                {t('decks.reset')}
               </button>
             )}
           </div>
@@ -249,7 +250,7 @@ export default function DecksPage() {
                           style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#444' }}
                         >
                           <i className={`fa-solid ${deck.isPublic ? 'fa-globe' : 'fa-lock'}`} />
-                          {deck.isPublic ? t('common.public') : 'Privé'}
+                          {deck.isPublic ? t('common.public') : t('common.private')}
                         </span>
                       </div>
 
@@ -310,11 +311,11 @@ export default function DecksPage() {
                               style={{ opacity: deleting === deck.id ? 0.5 : 1 }}
                             >
                               <i className="fa-solid fa-trash" />
-                              {deleting === deck.id ? '...' : 'Supprimer'}
+                              {deleting === deck.id ? '...' : t('common.delete')}
                             </button>
                           </div>
                           <Link href={`/decks/${deck.id}`} className="btn-primary-altered btn-sm">
-                            Voir <i className="fa-solid fa-eye" />
+                            {t('decks.view')} <i className="fa-solid fa-eye" />
                           </Link>
                         </div>
                       </div>

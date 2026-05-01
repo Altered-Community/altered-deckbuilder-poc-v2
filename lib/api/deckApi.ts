@@ -34,14 +34,14 @@ export async function fetchFormats(): Promise<ApiFormat[]> {
   return normalizeArray<ApiFormat>(await res.json());
 }
 
-export async function getDecks(): Promise<ApiDeck[]> {
-  const res = await deckFetch('/decks');
+export async function getDecks(locale = 'fr'): Promise<ApiDeck[]> {
+  const res = await deckFetch(`/decks?locale=${locale}`);
   if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);
   return normalizeArray<ApiDeck>(await res.json());
 }
 
-export async function getDeckDetail(id: string): Promise<ApiDeckDetail> {
-  const res = await deckFetch(`/decks/${id}`);
+export async function getDeckDetail(id: string, locale = 'fr'): Promise<ApiDeckDetail> {
+  const res = await deckFetch(`/decks/${id}?locale=${locale}`);
   if (!res.ok) throw new Error(`Erreur chargement deck : ${res.status}`);
   return res.json();
 }

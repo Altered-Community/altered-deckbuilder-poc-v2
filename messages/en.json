@@ -5,6 +5,8 @@
     "saving": "Saving...",
     "saved": "✓",
     "public": "Public",
+    "private": "Private",
+    "delete": "Delete",
     "noFormat": "— None —",
     "unknownError": "Unknown error"
   },
@@ -96,8 +98,12 @@
     "loginRequired": "Log in to see your decks.",
     "noDecks": "No decks saved yet.",
     "createFirst": "Create a deck",
+    "newDeck": "New deck",
     "cards": "cards",
     "edit": "Edit",
+    "view": "View",
+    "allFormats": "All formats",
+    "reset": "Reset",
     "deleteConfirm": "Delete \"{name}\"?"
   },
   "deckEdit": {

@@ -1,4 +1,5 @@
 import { QueryClient, dehydrate, HydrationBoundary } from '@tanstack/react-query';
+import { getLocale } from 'next-intl/server';
 import { fetchSets, fetchCardGroups } from '@/lib/api/cardApi';
 import HeroSelector from '@/components/hero/HeroSelector';
 
@@ -8,6 +9,7 @@ const BASE_HERO_FILTERS = {
 };
 
 export default async function HomePage() {
+  const locale = await getLocale();
   const queryClient = new QueryClient();
 
   await Promise.all([
@@ -16,12 +18,12 @@ export default async function HomePage() {
       queryFn: fetchSets,
     }),
     queryClient.prefetchQuery({
-      queryKey: ['heroes', BASE_HERO_FILTERS, 1],
-      queryFn: () => fetchCardGroups({ ...BASE_HERO_FILTERS, page: 1 }),
+      queryKey: ['heroes', BASE_HERO_FILTERS, 1, locale],
+      queryFn: () => fetchCardGroups({ ...BASE_HERO_FILTERS, page: 1 }, locale),
     }),
     queryClient.prefetchQuery({
-      queryKey: ['heroes', BASE_HERO_FILTERS, 2],
-      queryFn: () => fetchCardGroups({ ...BASE_HERO_FILTERS, page: 2 }),
+      queryKey: ['heroes', BASE_HERO_FILTERS, 2, locale],
+      queryFn: () => fetchCardGroups({ ...BASE_HERO_FILTERS, page: 2 }, locale),
     }),
   ]);
 

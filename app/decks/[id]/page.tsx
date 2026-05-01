@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
@@ -117,6 +117,7 @@ export default function DeckEditPage() {
   const t = useTranslations('deckEdit');
   const tc = useTranslations('common');
   const tn = useTranslations('nav');
+  const locale = useLocale();
   const { token } = useAuth();
 
   const [deck, setDeck] = useState<ApiDeckDetail | null>(null);
@@ -139,7 +140,7 @@ export default function DeckEditPage() {
 
   useEffect(() => {
     if (!token) return;
-    getDeckDetail(id)
+    getDeckDetail(id, locale)
       .then((d) => {
         setDeck(d);
         setName(d.name);
@@ -264,7 +265,7 @@ export default function DeckEditPage() {
                     style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#444' }}
                   >
                     <i className={`fa-solid ${deck.isPublic ? 'fa-globe' : 'fa-lock'}`} />
-                    {deck.isPublic ? tc('public') : 'Privé'}
+                    {deck.isPublic ? tc('public') : tc('private')}
                   </span>
                 </div>
 

@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupName, getCardGroupFaction } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
@@ -14,6 +14,7 @@ import SiteFooter from '@/components/layout/SiteFooter';
 
 export default function HeroSelector() {
   const t = useTranslations();
+  const locale = useLocale();
   const router = useRouter();
   const { setHero, deck } = useDeckStore();
   const [factionFilter, setFactionFilter] = useState('');
@@ -27,8 +28,8 @@ export default function HeroSelector() {
   const heroCache = { staleTime: 1000 * 60 * 60, gcTime: 1000 * 60 * 60 * 24 };
 
   const { data: firstPage } = useQuery({
-    queryKey: ['heroes', baseFilters, 1],
-    queryFn: () => fetchCardGroups({ ...baseFilters, page: 1 }),
+    queryKey: ['heroes', baseFilters, 1, locale],
+    queryFn: () => fetchCardGroups({ ...baseFilters, page: 1 }, locale),
     ...heroCache,
   });
 
@@ -36,8 +37,8 @@ export default function HeroSelector() {
 
   const results = useQueries({
     queries: Array.from({ length: lastPage }, (_, i) => i + 1).map((page) => ({
-      queryKey: ['heroes', baseFilters, page],
-      queryFn: () => fetchCardGroups({ ...baseFilters, page }),
+      queryKey: ['heroes', baseFilters, page, locale],
+      queryFn: () => fetchCardGroups({ ...baseFilters, page }, locale),
       ...heroCache,
     })),
   });
