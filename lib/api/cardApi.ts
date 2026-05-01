@@ -23,9 +23,9 @@ function normalizeList<T>(data: any): T[] {
   return Array.isArray(data) ? data : (data?.member ?? []);
 }
 
-export async function fetchCardGroups(filters: CardGroupFilters = {}): Promise<PaginatedResponse<CardGroup>> {
+export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
   const searchParams = new URLSearchParams();
-  searchParams.set('locale', 'fr');
+  searchParams.set('locale', locale);
   Object.entries(filters).forEach(([key, value]) => {
     if (value === undefined || value === '') return;
     const paramKey = key;
@@ -46,8 +46,8 @@ export async function fetchSets(): Promise<ApiSet[]> {
   return normalizeList<ApiSet>(await res.json());
 }
 
-export async function fetchCardGroupBySlug(slug: string): Promise<CardGroup | null> {
-  const res = await fetch(`${API_BASE}/card_groups/${encodeURIComponent(slug)}?locale=fr`);
+export async function fetchCardGroupBySlug(slug: string, locale = 'fr'): Promise<CardGroup | null> {
+  const res = await fetch(`${API_BASE}/card_groups/${encodeURIComponent(slug)}?locale=${locale}`);
   if (!res.ok) return null;
   return res.json();
 }
@@ -59,12 +59,12 @@ export async function fetchFactions(): Promise<ApiFaction[]> {
   return normalizeList<ApiFaction>(await res.json());
 }
 
-export async function verifyCardReferences(references: string[]): Promise<{ found: string[]; notFound: string[] }> {
+export async function verifyCardReferences(references: string[], locale = 'fr'): Promise<{ found: string[]; notFound: string[] }> {
   if (references.length === 0) return { found: [], notFound: [] };
 
   const found: string[] = [];
   const params = references.map((ref) => `cards.reference[]=${encodeURIComponent(ref)}`).join('&');
-  const res = await fetch(`${API_BASE}/card_groups?${params}&locale=fr&itemsPerPage=250`);
+  const res = await fetch(`${API_BASE}/card_groups?${params}&locale=${locale}&itemsPerPage=250`);
   if (!res.ok) throw new Error('Erreur lors de la vérification des cartes');
 
   const data = await res.json();

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupFaction } from '@/lib/utils/card';
 import type { CardGroupFilters, CardGroup } from '@/lib/types/card';
@@ -18,6 +18,7 @@ interface Props {
 
 export default function CardBrowser({ initialFaction }: Props) {
   const t = useTranslations('cards');
+  const locale = useLocale();
   const hero = useDeckStore((s) => s.deck.hero);
 
   const [filters, setFilters] = useState<CardGroupFilters>({
@@ -30,12 +31,12 @@ export default function CardBrowser({ initialFaction }: Props) {
   const factionCode = hero ? getCardGroupFaction(hero) : initialFaction;
 
   const { data, isLoading, isFetching, isError } = useQuery({
-    queryKey: ['cards', filters, factionCode],
+    queryKey: ['cards', filters, factionCode, locale],
     queryFn: () =>
         fetchCardGroups({
           ...filters,
           'faction': factionCode,
-        }),
+        }, locale),
     enabled: !!factionCode,
     placeholderData: (prev) => prev,
   });

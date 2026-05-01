@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck } from '@/lib/api/deckApi';
 import { verifyCardReferences } from '@/lib/api/cardApi';
@@ -81,6 +81,7 @@ function parseAlteredJson(data: unknown): AlteredDeck[] {
 export default function ImportFromAlteredPage() {
   const t = useTranslations('importAltered');
   const tc = useTranslations('common');
+  const locale = useLocale();
   const router = useRouter();
   const { token, isLoading } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -172,7 +173,7 @@ export default function ImportFromAlteredPage() {
     const uniqueRefs = [...new Set(allRefs.filter(Boolean))];
 
     try {
-      const { found } = await verifyCardReferences(uniqueRefs);
+      const { found } = await verifyCardReferences(uniqueRefs, locale);
       const refMap = new Map<string, boolean>();
       uniqueRefs.forEach((ref) => {
         refMap.set(ref, found.includes(ref));
