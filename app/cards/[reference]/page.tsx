@@ -29,6 +29,7 @@ export default function CardDetailPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>('details');
   const [selectedVariant, setSelectedVariant] = useState<CardGroupVariant | null>(null);
+  const [lightbox, setLightbox] = useState(false);
 
   const { data: card, isLoading, isError } = useQuery({
     queryKey: ['card-detail', reference, locale],
@@ -84,15 +85,44 @@ export default function CardDetailPage() {
         {card && (
           <div className="flex flex-col lg:flex-row gap-8">
 
+            {/* ── Lightbox ── */}
+            {lightbox && image && (
+              <div
+                className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
+                style={{ zIndex: 9999 }}
+                onClick={() => setLightbox(false)}
+              >
+                <div className="relative max-h-[90vh] max-w-[90vw] aspect-[2/3]" style={{ height: '90vh' }}>
+                  <Image
+                    src={image}
+                    alt={card.name}
+                    fill
+                    className="object-contain rounded-2xl shadow-2xl"
+                    unoptimized
+                    sizes="90vw"
+                  />
+                </div>
+                <button
+                  onClick={() => setLightbox(false)}
+                  className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+                >
+                  <i className="fa-solid fa-xmark" />
+                </button>
+              </div>
+            )}
+
             {/* ── Colonne gauche : image + variantes ── */}
             <div className="lg:w-72 shrink-0 flex flex-col items-center gap-3">
-              <div className="relative w-full max-w-xs aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl">
+              <div
+                className="relative w-full max-w-xs aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl cursor-zoom-in"
+                onClick={() => image && setLightbox(true)}
+              >
                 {image ? (
                   <Image
                     src={image}
                     alt={card.name}
                     fill
-                    className="object-cover"
+                    className="object-cover hover:scale-105 transition-transform duration-200"
                     unoptimized
                     sizes="288px"
                     priority
