@@ -52,6 +52,15 @@ export async function fetchCardGroupBySlug(slug: string, locale = 'fr'): Promise
   return res.json();
 }
 
+export async function fetchCardGroupByReference(reference: string, locale = 'fr'): Promise<CardGroup | null> {
+  const params = new URLSearchParams({ locale });
+  params.append('cards.reference[]', reference);
+  const res = await fetch(`${API_BASE}/card_groups?${params}`);
+  if (!res.ok) return null;
+  const data = normalizeCollection<CardGroup>(await res.json());
+  return data.data[0] ?? null;
+}
+
 
 export async function fetchFactions(): Promise<ApiFaction[]> {
   const res = await fetch(`${API_BASE}/factions`);

@@ -9,7 +9,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
-import { cardGroupFromDeckCard, getCardGroupFaction, getRarityFromSlug } from '@/lib/utils/card';
+import { cardGroupFromDeckCard, getCardGroupFaction } from '@/lib/utils/card';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
@@ -35,39 +35,35 @@ function groupByType(deckCards: ApiDeckCard[]) {
     .map((t) => ({ type: t, label: CARD_TYPE_LABELS[t] ?? t, cards: groups[t] }));
 }
 
-function CardRow({ dc }: { dc: ApiDeckCard }) {
+function CardRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
   const name = dc.name ?? dc.cardReference;
-  const rarity = getRarityFromSlug(dc.cardReference);
   const image = dc.imagePath;
 
   return (
-    <div className="relative rounded-lg overflow-hidden border border-c-border bg-c-surface aspect-[2/3] flex flex-col justify-end">
+    <div
+      onClick={onClick}
+      className="relative rounded-lg overflow-hidden border border-c-border bg-c-surface aspect-[2/3] cursor-pointer hover:brightness-110 hover:scale-[1.02] transition-all duration-100 select-none"
+    >
       {image && (
         <Image src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" fill sizes="(max-width: 768px) 50vw, 33vw" />
       )}
-      <div className="relative z-10 px-2 pb-2 flex flex-col gap-0.5">
-        <span className="text-xs text-white font-medium leading-tight line-clamp-2">{name}</span>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1">
-            {dc.mainCost != null && (
-              <span className="text-[10px] font-mono bg-gray-800/80 text-white rounded px-1">{dc.mainCost}</span>
-            )}
-            <span className="text-[9px] text-gray-400">{rarity.charAt(0)}</span>
-          </div>
-          <span className="text-xs font-bold text-white bg-gray-800/80 px-1.5 rounded">×{dc.quantity}</span>
-        </div>
-      </div>
+      <span className="absolute top-1.5 right-1.5 z-10 text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded-full shadow">
+        x{dc.quantity}
+      </span>
     </div>
   );
 }
 
-function ListRow({ dc }: { dc: ApiDeckCard }) {
+function ListRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
   const name = dc.name ?? dc.cardReference;
   const faction = dc.factionCode ?? '';
   const badge = FACTION_BADGE_COLORS[faction] ?? 'bg-gray-600';
 
   return (
-    <div className="flex items-center gap-2 py-1.5 border-b border-c-border-subtle last:border-0">
+    <div
+      onClick={onClick}
+      className="flex items-center gap-2 py-1.5 border-b border-c-border-subtle last:border-0 cursor-pointer hover:bg-c-elevated transition-colors rounded px-1 -mx-1"
+    >
       {faction && (
         <span className={`text-[9px] font-bold px-1 rounded text-white shrink-0 ${badge}`}>
           {faction}
@@ -82,8 +78,11 @@ function ListRow({ dc }: { dc: ApiDeckCard }) {
 
 function DeckCards({ deckCards, view }: { deckCards: ApiDeckCard[]; view: 'cards' | 'list' }) {
   const t = useTranslations('deckEdit');
+  const router = useRouter();
   const groups = groupByType(deckCards);
   if (deckCards.length === 0) return <p className="text-c-text-subtle text-sm">{t('noCards')}</p>;
+
+  const openCard = (ref: string) => router.push(`/cards/${ref}`);
 
   return (
     <div className="flex flex-col gap-6">
@@ -98,11 +97,15 @@ function DeckCards({ deckCards, view }: { deckCards: ApiDeckCard[]; view: 'cards
           </p>
           {view === 'cards' ? (
             <div className="grid gap-3" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))' }}>
-              {g.cards.map((dc) => <CardRow key={dc.cardReference} dc={dc} />)}
+              {g.cards.map((dc) => (
+                <CardRow key={dc.cardReference} dc={dc} onClick={() => openCard(dc.cardReference)} />
+              ))}
             </div>
           ) : (
             <div className="flex flex-col">
-              {g.cards.map((dc) => <ListRow key={dc.cardReference} dc={dc} />)}
+              {g.cards.map((dc) => (
+                <ListRow key={dc.cardReference} dc={dc} onClick={() => openCard(dc.cardReference)} />
+              ))}
             </div>
           )}
         </div>

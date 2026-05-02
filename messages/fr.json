@@ -154,6 +154,30 @@
     "deckNotFound": "Deck non trouvé",
     "loadError": "Erreur lors du chargement"
   },
+  "cardDetail": {
+    "mainEffect": "Effet principal",
+    "echoEffect": "Effet écho",
+    "rulings": "Règles",
+    "lore": "Lore",
+    "mainCost": "Coût main",
+    "recallCost": "Réserve",
+    "forestPower": "Forêt",
+    "mountainPower": "Montagne",
+    "oceanPower": "Mer",
+    "tabs": {
+      "details": "Détails",
+      "rules": "Règles",
+      "lore": "Lore",
+      "offers": "Offres"
+    },
+    "offersDescription": "Les offres sont disponibles sur la plateforme officielle Altered.",
+    "back": "← Retour",
+    "noRulings": "Nothing to say about this card for now...",
+    "noEffect": "Aucun effet.",
+    "offersOnAltered": "Voir les offres sur Altered.gg",
+    "deckLimit": "Limite deck",
+    "variant": "Variante"
+  },
   "deckDetailStats": {
     "mainCostCurve": "Courbe de main",
     "recallCostCurve": "Courbe de réserve",

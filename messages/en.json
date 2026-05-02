@@ -154,6 +154,30 @@
     "deckNotFound": "Deck not found",
     "loadError": "Error loading deck"
   },
+  "cardDetail": {
+    "mainEffect": "Main ability",
+    "echoEffect": "Echo ability",
+    "rulings": "Rulings",
+    "lore": "Lore",
+    "mainCost": "Main cost",
+    "recallCost": "Reserve",
+    "forestPower": "Forest",
+    "mountainPower": "Mountain",
+    "oceanPower": "Ocean",
+    "tabs": {
+      "details": "Details",
+      "rules": "Rules",
+      "lore": "Lore",
+      "offers": "Offers"
+    },
+    "offersDescription": "Offers are available on the official Altered platform.",
+    "back": "← Back",
+    "noRulings": "Nothing to say about this card for now...",
+    "noEffect": "No effect.",
+    "offersOnAltered": "View offers on Altered.gg",
+    "deckLimit": "Deck limit",
+    "variant": "Variant"
+  },
   "deckDetailStats": {
     "mainCostCurve": "Main cost curve",
     "recallCostCurve": "Reserve curve",
