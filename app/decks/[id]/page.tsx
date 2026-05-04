@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDeckDetail, patchDeck, fetchFormats } from '@/lib/api/deckApi';
+import { getDeckDetail, getDeckDetailPublic, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction } from '@/lib/utils/card';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
@@ -142,8 +142,8 @@ export default function DeckEditPage() {
   const [cardView, setCardView] = useState<'cards' | 'list'>('cards');
 
   useEffect(() => {
-    if (!token) return;
-    getDeckDetail(id, locale)
+    const fetcher = token ? getDeckDetail(id, locale) : getDeckDetailPublic(id, locale);
+    fetcher
       .then((d) => {
         setDeck(d);
         setName(d.name);
@@ -153,7 +153,7 @@ export default function DeckEditPage() {
       })
       .catch((e) => setError(e instanceof Error ? e.message : tc('unknownError')))
       .finally(() => setLoading(false));
-  }, [id, token, tc]);
+  }, [id, token, locale, tc]);
 
   const handleOpenInBuilder = async () => {
     if (!deck) return;
@@ -248,11 +248,10 @@ export default function DeckEditPage() {
         </div>
 
         {/* ── États ── */}
-        {!token && <p className="text-red-400 text-sm">{t('mustLogin')}</p>}
-        {token && loading && <p className="text-c-text-muted text-sm">{tc('loading')}</p>}
-        {token && error && <p className="text-red-400 text-sm">{error}</p>}
+        {loading && <p className="text-c-text-muted text-sm">{tc('loading')}</p>}
+        {error && <p className="text-red-400 text-sm">{error}</p>}
 
-        {token && !loading && deck && (
+        {!loading && deck && (
           <>
             {/* ── Bannière héro ── */}
             <div className="news-card" style={bannerStyle}>
@@ -316,50 +315,52 @@ export default function DeckEditPage() {
               {/* Sidebar droite (1/3) */}
               <div className="flex flex-col gap-4">
 
-                {/* Formulaire */}
-                <div className="card-altered p-4 flex flex-col gap-4">
-                  <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
+                {/* Formulaire — uniquement si connecté */}
+                {token && (
+                  <div className="card-altered p-4 flex flex-col gap-4">
+                    <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
 
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs text-c-text-muted">{t('name')}</label>
-                    <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs text-c-text-muted">{t('description')}</label>
-                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputClass + ' resize-none'} />
-                  </div>
-
-                  <div className="flex flex-col gap-1">
-                    <label className="text-xs text-c-text-muted">{t('format')}</label>
-                    <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
-                      <option value="">{tc('noFormat')}</option>
-                      {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
-                    </select>
-                  </div>
-
-                  <label className="flex items-center gap-2 cursor-pointer select-none">
-                    <div
-                      onClick={() => setIsPublic((v) => !v)}
-                      className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-amber-500' : 'bg-c-input'} relative`}
-                    >
-                      <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-c-text-muted">{t('name')}</label>
+                      <input value={name} onChange={(e) => setName(e.target.value)} maxLength={150} className={inputClass} />
                     </div>
-                    <span className="text-sm text-c-text-muted">{t('public')}</span>
-                  </label>
 
-                  <div className="flex items-center gap-3 pt-1">
-                    <button
-                      onClick={handleSave}
-                      disabled={saving || !name.trim()}
-                      className="btn-primary-altered btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      {saving ? tc('saving') : tc('save')}
-                    </button>
-                    {saved && <span className="text-sm text-green-600 dark:text-green-400 font-medium">{tc('saved')}</span>}
-                    {saveError && <span className="text-xs text-red-500">{saveError}</span>}
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-c-text-muted">{t('description')}</label>
+                      <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className={inputClass + ' resize-none'} />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className="text-xs text-c-text-muted">{t('format')}</label>
+                      <select value={format} onChange={(e) => setFormat(e.target.value)} className={inputClass}>
+                        <option value="">{tc('noFormat')}</option>
+                        {formats.map((f) => <option key={f.code} value={f.code}>{f.label}</option>)}
+                      </select>
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <div
+                        onClick={() => setIsPublic((v) => !v)}
+                        className={`w-9 h-5 rounded-full transition-colors ${isPublic ? 'bg-amber-500' : 'bg-c-input'} relative`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isPublic ? 'translate-x-4' : ''}`} />
+                      </div>
+                      <span className="text-sm text-c-text-muted">{t('public')}</span>
+                    </label>
+
+                    <div className="flex items-center gap-3 pt-1">
+                      <button
+                        onClick={handleSave}
+                        disabled={saving || !name.trim()}
+                        className="btn-primary-altered btn-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {saving ? tc('saving') : tc('save')}
+                      </button>
+                      {saved && <span className="text-sm text-green-600 dark:text-green-400 font-medium">{tc('saved')}</span>}
+                      {saveError && <span className="text-xs text-red-500">{saveError}</span>}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Statistiques */}
                 <div className="card-altered overflow-hidden">

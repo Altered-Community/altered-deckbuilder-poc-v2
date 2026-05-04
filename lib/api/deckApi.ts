@@ -40,8 +40,24 @@ export async function getDecks(locale = 'fr'): Promise<ApiDeck[]> {
   return normalizeArray<ApiDeck>(await res.json());
 }
 
+export async function getPublicDecks(locale = 'fr'): Promise<ApiDeck[]> {
+  const res = await fetch(`${DECK_API_BASE}/decks/public?locale=${locale}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error(`Erreur chargement decks publics : ${res.status}`);
+  return normalizeArray<ApiDeck>(await res.json());
+}
+
 export async function getDeckDetail(id: string, locale = 'fr'): Promise<ApiDeckDetail> {
   const res = await deckFetch(`/decks/${id}?locale=${locale}`);
+  if (!res.ok) throw new Error(`Erreur chargement deck : ${res.status}`);
+  return res.json();
+}
+
+export async function getDeckDetailPublic(id: string, locale = 'fr'): Promise<ApiDeckDetail> {
+  const res = await fetch(`${DECK_API_BASE}/decks/${id}?locale=${locale}`, {
+    headers: { Accept: 'application/json' },
+  });
   if (!res.ok) throw new Error(`Erreur chargement deck : ${res.status}`);
   return res.json();
 }

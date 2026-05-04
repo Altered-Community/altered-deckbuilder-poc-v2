@@ -24,17 +24,19 @@ function normalizeList<T>(data: any): T[] {
 }
 
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
+  const { excludeCardTypes, excludeCardSubTypes, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
-  Object.entries(filters).forEach(([key, value]) => {
+  Object.entries(rest).forEach(([key, value]) => {
     if (value === undefined || value === '') return;
-    const paramKey = key;
     if (Array.isArray(value)) {
-      value.forEach((v) => searchParams.append(`${paramKey}[]`, v));
+      value.forEach((v) => searchParams.append(`${key}[]`, v));
     } else {
-      searchParams.set(paramKey, String(value));
+      searchParams.set(key, String(value));
     }
   });
+  excludeCardTypes?.forEach((type) => searchParams.append('cardType[ne][]', type));
+  excludeCardSubTypes?.forEach((sub) => searchParams.append('cardSubTypes[ne][]', sub));
   const res = await fetch(`${API_BASE}/card_groups?${searchParams}`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des cartes');
   return normalizeCollection<CardGroup>(await res.json());

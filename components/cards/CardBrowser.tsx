@@ -36,6 +36,7 @@ export default function CardBrowser({ initialFaction }: Props) {
         fetchCardGroups({
           ...filters,
           'faction': factionCode,
+          excludeCardTypes: ['HERO'],
         }, locale),
     enabled: !!factionCode,
     placeholderData: (prev) => prev,
@@ -67,6 +68,7 @@ export default function CardBrowser({ initialFaction }: Props) {
         onChange={handleFiltersChange}
         selectedRarities={selectedRarities}
         onToggleRarity={toggleRarity}
+        excludeTypes={['HERO']}
       />
 
       {/* Pagination — au-dessus des cartes */}

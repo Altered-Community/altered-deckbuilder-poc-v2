@@ -610,6 +610,8 @@ body {
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   transition: box-shadow 0.2s ease, transform 0.15s ease;
+  display: flex;
+  flex-direction: column;
 }
 .dark .news-card { background: #1a1710; }
 .news-card:hover {
@@ -624,13 +626,14 @@ body {
   height: 100%;
 }
 .news-card-title {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #fff;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.4rem;
+  text-align: left;
 }
 
 /* ── Primary gold button ── */
@@ -679,7 +682,8 @@ body {
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
-  padding: 0.2rem 0.5rem;
+  padding: 0 0.5rem;
+  height: 1.5rem;
   border-radius: 0.25rem;
   font-size: 0.72rem;
   font-weight: 600;

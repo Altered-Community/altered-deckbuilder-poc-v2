@@ -44,6 +44,8 @@ export interface CardGroupFilters {
   name?: string;
   faction?: string;
   cardType?: string;
+  excludeCardTypes?: string[];
+  excludeCardSubTypes?: string[];
   rarity?: string | string[];
   mainCost?: string;
   recallCost?: string;

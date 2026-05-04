@@ -12,8 +12,8 @@
   },
   "nav": {
     "home": "← Home",
-    "myDecks": "My decks",
-    "backMyDecks": "← My decks",
+    "myDecks": "Decks",
+    "backMyDecks": "← Decks",
     "backHero": "← Heroes",
     "appName": "Altered",
     "deckBuilder": "Deck Builder",
@@ -94,9 +94,12 @@
     "invalidTooltip": "Invalid deck (hero + {min} cards min)"
   },
   "decks": {
-    "title": "My decks",
+    "title": "Decks",
+    "tabPublic": "Decks",
+    "tabMyDecks": "My decks",
     "loginRequired": "Log in to see your decks.",
     "noDecks": "No decks saved yet.",
+    "noPublicDecks": "No public decks available.",
     "createFirst": "Create a deck",
     "newDeck": "New deck",
     "cards": "cards",

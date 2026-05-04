@@ -12,11 +12,12 @@ interface CardFiltersProps {
   onReset?: () => void;
   selectedRarities?: string[];
   onToggleRarity?: (ref: string) => void;
+  excludeTypes?: string[];
 }
 
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity }: CardFiltersProps) {
+export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity, excludeTypes = [] }: CardFiltersProps) {
   const t = useTranslations('cards');
 
   const { data: sets = [] } = useQuery({
@@ -62,7 +63,7 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
       <div className="grid grid-cols-3 gap-2">
         <select value={filters.cardType ?? ''} onChange={(e) => update('cardType', e.target.value)} className={selectClass}>
           <option value="">{t('allTypes')}</option>
-          {CARD_TYPES.map((type) => (
+          {CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => (
             <option key={type.value} value={type.value}>{type.label}</option>
           ))}
         </select>

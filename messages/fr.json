@@ -12,8 +12,8 @@
   },
   "nav": {
     "home": "← Accueil",
-    "myDecks": "Mes decks",
-    "backMyDecks": "← Mes decks",
+    "myDecks": "Decks",
+    "backMyDecks": "← Decks",
     "backHero": "← Héros",
     "appName": "Altered",
     "deckBuilder": "Deck Builder",
@@ -94,9 +94,12 @@
     "invalidTooltip": "Deck invalide (héros + {min} cartes min)"
   },
   "decks": {
-    "title": "Mes decks",
+    "title": "Decks",
+    "tabPublic": "Decks",
+    "tabMyDecks": "Mes decks",
     "loginRequired": "Connectez-vous pour voir vos decks.",
     "noDecks": "Aucun deck sauvegardé.",
+    "noPublicDecks": "Aucun deck public disponible.",
     "createFirst": "Créer un deck",
     "newDeck": "Nouveau deck",
     "cards": "cartes",

@@ -16,7 +16,7 @@ const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 
 const LOCAL_NAV: { label: { en: string; fr: string }; url: string; icon: string }[] = [
   { label: { en: 'Deck Builder', fr: 'Deckbuilder' }, url: '/',      icon: 'fa-solid fa-hammer' },
-  { label: { en: 'My Decks',    fr: 'Mes Decks'    }, url: '/decks', icon: 'fa-solid fa-layer-group' },
+  { label: { en: 'Decks',       fr: 'Decks'        }, url: '/decks', icon: 'fa-solid fa-layer-group' },
 ];
 
 /* ── Theme toggle ── */

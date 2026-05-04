@@ -4,11 +4,13 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDecks, deleteDeck } from '@/lib/api/deckApi';
+import { getDecks, getPublicDecks, deleteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { FACTIONS } from '@/lib/types/constants';
+
+type Tab = 'public' | 'myDecks';
 
 function getFactionCode(heroRef: string | undefined): string | null {
   if (!heroRef) return null;
@@ -20,10 +22,20 @@ export default function DecksPage() {
   const t = useTranslations();
   const locale = useLocale();
   const { token } = useAuth();
-  const [decks, setDecks] = useState<ApiDeck[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const [activeTab, setActiveTab] = useState<Tab>('public');
+
+  /* Decks publics */
+  const [publicDecks, setPublicDecks] = useState<ApiDeck[]>([]);
+  const [publicLoading, setPublicLoading] = useState(true);
+  const [publicError, setPublicError] = useState<string | null>(null);
+
+  /* Mes decks */
+  const [myDecks, setMyDecks] = useState<ApiDeck[]>([]);
+  const [myLoading, setMyLoading] = useState(true);
+  const [myError, setMyError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+
   const mounted = useRef(true);
 
   /* Filtres */
@@ -32,29 +44,49 @@ export default function DecksPage() {
   const [filterFormat, setFilterFormat] = useState<string>('');
   const [filterSearch, setFilterSearch] = useState<string>('');
 
+  /* Fetch decks publics */
+  useEffect(() => {
+    mounted.current = true;
+    getPublicDecks(locale)
+      .then((data) => { if (mounted.current) setPublicDecks(data); })
+      .catch((e) => { if (mounted.current) setPublicError(e instanceof Error ? e.message : t('common.unknownError')); })
+      .finally(() => { if (mounted.current) setPublicLoading(false); });
+    return () => { mounted.current = false; };
+  }, [locale, t]);
+
+  /* Fetch mes decks */
   useEffect(() => {
     if (!token) return;
     mounted.current = true;
     getDecks(locale)
-      .then((data) => { if (mounted.current) setDecks(data); })
-      .catch((e) => { if (mounted.current) setError(e instanceof Error ? e.message : t('common.unknownError')); })
-      .finally(() => { if (mounted.current) setLoading(false); });
+      .then((data) => { if (mounted.current) setMyDecks(data); })
+      .catch((e) => { if (mounted.current) setMyError(e instanceof Error ? e.message : t('common.unknownError')); })
+      .finally(() => { if (mounted.current) setMyLoading(false); });
     return () => { mounted.current = false; };
-  }, [token, t]);
+  }, [token, locale, t]);
 
-  /* Réinitialise le filtre héros si faction change */
+  /* Reset filtres au changement de tab */
+  const handleTabChange = (tab: Tab) => {
+    setActiveTab(tab);
+    setFilterFaction(null);
+    setFilterHero(null);
+    setFilterFormat('');
+    setFilterSearch('');
+  };
+
   const handleFactionClick = (code: string) => {
     const next = filterFaction === code ? null : code;
     setFilterFaction(next);
     setFilterHero(null);
   };
 
-  /* Héros disponibles pour la faction sélectionnée */
+  const activeDecks = activeTab === 'public' ? publicDecks : myDecks;
+
   const heroesForFaction = useMemo(() => {
     if (!filterFaction) return [];
     const seen = new Set<string>();
     const result: { name: string; imagePath: string | null }[] = [];
-    for (const d of decks) {
+    for (const d of activeDecks) {
       const fc = getFactionCode(d.stats?.hero?.reference);
       if (fc !== filterFaction) continue;
       const name = d.stats?.hero?.name;
@@ -63,27 +95,28 @@ export default function DecksPage() {
       result.push({ name, imagePath: d.stats?.hero?.imagePath ?? null });
     }
     return result;
-  }, [decks, filterFaction]);
+  }, [activeDecks, filterFaction]);
 
-  /* Formats disponibles */
   const formats = useMemo(() => {
     const seen = new Set<string>();
-    return decks
+    return activeDecks
       .filter((d) => d.format && !seen.has(d.format) && seen.add(d.format))
       .map((d) => d.format as string);
-  }, [decks]);
+  }, [activeDecks]);
 
-  /* Decks filtrés */
-  const filtered = useMemo(() => decks.filter((d) => {
+  const filtered = useMemo(() => activeDecks.filter((d) => {
     const fc = getFactionCode(d.stats?.hero?.reference);
     if (filterFaction && fc !== filterFaction) return false;
     if (filterHero && d.stats?.hero?.name !== filterHero) return false;
     if (filterFormat && d.format !== filterFormat) return false;
     if (filterSearch && !d.name.toLowerCase().includes(filterSearch.toLowerCase())) return false;
     return true;
-  }), [decks, filterFaction, filterHero, filterFormat, filterSearch]);
+  }), [activeDecks, filterFaction, filterHero, filterFormat, filterSearch]);
 
   const hasFilter = !!(filterFaction || filterHero || filterFormat || filterSearch);
+
+  const isLoading = activeTab === 'public' ? publicLoading : (token ? myLoading : false);
+  const error = activeTab === 'public' ? publicError : myError;
 
   return (
     <SiteLayout>
@@ -93,11 +126,11 @@ export default function DecksPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="section-title mb-0">
             <span>{t('decks.title')}</span>
-            {decks.length > 0 && (
+            {activeDecks.length > 0 && (
               <span className="ml-2 text-sm font-normal" style={{ color: 'var(--neutral-600)' }}>
-                {filtered.length !== decks.length
-                  ? `${filtered.length} / ${decks.length}`
-                  : `${decks.length} deck${decks.length !== 1 ? 's' : ''}`}
+                {filtered.length !== activeDecks.length
+                  ? `${filtered.length} / ${activeDecks.length}`
+                  : `${activeDecks.length} deck${activeDecks.length !== 1 ? 's' : ''}`}
               </span>
             )}
           </div>
@@ -113,10 +146,25 @@ export default function DecksPage() {
           </div>
         </div>
 
+        {/* ── Tabs ── */}
+        <div className="flex gap-1 border-b border-c-border">
+          {(['public', 'myDecks'] as Tab[]).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabChange(tab)}
+              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                activeTab === tab
+                  ? 'border-amber-400 text-amber-400'
+                  : 'border-transparent text-c-text-subtle hover:text-c-text'
+              }`}
+            >
+              {t(tab === 'public' ? 'decks.tabPublic' : 'decks.tabMyDecks')}
+            </button>
+          ))}
+        </div>
+
         {/* ── Barre de filtres ── */}
         <div className="card-altered p-3 flex flex-col gap-2">
-
-          {/* Recherche + Format + Reset */}
           <div className="filter-row">
             <span className="filter-label">Recherche</span>
             <input
@@ -149,7 +197,6 @@ export default function DecksPage() {
             )}
           </div>
 
-          {/* Factions */}
           <div className="filter-row">
             <span className="filter-label">Faction</span>
             {Object.entries(FACTIONS).map(([code]) => {
@@ -168,7 +215,6 @@ export default function DecksPage() {
             })}
           </div>
 
-          {/* Héros (si faction sélectionnée) */}
           {filterFaction && heroesForFaction.length > 0 && (
             <div className="filter-row" style={{ borderTop: '1px solid var(--c-border-subtle)', paddingTop: '0.4rem' }}>
               <span className="filter-label">Héros</span>
@@ -194,23 +240,33 @@ export default function DecksPage() {
 
         {/* ── Contenu ── */}
         <div>
-
-          {/* États */}
-          {!token && (
+          {/* Tab "My Decks" — login requis */}
+          {activeTab === 'myDecks' && !token && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.loginRequired')}</p>
               <LoginButton />
             </div>
           )}
-          {token && loading && <p className="text-sm" style={{ color: 'var(--neutral-600)' }}>{t('common.loading')}</p>}
-          {token && error && <p className="text-sm text-red-500">{error}</p>}
-          {token && !loading && !error && decks.length === 0 && (
+
+          {/* États communs */}
+          {(activeTab === 'public' || token) && isLoading && (
+            <p className="text-sm" style={{ color: 'var(--neutral-600)' }}>{t('common.loading')}</p>
+          )}
+          {(activeTab === 'public' || token) && error && (
+            <p className="text-sm text-red-500">{error}</p>
+          )}
+
+          {/* Vide */}
+          {activeTab === 'public' && !isLoading && !error && publicDecks.length === 0 && (
+            <p className="text-center mt-20 text-sm" style={{ color: 'var(--neutral-600)' }}>{t('decks.noPublicDecks')}</p>
+          )}
+          {activeTab === 'myDecks' && token && !isLoading && !error && myDecks.length === 0 && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.noDecks')}</p>
               <Link href="/" className="btn-primary-altered">{t('decks.createFirst')}</Link>
             </div>
           )}
-          {token && !loading && !error && decks.length > 0 && filtered.length === 0 && (
+          {!isLoading && !error && activeDecks.length > 0 && filtered.length === 0 && (
             <p className="text-sm text-c-text-muted mt-8">Aucun deck ne correspond aux filtres.</p>
           )}
 
@@ -237,12 +293,19 @@ export default function DecksPage() {
                   : { borderTop: '3px solid var(--primary-400)' };
 
                 return (
-                  <div key={deck.id} className="news-card h-full" style={cardStyle}>
+                  <div key={deck.id} className="news-card" style={{ ...cardStyle, height: 180 }}>
                     <div className="news-card-body">
                       <div className="flex flex-wrap gap-1 items-center">
                         {deck.format && (
                           <span className="ac-badge" style={{ background: 'var(--primary-400)', color: '#fff' }}>
                             {deck.format}
+                          </span>
+                        )}
+                        {factionCode && (
+                          <span className="ac-badge" style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#444' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={`https://alteredcore.org/assets/faction/${factionCode}.png`} alt={factionCode} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+                            {FACTIONS[factionCode] ?? factionCode}
                           </span>
                         )}
                         <span
@@ -254,52 +317,18 @@ export default function DecksPage() {
                         </span>
                       </div>
 
-                      <h3 className="news-card-title">
-                        {factionCode && (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={`https://alteredcore.org/assets/faction/${factionCode}.png`}
-                            alt={factionCode}
-                            style={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
-                          />
-                        )}
+                      <h3 className="news-card-title" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.5)' }}>
                         {deck.name}
                       </h3>
 
                       {heroName && (
-                        <p style={{ fontSize: '.8rem', opacity: 0.75, color: '#fff', margin: 0 }}>{heroName}</p>
+                        <p style={{ fontSize: '.85rem', fontWeight: 700, color: '#fff', margin: 0, textAlign: 'left', textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>{heroName}</p>
                       )}
 
-                      <div className="mt-auto pt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.20)' }}>
-                        <div className="flex items-center gap-2 mb-2">
-                          <span style={{ fontSize: '.8rem', color: 'rgba(255,255,255,0.75)' }}>
-                            {totalCards} {t('decks.cards')}
-                          </span>
-                          {commonCount > 0 && (
-                            <span className="flex items-center gap-1" style={{ fontSize: '.8rem' }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/C.png" alt="C" style={{ width: 14, height: 14, objectFit: 'contain' }} />
-                              <span style={{ color: 'rgba(255,255,255,0.7)' }}>{commonCount}</span>
-                            </span>
-                          )}
-                          {rareCount > 0 && (
-                            <span className="flex items-center gap-1" style={{ fontSize: '.8rem' }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/R.png" alt="R" style={{ width: 14, height: 14, objectFit: 'contain' }} />
-                              <span style={{ color: 'rgba(255,255,255,0.7)' }}>{rareCount}</span>
-                            </span>
-                          )}
-                          {uniqueCount > 0 && (
-                            <span className="flex items-center gap-1" style={{ fontSize: '.8rem' }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/U.png" alt="U" style={{ width: 14, height: 14, objectFit: 'contain' }} />
-                              <span style={{ color: 'rgba(255,255,255,0.7)' }}>{uniqueCount}</span>
-                            </span>
-                          )}
-                        </div>
-
-                        <div className="flex items-center justify-between gap-1">
-                          <div className="flex gap-1">
+                      <div className="mt-auto pt-2 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.20)' }}>
+                        {/* Boutons edit/delete */}
+                        {activeTab === 'myDecks' && (
+                          <>
                             <Link href={`/decks/${deck.id}`} className="ac-btn">
                               <i className="fa-solid fa-pen" />
                               {t('decks.edit')}
@@ -313,11 +342,39 @@ export default function DecksPage() {
                               <i className="fa-solid fa-trash" />
                               {deleting === deck.id ? '...' : t('common.delete')}
                             </button>
-                          </div>
-                          <Link href={`/decks/${deck.id}`} className="btn-primary-altered btn-sm">
-                            {t('decks.view')} <i className="fa-solid fa-eye" />
-                          </Link>
+                          </>
+                        )}
+
+                        {/* Gems */}
+                        <div className="flex items-center gap-2 flex-1" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                          <span style={{ fontSize: '.875rem', fontWeight: 700, color: '#fff' }}>{totalCards} {t('decks.cards')}</span>
+                          {commonCount > 0 && (
+                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://alteredcore.org/assets/gems/C.png" alt="C" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
+                              <span style={{ color: '#fff' }}>{commonCount}</span>
+                            </span>
+                          )}
+                          {rareCount > 0 && (
+                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://alteredcore.org/assets/gems/R.png" alt="R" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
+                              <span style={{ color: '#fff' }}>{rareCount}</span>
+                            </span>
+                          )}
+                          {uniqueCount > 0 && (
+                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src="https://alteredcore.org/assets/gems/U.png" alt="U" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
+                              <span style={{ color: '#fff' }}>{uniqueCount}</span>
+                            </span>
+                          )}
                         </div>
+
+                        {/* View */}
+                        <Link href={`/decks/${deck.id}`} className="btn-primary-altered btn-sm">
+                          {t('decks.view')} <i className="fa-solid fa-eye" />
+                        </Link>
                       </div>
                     </div>
                   </div>
@@ -335,8 +392,8 @@ export default function DecksPage() {
     if (!confirm(t('decks.deleteConfirm', { name: deck.name }))) return;
     setDeleting(deck.id);
     deleteDeck(deck.id)
-      .then(() => setDecks((prev) => prev.filter((d) => d.id !== deck.id)))
-      .catch((e) => setError(e instanceof Error ? e.message : t('common.unknownError')))
+      .then(() => setMyDecks((prev) => prev.filter((d) => d.id !== deck.id)))
+      .catch((e) => setMyError(e instanceof Error ? e.message : t('common.unknownError')))
       .finally(() => setDeleting(null));
   }
 }
