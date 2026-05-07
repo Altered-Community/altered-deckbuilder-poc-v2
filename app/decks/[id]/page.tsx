@@ -9,7 +9,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, getDeckDetailPublic, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
-import { cardGroupFromDeckCard, getCardGroupFaction } from '@/lib/utils/card';
+import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
@@ -37,7 +37,7 @@ function groupByType(deckCards: ApiDeckCard[]) {
 
 function CardRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
   const name = dc.name ?? dc.cardReference;
-  const image = dc.imagePath;
+  const image = getRarityFromSlug(dc.cardReference) !== 'UNIQUE' ? getCdnImageUrl(dc.cardReference) : dc.imagePath;
 
   return (
     <div
@@ -202,7 +202,8 @@ export default function DeckEditPage() {
     }
   };
 
-  const heroImage   = deck?.stats?.hero?.imagePath ?? null;
+  const heroRef2    = deck?.stats?.hero?.reference ?? null;
+  const heroImage   = heroRef2 && getRarityFromSlug(heroRef2) !== 'UNIQUE' ? getCdnImageUrl(heroRef2) : (deck?.stats?.hero?.imagePath ?? null);
   const heroName    = deck?.stats?.hero?.name ?? null;
   const factionCode = getFactionCode(deck?.stats?.hero?.reference);
   const totalCards  = deck?.cards.reduce((s, dc) => s + dc.quantity, 0) ?? 0;

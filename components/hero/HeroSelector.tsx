@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
 import { fetchCardGroups } from '@/lib/api/cardApi';
-import { getCardGroupName, getCardGroupFaction } from '@/lib/utils/card';
+import { getCardGroupName, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
 import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import type { CardGroup } from '@/lib/types/card';
@@ -138,7 +138,7 @@ function HeroCard({ hero, isSelected, onSelect }: {
   const factionName = factionCode ? FACTIONS[factionCode] : '';
 
   const images = hero.cards
-    .map((c) => c.imagePath)
+    .map((c) => getRarityFromSlug(c.reference) !== 'UNIQUE' ? getCdnImageUrl(c.reference) : c.imagePath)
     .filter((p): p is string => !!p);
   const currentImage = images[imgIndex] ?? null;
   const hasMultiple = images.length > 1;

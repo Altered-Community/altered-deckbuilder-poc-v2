@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useLocale, useTranslations } from 'next-intl';
 import { fetchCardGroupByReference } from '@/lib/api/cardApi';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
-import { getRarityFromSlug } from '@/lib/utils/card';
+import { getRarityFromSlug, getCdnImageUrl } from '@/lib/utils/card';
 import SiteLayout from '@/components/layout/SiteLayout';
 import CardText, { CardEffectList } from '@/components/cards/CardText';
 import type { CardGroupVariant } from '@/lib/types/card';
@@ -39,7 +39,9 @@ export default function CardDetailPage() {
 
   const variants = card?.cards ?? [];
   const activeVariant = selectedVariant ?? variants.find((v) => v.variation === 'standard') ?? variants[0] ?? null;
-  const image = activeVariant?.imagePath ?? null;
+  const image = activeVariant
+    ? (getRarityFromSlug(activeVariant.reference) !== 'UNIQUE' ? getCdnImageUrl(activeVariant.reference, locale) : activeVariant.imagePath)
+    : null;
 
   const factionCode = card?.faction?.code ?? '';
   const factionBadge = FACTION_BADGE_COLORS[factionCode] ?? 'bg-gray-600';
@@ -137,26 +139,29 @@ export default function CardDetailPage() {
               {/* Variantes */}
               {variants.length > 1 && (
                 <div className="flex flex-wrap gap-2 justify-center">
-                  {variants.map((v) => (
-                    <button
-                      key={v.reference}
-                      onClick={() => setSelectedVariant(v)}
-                      title={v.variation}
-                      className={`relative w-12 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                        activeVariant?.reference === v.reference
-                          ? 'border-amber-400 scale-105'
-                          : 'border-c-border opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      {v.imagePath ? (
-                        <Image src={v.imagePath} alt={v.variation} fill className="object-cover" unoptimized sizes="48px" />
-                      ) : (
-                        <div className="absolute inset-0 bg-c-surface flex items-center justify-center text-[8px] text-c-text-muted px-0.5 text-center">
-                          {v.variation}
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                  {variants.map((v) => {
+                    const vImg = getRarityFromSlug(v.reference) !== 'UNIQUE' ? getCdnImageUrl(v.reference, locale) : v.imagePath;
+                    return (
+                      <button
+                        key={v.reference}
+                        onClick={() => setSelectedVariant(v)}
+                        title={v.variation}
+                        className={`relative w-12 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          activeVariant?.reference === v.reference
+                            ? 'border-amber-400 scale-105'
+                            : 'border-c-border opacity-60 hover:opacity-100'
+                        }`}
+                      >
+                        {vImg ? (
+                          <Image src={vImg} alt={v.variation} fill className="object-cover" unoptimized sizes="48px" />
+                        ) : (
+                          <div className="absolute inset-0 bg-c-surface flex items-center justify-center text-[8px] text-c-text-muted px-0.5 text-center">
+                            {v.variation}
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
               )}
             </div>

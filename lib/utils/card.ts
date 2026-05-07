@@ -43,9 +43,20 @@ export function getCardReference(group: CardGroup): string {
   return getStandardCard(group)?.reference ?? group.slug;
 }
 
-export function getCardGroupImage(group: CardGroup): string | null {
+export function getCdnImageUrl(reference: string, locale = 'fr'): string | null {
+  const parts = reference.split('_');
+  if (parts[0] !== 'ALT' || parts.length < 6) return null;
+  const set = parts[1];
+  return `https://cdn.alteredcore.org/cards/${locale}/${set}/${reference}.webp`;
+}
+
+export function getCardGroupImage(group: CardGroup, locale = 'fr'): string | null {
   if (!group.cards.length) return null;
-  return getStandardCard(group)?.imagePath ?? null;
+  const card = getStandardCard(group);
+  if (!card) return null;
+  const rarity = getRarityFromSlug(card.reference);
+  if (rarity !== 'UNIQUE') return getCdnImageUrl(card.reference, locale);
+  return card.imagePath;
 }
 
 export function getCardGroupName(group: CardGroup): string {
