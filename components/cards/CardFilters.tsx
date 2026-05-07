@@ -61,7 +61,11 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
 
       {/* Ligne 1 : Type · Faction · Set */}
       <div className="grid grid-cols-3 gap-2">
-        <select value={filters.cardType ?? ''} onChange={(e) => update('cardType', e.target.value)} className={selectClass}>
+        <select
+          value={Array.isArray(filters.cardType) ? (filters.cardType[0] ?? '') : (filters.cardType ?? '')}
+          onChange={(e) => onChange({ ...filters, cardType: e.target.value ? [e.target.value] : undefined, page: 1 })}
+          className={selectClass}
+        >
           <option value="">{t('allTypes')}</option>
           {CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => (
             <option key={type.value} value={type.value}>{type.label}</option>

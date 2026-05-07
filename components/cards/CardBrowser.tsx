@@ -163,7 +163,7 @@ export default function CardBrowser({ initialFaction }: Props) {
 
       {lightboxIdx !== null && lightboxCard && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
+          className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center" style={{ zIndex: 9999 }}
           onClick={() => setLightboxIdx(null)}
         >
           {/* Card image */}

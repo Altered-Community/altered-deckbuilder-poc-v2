@@ -15,9 +15,10 @@ const RARITY_RING: Record<string, string> = {
 
 interface DeckCardItemProps {
   deckCard: DeckCard;
+  onZoom?: () => void;
 }
 
-export default function DeckCardItem({ deckCard }: DeckCardItemProps) {
+export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
   const { addCard, decrementCard, removeCard, canAddCard } = useDeckStore();
   const { cardGroup, quantity } = deckCard;
 
@@ -66,6 +67,14 @@ export default function DeckCardItem({ deckCard }: DeckCardItemProps) {
 
       {/* Contrôles au survol */}
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+        {onZoom && (
+          <button
+            onClick={onZoom}
+            className="w-6 h-6 flex items-center justify-center bg-black/70 hover:bg-white/20 text-white rounded-full mb-0.5"
+          >
+            <i className="fa-solid fa-magnifying-glass text-[10px]" />
+          </button>
+        )}
         <div className="flex items-center gap-1">
           <button
             onClick={() => decrementCard(cardGroup.slug)}

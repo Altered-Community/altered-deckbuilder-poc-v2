@@ -16,9 +16,10 @@ const RARITY_BORDER: Record<string, string> = {
 
 interface CardItemProps {
   card: CardGroup;
+  onZoom?: () => void;
 }
 
-export default function CardItem({ card }: CardItemProps) {
+export default function CardItem({ card, onZoom }: CardItemProps) {
   const { addCard, setHero, deck, canAddCard } = useDeckStore();
 
   const name = getCardGroupName(card);
@@ -71,8 +72,28 @@ export default function CardItem({ card }: CardItemProps) {
           </div>
         )}
 
+        {/* Hover overlay */}
+        {!greyed && (
+          <div className="absolute inset-0 flex items-center justify-center gap-3 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            {onZoom && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onZoom(); }}
+                className="w-12 h-12 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition backdrop-blur-sm"
+              >
+                <i className="fa-solid fa-magnifying-glass text-xl" />
+              </button>
+            )}
+            <button
+              onClick={(e) => { e.stopPropagation(); handleClick(); }}
+              className="w-12 h-12 rounded-full bg-white/15 hover:bg-white/30 text-white flex items-center justify-center transition backdrop-blur-sm"
+            >
+              <i className={`fa-solid ${isHeroSelected ? 'fa-check' : 'fa-plus'} text-xl`} />
+            </button>
+          </div>
+        )}
+
         {(deckEntry || isHeroSelected) && (
-          <div className="absolute top-1 right-1 bg-black/80 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          <div className="absolute top-1 right-1 z-20 bg-black/80 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
             {isHero ? '★' : deckEntry?.quantity}
           </div>
         )}

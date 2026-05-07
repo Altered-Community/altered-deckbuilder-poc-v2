@@ -167,14 +167,27 @@ export const useDeckStore = create<DeckState>()(
           if (heroFaction && getCardGroupFaction(group) !== heroFaction) return 'FACTION_MISMATCH';
         }
 
-        // Max copies par nom (rare et common du même nom = même limite)
-        const maxCopies = format?.limits.maxCopiesPerRarity ?? format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
-        const groupName = group.name;
-        const existing = deck.cards.find((dc) => dc.cardGroup.name === groupName);
-        if (existing && existing.quantity >= maxCopies) return 'MAX_COPIES';
+        const rarity = getRarityFromSlug(group.slug);
+
+        if (rarity === 'UNIQUE') {
+          // Chaque carte unique spécifique : max 1 exemplaire (par slug)
+          if (deck.cards.some((dc) => dc.cardGroup.slug === group.slug)) return 'MAX_COPIES';
+
+          // Variantes du même nom : limité par le format (ex. 3 Morgane différentes)
+          const maxPerName = format?.limits.maxCopiesPerRarity ?? format?.limits.maxCopiesPerName ?? null;
+          if (maxPerName != null) {
+            const countSameName = deck.cards
+              .filter((dc) => dc.cardGroup.name === group.name)
+              .reduce((sum, dc) => sum + dc.quantity, 0);
+            if (countSameName >= maxPerName) return 'MAX_COPIES';
+          }
+        } else {
+          const maxCopies = format?.limits.maxCopiesPerRarity ?? format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
+          const existing = deck.cards.find((dc) => dc.cardGroup.name === group.name);
+          if (existing && existing.quantity >= maxCopies) return 'MAX_COPIES';
+        }
 
         const { rareCount, uniqueCount, exaltedCount } = deckStats();
-        const rarity = getRarityFromSlug(group.slug);
 
         if (format) {
           const { rare, exalted } = format.limits;

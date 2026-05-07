@@ -1,12 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useDeckStore } from '@/store/deckStore';
 import { MIN_DECK_SIZE } from '@/lib/types/constants';
 import { fetchFormats } from '@/lib/api/deckApi';
 import { getUniqueLimit } from '@/lib/utils/format';
+import { getRarityFromSlug, getCardReference, getCardGroupImage, getCardGroupName } from '@/lib/utils/card';
+import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import DeckCardItem from './DeckCardItem';
 import DeckStats from './DeckStats';
 import SaveDeckButton from './SaveDeckButton';
@@ -30,10 +33,25 @@ function LimitBadge({ current, max, label, colorOver = 'text-red-400', colorOk =
 
 export default function DeckPanel() {
   const t = useTranslations('deck');
+  const locale = useLocale();
   const { deck, setDeckName, setFormat, clearDeck, deckStats } = useDeckStore();
   const [editingName, setEditingName] = useState(false);
   const [nameInput, setNameInput] = useState(deck.name);
   const [activeTab, setActiveTab] = useState<'cards' | 'stats'>('cards');
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+
+  const allDeckCards = deck.cards;
+
+  useEffect(() => {
+    if (lightboxIdx === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft')  setLightboxIdx(i => i !== null && i > 0 ? i - 1 : i);
+      if (e.key === 'ArrowRight') setLightboxIdx(i => i !== null && i < allDeckCards.length - 1 ? i + 1 : i);
+      if (e.key === 'Escape')     setLightboxIdx(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxIdx, allDeckCards.length]);
 
   const { data: formats = [] } = useQuery({
     queryKey: ['formats'],
@@ -184,15 +202,73 @@ export default function DeckPanel() {
                   </span>
                 </p>
                 <div className="grid grid-cols-3 gap-1.5">
-                  {cards.map((dc) => (
-                    <DeckCardItem key={dc.cardGroup.slug} deckCard={dc} />
-                  ))}
+                  {cards.map((dc) => {
+                    const idx = allDeckCards.findIndex(c => c.cardGroup.slug === dc.cardGroup.slug);
+                    return (
+                      <DeckCardItem key={dc.cardGroup.slug} deckCard={dc} onZoom={() => setLightboxIdx(idx)} />
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {lightboxIdx !== null && (() => {
+        const dc = allDeckCards[lightboxIdx];
+        if (!dc) return null;
+        const rarity    = getRarityFromSlug(dc.cardGroup.slug);
+        const reference = getCardReference(dc.cardGroup);
+        const image     = rarity !== 'UNIQUE' ? getCardGroupImage(dc.cardGroup, locale) : null;
+        const name      = getCardGroupName(dc.cardGroup);
+        return (
+          <div
+            className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center" style={{ zIndex: 9999 }}
+            onClick={() => setLightboxIdx(null)}
+          >
+            <div onClick={(e) => e.stopPropagation()}>
+              {rarity === 'UNIQUE' ? (
+                <div style={{ width: 'min(52vh, 88vw)' }}>
+                  <UniqueCardRenderer reference={reference} locale={locale} className="w-full" />
+                </div>
+              ) : image ? (
+                <div className="relative" style={{ height: '85vh', aspectRatio: '744/1039' }}>
+                  <Image src={image} alt={name} fill className="object-contain" unoptimized sizes="600px" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center bg-c-surface rounded-xl p-8" style={{ height: '60vh', aspectRatio: '744/1039' }}>
+                  <span className="text-white text-sm text-center">{name}</span>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx(i => i !== null ? Math.max(0, i - 1) : i); }}
+              disabled={lightboxIdx === 0}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white disabled:opacity-20 transition"
+            >
+              <i className="fa-solid fa-chevron-left text-base" />
+            </button>
+            <button
+              onClick={(e) => { e.stopPropagation(); setLightboxIdx(i => i !== null ? Math.min(allDeckCards.length - 1, i + 1) : i); }}
+              disabled={lightboxIdx === allDeckCards.length - 1}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white disabled:opacity-20 transition"
+            >
+              <i className="fa-solid fa-chevron-right text-base" />
+            </button>
+            <button
+              onClick={() => setLightboxIdx(null)}
+              className="absolute top-4 right-4 w-9 h-9 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition"
+            >
+              <i className="fa-solid fa-xmark" />
+            </button>
+            <div className="absolute bottom-5 left-0 right-0 text-center pointer-events-none">
+              <span className="text-white text-sm font-semibold drop-shadow">{name}</span>
+              <span className="text-white/40 text-xs ml-3">{lightboxIdx + 1} / {allDeckCards.length}</span>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

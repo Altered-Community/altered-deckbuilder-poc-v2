@@ -43,7 +43,7 @@ export interface CardGroup {
 export interface CardGroupFilters {
   name?: string;
   faction?: string;
-  cardType?: string;
+  cardType?: string | string[];
   excludeCardTypes?: string[];
   excludeCardSubTypes?: string[];
   rarity?: string | string[];
