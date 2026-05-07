@@ -10,6 +10,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, getDeckDetailPublic, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
+import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
@@ -37,16 +38,19 @@ function groupByType(deckCards: ApiDeckCard[]) {
 
 function CardRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
   const name = dc.name ?? dc.cardReference;
-  const image = getRarityFromSlug(dc.cardReference) !== 'UNIQUE' ? getCdnImageUrl(dc.cardReference) : dc.imagePath;
+  const isUnique = getRarityFromSlug(dc.cardReference) === 'UNIQUE';
+  const image = isUnique ? null : getCdnImageUrl(dc.cardReference);
 
   return (
     <div
       onClick={onClick}
-      className="relative rounded-lg overflow-hidden border border-c-border bg-c-surface aspect-[2/3] cursor-pointer hover:brightness-110 hover:scale-[1.02] transition-all duration-100 select-none"
+      className={`relative rounded-lg overflow-hidden border border-c-border bg-c-surface cursor-pointer hover:brightness-110 hover:scale-[1.02] transition-all duration-100 select-none ${isUnique ? '' : 'aspect-[744/1039]'}`}
     >
-      {image && (
+      {isUnique ? (
+        <UniqueCardRenderer reference={dc.cardReference} className="w-full" />
+      ) : image ? (
         <Image src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" fill sizes="(max-width: 768px) 50vw, 33vw" />
-      )}
+      ) : null}
       <span className="absolute top-1.5 right-1.5 z-10 text-sm font-bold text-white bg-black/70 px-2 py-0.5 rounded-full shadow">
         x{dc.quantity}
       </span>

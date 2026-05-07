@@ -44,7 +44,9 @@
       "Bash(curl -s \"https://altered-core-cards-api.toxicity.be/api/card_groups?locale=fr&name=Sierra&page=1\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('name only:', d['pagination']\\)\")",
       "Bash(npm install:*)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(curl -s \"https://cdn.jsdelivr.net/gh/PolluxTroy0/Altered-Card-Renderer@main/altered-card-renderer.js\")",
+      "Bash(grep -o '\"id\"[^\\)]*\\\\|{id}[^,}]*\\\\|\\\\.id\\\\b[^,;\\)]*')"
     ]
   }
 }

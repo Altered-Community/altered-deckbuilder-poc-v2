@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import type { CardGroup } from '@/lib/types/card';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
-import { getCardGroupName, getCardGroupImage, getCardGroupFaction, getRarityFromSlug } from '@/lib/utils/card';
+import { getCardGroupName, getCardGroupImage, getCardGroupFaction, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
+import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 
 const RARITY_BORDER: Record<string, string> = {
   COMMON: 'border-gray-500',
@@ -52,8 +53,10 @@ export default function CardItem({ card }: CardItemProps) {
       `}
       title={name}
     >
-      <div className="aspect-[2/3] relative bg-c-elevated">
-        {image ? (
+      <div className={`relative bg-c-elevated overflow-hidden ${rarity !== 'UNIQUE' ? 'aspect-[744/1039]' : ''}`}>
+        {rarity === 'UNIQUE' ? (
+          <UniqueCardRenderer reference={getCardReference(card)} className="w-full" />
+        ) : image ? (
           <Image
             src={image}
             alt={name}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Geist } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
 import { getLocale, getMessages } from 'next-intl/server';
+import Script from 'next/script';
 import './globals.css';
 import Providers from './providers';
 import SiteHeader from '@/components/layout/SiteHeader';
@@ -29,6 +30,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         />
       </head>
       <body className="text-c-text antialiased">
+        <Script
+          src="https://cdn.jsdelivr.net/gh/PolluxTroy0/Altered-Card-Renderer@main/altered-card-renderer.js"
+          strategy="afterInteractive"
+        />
         <NextIntlClientProvider locale={locale} messages={messages}>
           <Providers>
             <SiteHeader navItems={layout.nav} logoUrl={layout.site.logo_url} />

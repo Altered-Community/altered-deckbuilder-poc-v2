@@ -3,8 +3,9 @@
 import Image from 'next/image';
 import type { DeckCard } from '@/lib/types/deck';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
-import { getCardGroupName, getCardGroupFaction, getCardGroupImage, getRarityFromSlug } from '@/lib/utils/card';
+import { getCardGroupName, getCardGroupFaction, getCardGroupImage, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
+import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 
 const RARITY_RING: Record<string, string> = {
   RARE:    'ring-blue-400',
@@ -30,9 +31,11 @@ export default function DeckCardItem({ deckCard }: DeckCardItemProps) {
 
   return (
     <div
-      className={`relative rounded-md overflow-hidden aspect-[2/3] bg-c-elevated border border-c-border group cursor-pointer select-none ${ring ? `ring-1 ${ring}` : ''}`}
+      className={`relative rounded-md overflow-hidden bg-c-elevated border border-c-border group cursor-pointer select-none ${ring ? `ring-1 ${ring}` : ''} ${rarity !== 'UNIQUE' ? 'aspect-[744/1039]' : ''}`}
     >
-      {image ? (
+      {rarity === 'UNIQUE' ? (
+        <UniqueCardRenderer reference={getCardReference(cardGroup)} className="w-full" />
+      ) : image ? (
         <Image src={image} alt={name} fill className="object-cover" sizes="100px" unoptimized />
       ) : (
         <div className="absolute inset-0 flex items-center justify-center p-1">

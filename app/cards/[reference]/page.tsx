@@ -9,6 +9,7 @@ import { useLocale, useTranslations } from 'next-intl';
 import { fetchCardGroupByReference } from '@/lib/api/cardApi';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import { getRarityFromSlug, getCdnImageUrl } from '@/lib/utils/card';
+import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import SiteLayout from '@/components/layout/SiteLayout';
 import CardText, { CardEffectList } from '@/components/cards/CardText';
 import type { CardGroupVariant } from '@/lib/types/card';
@@ -88,21 +89,29 @@ export default function CardDetailPage() {
           <div className="flex flex-col lg:flex-row gap-8">
 
             {/* ── Lightbox ── */}
-            {lightbox && image && (
+            {lightbox && (image || rarity === 'UNIQUE') && (
               <div
                 className="fixed inset-0 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4"
                 style={{ zIndex: 9999 }}
                 onClick={() => setLightbox(false)}
               >
-                <div className="relative max-h-[90vh] max-w-[90vw] aspect-[2/3]" style={{ height: '90vh' }}>
-                  <Image
-                    src={image}
-                    alt={card.name}
-                    fill
-                    className="object-contain rounded-2xl shadow-2xl"
-                    unoptimized
-                    sizes="90vw"
-                  />
+                <div className="rounded-2xl shadow-2xl overflow-hidden" style={{ maxHeight: '90vh', maxWidth: '90vw' }}>
+                  {rarity === 'UNIQUE' ? (
+                    <div className="aspect-[744/1039]" style={{ height: '90vh' }}>
+                      <UniqueCardRenderer reference={reference as string} locale={locale} className="w-full" />
+                    </div>
+                  ) : (
+                    <div className="relative aspect-[2/3]" style={{ height: '90vh' }}>
+                      <Image
+                        src={image!}
+                        alt={card.name}
+                        fill
+                        className="object-contain"
+                        unoptimized
+                        sizes="90vw"
+                      />
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => setLightbox(false)}
@@ -116,10 +125,12 @@ export default function CardDetailPage() {
             {/* ── Colonne gauche : image + variantes ── */}
             <div className="lg:w-72 shrink-0 flex flex-col items-center gap-3">
               <div
-                className="relative w-full max-w-xs aspect-[2/3] rounded-2xl overflow-hidden shadow-2xl cursor-zoom-in"
-                onClick={() => image && setLightbox(true)}
+                className={`relative w-full max-w-xs rounded-2xl overflow-hidden shadow-2xl cursor-zoom-in ${rarity !== 'UNIQUE' ? 'aspect-[2/3]' : ''}`}
+                onClick={() => (image || rarity === 'UNIQUE') && setLightbox(true)}
               >
-                {image ? (
+                {rarity === 'UNIQUE' ? (
+                  <UniqueCardRenderer reference={reference as string} locale={locale} className="w-full" />
+                ) : image ? (
                   <Image
                     src={image}
                     alt={card.name}
@@ -140,7 +151,8 @@ export default function CardDetailPage() {
               {variants.length > 1 && (
                 <div className="flex flex-wrap gap-2 justify-center">
                   {variants.map((v) => {
-                    const vImg = getRarityFromSlug(v.reference) !== 'UNIQUE' ? getCdnImageUrl(v.reference, locale) : v.imagePath;
+                    const vRarity = getRarityFromSlug(v.reference);
+                    const vImg = vRarity !== 'UNIQUE' ? getCdnImageUrl(v.reference, locale) : v.imagePath;
                     return (
                       <button
                         key={v.reference}
