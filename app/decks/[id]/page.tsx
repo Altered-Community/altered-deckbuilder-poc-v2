@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDeckDetail, getDeckDetailPublic, patchDeck, fetchFormats } from '@/lib/api/deckApi';
+import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard, ApiLegalityDetail } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
@@ -195,6 +195,14 @@ export default function DeckEditPage() {
 
   const { data: formats = [] } = useQuery({ queryKey: ['formats'], queryFn: fetchFormats, staleTime: Infinity });
 
+  const { data: myDecks = [] } = useQuery({
+    queryKey: ['my-decks', locale],
+    queryFn: () => getDecks(locale),
+    enabled: !!token,
+    staleTime: 60_000,
+  });
+  const isOwner = !!token && myDecks.some((d) => d.id === id);
+
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -249,7 +257,7 @@ export default function DeckEditPage() {
   };
 
   const handleSave = async () => {
-    if (!token) return;
+    if (!isOwner) return;
     setSaving(true);
     setSaveError(null);
     setSaved(false);
@@ -377,8 +385,8 @@ export default function DeckEditPage() {
               {/* Sidebar droite (1/3) */}
               <div className="flex flex-col gap-4">
 
-                {/* Formulaire — uniquement si connecté */}
-                {token && (
+                {/* Formulaire — uniquement pour le propriétaire du deck */}
+                {isOwner && (
                   <div className="card-altered p-4 flex flex-col gap-4">
                     <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('info')}</h2>
 
