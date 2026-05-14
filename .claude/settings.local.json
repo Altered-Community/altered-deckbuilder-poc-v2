@@ -46,7 +46,8 @@
       "Bash(npm install:*)",
       "Bash(npm run *)",
       "Bash(curl -s \"https://cdn.jsdelivr.net/gh/PolluxTroy0/Altered-Card-Renderer@main/altered-card-renderer.js\")",
-      "Bash(grep -o '\"id\"[^\\)]*\\\\|{id}[^,}]*\\\\|\\\\.id\\\\b[^,;\\)]*')"
+      "Bash(grep -o '\"id\"[^\\)]*\\\\|{id}[^,}]*\\\\|\\\\.id\\\\b[^,;\\)]*')",
+      "Bash(python3 *)"
     ]
   }
 }

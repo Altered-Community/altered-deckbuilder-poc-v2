@@ -146,6 +146,10 @@ export default function DecksPage() {
               <i className="fa-solid fa-cloud-arrow-down" />
               {t('nav.importFromAltered')}
             </Link>
+            <Link href="/decks/import/csv" className="btn-primary-altered btn-sm" style={{ background: 'var(--neutral-600)' }}>
+              <i className="fa-solid fa-file-csv" />
+              {t('nav.importFromCsv')}
+            </Link>
           </div>
         </div>
 

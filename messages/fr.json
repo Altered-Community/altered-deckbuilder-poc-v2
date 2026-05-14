@@ -18,6 +18,7 @@
     "appName": "Altered",
     "deckBuilder": "Deck Builder",
     "importFromAltered": "Importer depuis Altered",
+    "importFromCsv": "Importer CSV",
     "import": "Importer"
   },
   "hero": {
@@ -208,6 +209,25 @@
       "UNIQUE": "Unique",
       "EXALTED": "Exalté"
     }
+  },
+  "importCsv": {
+    "loginRequired": "Connectez-vous pour importer un deck.",
+    "howTo": "Comment importer depuis l'export Altered ?",
+    "howToDesc": "Téléversez le fichier decks.csv issu de votre export de données personnelles Altered. Les decks seront importés en privé par défaut.",
+    "fileLabel": "Fichier decks.csv (export données personnelles Altered)",
+    "fileTypeError": "Le fichier doit être un fichier CSV (.csv)",
+    "parseError": "Impossible de lire le fichier CSV.",
+    "selectDeck": "Sélectionnez un deck",
+    "verify": "Vérifier",
+    "save": "Sauvegarder (privé)",
+    "saveAll": "Sauvegarder tout ({count})",
+    "savedCount": "{saved}/{total} sauvegardés",
+    "colQty": "Qté",
+    "colRef": "Référence",
+    "colName": "Nom",
+    "colStatus": "Statut",
+    "hero": "Héros",
+    "verifyError": "Erreur lors de la vérification des cartes"
   },
   "importDeck": {
     "title": "Importer un deck",
