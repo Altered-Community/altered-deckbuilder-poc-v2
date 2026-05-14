@@ -58,14 +58,20 @@ export default function CardItem({ card, onZoom }: CardItemProps) {
         {rarity === 'UNIQUE' ? (
           <UniqueCardRenderer reference={getCardReference(card)} className="w-full" />
         ) : image ? (
-          <Image
-            src={image}
-            alt={name}
-            fill
-            className="object-cover"
-            sizes="200px"
-            unoptimized
-          />
+          <>
+            <Image
+              src={image}
+              alt={name}
+              fill
+              className="object-cover brightness-[1.01] saturate-[0.98] contrast-[1.04]"
+              sizes="200px"
+              unoptimized
+            />
+            <div
+              className="absolute inset-0 pointer-events-none mix-blend-screen"
+              style={{ backgroundColor: 'rgba(255,245,235,0.025)' }}
+            />
+          </>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-2">
             <span className="text-xs text-c-text-muted text-center">{name}</span>

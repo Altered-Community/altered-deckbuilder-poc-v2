@@ -27,7 +27,7 @@ export default function Providers({
 
   return (
     <SessionProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" disableTransitionOnChange>
+      <ThemeProvider attribute="class" defaultTheme="dark" enableColorScheme={false} disableTransitionOnChange>
         <Suspense>
           <ThemeFromUrl />
         </Suspense>

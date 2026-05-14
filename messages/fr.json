@@ -122,7 +122,20 @@
     "cards": "Cartes ({count})",
     "byType": "Par type",
     "list": "Liste",
-    "noCards": "Aucune carte dans ce deck."
+    "noCards": "Aucune carte dans ce deck.",
+    "legalityTitle": "Légalité",
+    "legalityLegal": "Légal",
+    "legalityIllegal": "Illégal",
+    "legalityHero": "Héros",
+    "legalityDeckSize": "Taille du deck",
+    "legalityFaction": "Faction",
+    "legalitySets": "Extensions",
+    "legalityBannedCards": "Cartes bannies",
+    "legalitySuspendedCards": "Cartes suspendues",
+    "legalityCopies": "Copies",
+    "legalityUniqueQuantity": "Quantité unique",
+    "legalityRareQuantity": "Quantité rare",
+    "legalityExaltedQuantity": "Quantité exaltée"
   },
   "importAltered": {
     "title": "Importer depuis Altered",

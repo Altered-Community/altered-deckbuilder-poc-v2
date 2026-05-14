@@ -37,7 +37,13 @@ export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
       {rarity === 'UNIQUE' ? (
         <UniqueCardRenderer reference={getCardReference(cardGroup)} className="w-full" />
       ) : image ? (
-        <Image src={image} alt={name} fill className="object-cover" sizes="100px" unoptimized />
+        <>
+          <Image src={image} alt={name} fill className="object-cover brightness-[1.01] saturate-[0.98] contrast-[1.04]" sizes="100px" unoptimized />
+          <div
+            className="absolute inset-0 pointer-events-none mix-blend-screen"
+            style={{ backgroundColor: 'rgba(255,245,235,0.025)' }}
+          />
+        </>
       ) : (
         <div className="absolute inset-0 flex items-center justify-center p-1">
           <span className="text-[9px] text-c-text-muted text-center leading-tight">{name}</span>

@@ -52,8 +52,24 @@ export interface ApiDeckCard {
   imagePath: string | null;
 }
 
+export interface ApiLegalityDetail {
+  hero: boolean;
+  deckSize: boolean;
+  faction: boolean;
+  sets: boolean;
+  bannedCards: boolean;
+  suspendedCards: boolean;
+  copies: boolean;
+  uniqueQuantity: boolean;
+  rareQuantity: boolean;
+  exaltedQuantity: boolean;
+  global: boolean;
+}
+
 export interface ApiDeckDetail extends ApiDeck {
   cards: ApiDeckCard[];
+  legal?: boolean;
+  legalityDetail?: ApiLegalityDetail;
 }
 
 export interface DeckCard {

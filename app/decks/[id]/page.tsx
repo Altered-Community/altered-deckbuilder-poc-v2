@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, getDeckDetailPublic, patchDeck, fetchFormats } from '@/lib/api/deckApi';
-import type { ApiDeckDetail, ApiDeckCard } from '@/lib/types/deck';
+import type { ApiDeckDetail, ApiDeckCard, ApiLegalityDetail } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
@@ -17,6 +17,63 @@ import { useDeckStore } from '@/store/deckStore';
 import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS } from '@/lib/types/constants';
 
 const TYPE_ORDER = ['HERO', 'CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
+
+const LEGALITY_KEYS: (keyof ApiLegalityDetail)[] = [
+  'hero', 'deckSize', 'faction', 'sets', 'bannedCards', 'suspendedCards',
+  'copies', 'uniqueQuantity', 'rareQuantity', 'exaltedQuantity',
+];
+
+function DeckLegality({ legal, detail }: { legal: boolean | undefined; detail: ApiLegalityDetail | undefined }) {
+  const t = useTranslations('deckEdit');
+
+  const labelKey: Record<keyof ApiLegalityDetail, string> = {
+    hero: t('legalityHero'),
+    deckSize: t('legalityDeckSize'),
+    faction: t('legalityFaction'),
+    sets: t('legalitySets'),
+    bannedCards: t('legalityBannedCards'),
+    suspendedCards: t('legalitySuspendedCards'),
+    copies: t('legalityCopies'),
+    uniqueQuantity: t('legalityUniqueQuantity'),
+    rareQuantity: t('legalityRareQuantity'),
+    exaltedQuantity: t('legalityExaltedQuantity'),
+    global: '',
+  };
+
+  const isLegal = legal ?? detail?.global;
+
+  return (
+    <div className="card-altered overflow-hidden">
+      <div className="px-4 py-3 border-b border-c-border-subtle flex items-center justify-between">
+        <h2 className="text-xs font-semibold text-c-text-muted uppercase tracking-widest">{t('legalityTitle')}</h2>
+        {isLegal !== undefined && (
+          <span
+            className={`text-xs font-bold px-2 py-0.5 rounded-full ${isLegal ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-500'}`}
+          >
+            {isLegal ? (
+              <><i className="fa-solid fa-circle-check mr-1" />{t('legalityLegal')}</>
+            ) : (
+              <><i className="fa-solid fa-circle-xmark mr-1" />{t('legalityIllegal')}</>
+            )}
+          </span>
+        )}
+      </div>
+      {detail && (
+        <div className="px-4 py-3 flex flex-col gap-1.5">
+          {LEGALITY_KEYS.map((key) => {
+            const ok = detail[key];
+            return (
+              <div key={key} className="flex items-center justify-between text-xs">
+                <span className="text-c-text-secondary">{labelKey[key]}</span>
+                <i className={`fa-solid ${ok ? 'fa-check text-green-500' : 'fa-xmark text-red-500'}`} />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
 function getFactionCode(heroRef: string | undefined): string | null {
   if (!heroRef) return null;
@@ -366,6 +423,9 @@ export default function DeckEditPage() {
                     </div>
                   </div>
                 )}
+
+                {/* Légalité */}
+                <DeckLegality legal={deck.legal} detail={deck.legalityDetail} />
 
                 {/* Statistiques */}
                 <div className="card-altered overflow-hidden">
