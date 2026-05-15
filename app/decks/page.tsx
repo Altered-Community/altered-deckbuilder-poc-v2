@@ -22,7 +22,7 @@ function getFactionCode(heroRef: string | undefined): string | null {
 export default function DecksPage() {
   const t = useTranslations();
   const locale = useLocale();
-  const { token } = useAuth();
+  const { token, isAuthenticated, isLoading: authLoading } = useAuth();
 
   const [activeTab, setActiveTab] = useState<Tab>('public');
 
@@ -57,14 +57,14 @@ export default function DecksPage() {
 
   /* Fetch mes decks */
   useEffect(() => {
-    if (!token) return;
+    if (!isAuthenticated) return;
     mounted.current = true;
     getDecks(locale)
       .then((data) => { if (mounted.current) setMyDecks(data); })
       .catch((e) => { if (mounted.current) setMyError(e instanceof Error ? e.message : t('common.unknownError')); })
       .finally(() => { if (mounted.current) setMyLoading(false); });
     return () => { mounted.current = false; };
-  }, [token, locale, t]);
+  }, [isAuthenticated, locale, t]);
 
   /* Reset filtres au changement de tab */
   const handleTabChange = (tab: Tab) => {
@@ -107,18 +107,28 @@ export default function DecksPage() {
       .map((d) => d.format as string);
   }, [activeDecks]);
 
-  const filtered = useMemo(() => activeDecks.filter((d) => {
-    const fc = getFactionCode(d.stats?.hero?.reference);
-    if (filterFaction && fc !== filterFaction) return false;
-    if (filterHero && d.stats?.hero?.name !== filterHero) return false;
-    if (filterFormat && d.format !== filterFormat) return false;
-    if (filterSearch && !d.name.toLowerCase().includes(filterSearch.toLowerCase())) return false;
-    return true;
-  }), [activeDecks, filterFaction, filterHero, filterFormat, filterSearch]);
+  const filtered = useMemo(() => {
+    const result = activeDecks.filter((d) => {
+      const fc = getFactionCode(d.stats?.hero?.reference);
+      if (filterFaction && fc !== filterFaction) return false;
+      if (filterHero && d.stats?.hero?.name !== filterHero) return false;
+      if (filterFormat && d.format !== filterFormat) return false;
+      if (filterSearch && !d.name.toLowerCase().includes(filterSearch.toLowerCase())) return false;
+      return true;
+    });
+    if (activeTab === 'myDecks') {
+      result.sort((a, b) => {
+        const da = a.updatedAt ?? a.createdAt;
+        const db = b.updatedAt ?? b.createdAt;
+        return db.localeCompare(da);
+      });
+    }
+    return result;
+  }, [activeDecks, activeTab, filterFaction, filterHero, filterFormat, filterSearch]);
 
   const hasFilter = !!(filterFaction || filterHero || filterFormat || filterSearch);
 
-  const isLoading = activeTab === 'public' ? publicLoading : (token ? myLoading : false);
+  const isLoading = activeTab === 'public' ? publicLoading : (isAuthenticated ? myLoading : false);
   const error = activeTab === 'public' ? publicError : myError;
 
   return (
@@ -248,7 +258,7 @@ export default function DecksPage() {
         {/* ── Contenu ── */}
         <div>
           {/* Tab "My Decks" — login requis */}
-          {activeTab === 'myDecks' && !token && (
+          {activeTab === 'myDecks' && !authLoading && !isAuthenticated && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.loginRequired')}</p>
               <LoginButton />
@@ -256,10 +266,10 @@ export default function DecksPage() {
           )}
 
           {/* États communs */}
-          {(activeTab === 'public' || token) && isLoading && (
+          {(activeTab === 'public' || isAuthenticated) && isLoading && (
             <p className="text-sm" style={{ color: 'var(--neutral-600)' }}>{t('common.loading')}</p>
           )}
-          {(activeTab === 'public' || token) && error && (
+          {(activeTab === 'public' || isAuthenticated) && error && (
             <p className="text-sm text-red-500">{error}</p>
           )}
 
@@ -267,7 +277,7 @@ export default function DecksPage() {
           {activeTab === 'public' && !isLoading && !error && publicDecks.length === 0 && (
             <p className="text-center mt-20 text-sm" style={{ color: 'var(--neutral-600)' }}>{t('decks.noPublicDecks')}</p>
           )}
-          {activeTab === 'myDecks' && token && !isLoading && !error && myDecks.length === 0 && (
+          {activeTab === 'myDecks' && isAuthenticated && !isLoading && !error && myDecks.length === 0 && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.noDecks')}</p>
               <Link href="/" className="btn-primary-altered">{t('decks.createFirst')}</Link>
@@ -395,7 +405,7 @@ export default function DecksPage() {
   );
 
   function handleDelete(deck: ApiDeck) {
-    if (!token) return;
+    if (!isAuthenticated) return;
     if (!confirm(t('decks.deleteConfirm', { name: deck.name }))) return;
     setDeleting(deck.id);
     deleteDeck(deck.id)

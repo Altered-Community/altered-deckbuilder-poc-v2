@@ -16,7 +16,7 @@ export default function HeroSelector() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
-  const { setHero, deck } = useDeckStore();
+  const { setHero, clearDeck, deck } = useDeckStore();
   const [factionFilter, setFactionFilter] = useState('');
 
   const baseFilters = {
@@ -54,6 +54,7 @@ export default function HeroSelector() {
   });
 
   const handleSelect = (hero: CardGroup) => {
+    clearDeck();
     setHero(hero);
     const faction = getCardGroupFaction(hero);
     router.push(faction ? `/deck?faction=${faction}` : '/deck');

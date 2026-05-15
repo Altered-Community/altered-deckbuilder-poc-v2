@@ -52,7 +52,7 @@ export default function LoginButton() {
 
   const label = getLabel();
 
-  if (status === 'authenticated' || token) {
+  if (USE_KEYCLOAK ? status === 'authenticated' : !!token) {
     return (
       <button
         onClick={handleLogout}
