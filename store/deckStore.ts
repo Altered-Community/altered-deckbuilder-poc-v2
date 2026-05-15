@@ -190,9 +190,26 @@ export const useDeckStore = create<DeckState>()(
             if (countSameName >= maxPerName) return 'MAX_COPIES';
           }
         } else {
-          const maxCopies = format?.limits.maxCopiesPerRarity ?? format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
-          const existing = deck.cards.find((dc) => dc.cardGroup.name === group.name);
-          if (existing && existing.quantity >= maxCopies) return 'MAX_COPIES';
+          if (format?.limits.maxCopiesPerRarity != null) {
+            // Limite par nom + rareté (ex: Singleton — 1 Commune + 1 Rare du même nom = OK)
+            const countSameRarity = deck.cards
+              .filter((dc) => dc.cardGroup.name === group.name && getRarityFromSlug(dc.cardGroup.slug) === rarity)
+              .reduce((sum, dc) => sum + dc.quantity, 0);
+            if (countSameRarity >= format.limits.maxCopiesPerRarity) return 'MAX_COPIES';
+            // Vérifier aussi la limite totale par nom
+            if (format.limits.maxCopiesPerName != null) {
+              const countSameName = deck.cards
+                .filter((dc) => dc.cardGroup.name === group.name)
+                .reduce((sum, dc) => sum + dc.quantity, 0);
+              if (countSameName >= format.limits.maxCopiesPerName) return 'MAX_COPIES';
+            }
+          } else {
+            const maxCopies = format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
+            const countSameName = deck.cards
+              .filter((dc) => dc.cardGroup.name === group.name)
+              .reduce((sum, dc) => sum + dc.quantity, 0);
+            if (countSameName >= maxCopies) return 'MAX_COPIES';
+          }
         }
 
         const { rareCount, uniqueCount, exaltedCount } = deckStats();
@@ -233,11 +250,26 @@ export const useDeckStore = create<DeckState>()(
               if (countSameName > maxPerName) return true;
             }
           } else {
-            const maxCopies = format.limits.maxCopiesPerRarity ?? format.limits.maxCopiesPerName ?? dc.cardGroup.deckLimit ?? 3;
-            const countSameName = deck.cards
-              .filter((c) => c.cardGroup.name === dc.cardGroup.name)
-              .reduce((sum, c) => sum + c.quantity, 0);
-            if (countSameName > maxCopies) return true;
+            if (format.limits.maxCopiesPerRarity != null) {
+              // Limite par nom + rareté
+              const cardRarity = getRarityFromSlug(dc.cardGroup.slug);
+              const countSameRarity = deck.cards
+                .filter((c) => c.cardGroup.name === dc.cardGroup.name && getRarityFromSlug(c.cardGroup.slug) === cardRarity)
+                .reduce((sum, c) => sum + c.quantity, 0);
+              if (countSameRarity > format.limits.maxCopiesPerRarity) return true;
+              if (format.limits.maxCopiesPerName != null) {
+                const countSameName = deck.cards
+                  .filter((c) => c.cardGroup.name === dc.cardGroup.name)
+                  .reduce((sum, c) => sum + c.quantity, 0);
+                if (countSameName > format.limits.maxCopiesPerName) return true;
+              }
+            } else {
+              const maxCopies = format.limits.maxCopiesPerName ?? dc.cardGroup.deckLimit ?? 3;
+              const countSameName = deck.cards
+                .filter((c) => c.cardGroup.name === dc.cardGroup.name)
+                .reduce((sum, c) => sum + c.quantity, 0);
+              if (countSameName > maxCopies) return true;
+            }
           }
         }
 
