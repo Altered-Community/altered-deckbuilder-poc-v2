@@ -32,7 +32,7 @@ export default function CardItem({ card, onZoom }: CardItemProps) {
   const isHeroSelected = isHero && deck.hero?.slug === card.slug;
   const deckEntry = deck.cards.find((dc) => dc.cardGroup.slug === card.slug);
   const addError = canAddCard(card);
-  const greyed = !isHero && (addError === 'MAX_COPIES' || addError === 'MAX_RARE' || addError === 'MAX_UNIQUE' || addError === 'MAX_EXALTED');
+  const greyed = !isHero && (addError === 'MAX_COPIES' || addError === 'MAX_RARE' || addError === 'MAX_UNIQUE' || addError === 'MAX_EXALTED' || addError === 'DECK_FULL');
 
   const handleClick = () => {
     if (isHero) {

@@ -63,7 +63,8 @@ export default function DeckPanel() {
   const format = deck.format;
   const minCards = format?.minCards ?? MIN_DECK_SIZE;
   const maxCards = format?.maxCards ?? null;
-  const isValid = !!deck.hero && playableCount >= minCards && (maxCards == null || playableCount <= maxCards);
+  const { hasDeckViolations } = useDeckStore();
+  const isValid = !!deck.hero && playableCount >= minCards && (maxCards == null || playableCount <= maxCards) && !hasDeckViolations();
 
   const maxR = format?.limits.rare ?? null;
   const maxU = format ? getUniqueLimit(format, deck.hero?.name ?? null) : null;

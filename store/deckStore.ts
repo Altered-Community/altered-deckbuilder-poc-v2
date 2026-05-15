@@ -12,6 +12,7 @@ export type AddCardError =
   | 'MAX_RARE'
   | 'MAX_UNIQUE'
   | 'MAX_EXALTED'
+  | 'DECK_FULL'
   | null;
 
 interface DeckState {
@@ -26,6 +27,7 @@ interface DeckState {
   decrementCard: (slug: string) => void;
   clearDeck: () => void;
   canAddCard: (group: CardGroup) => AddCardError;
+  hasDeckViolations: () => boolean;
   deckFaction: () => string | null;
   deckStats: () => { rareCount: number; uniqueCount: number; exaltedCount: number; playableCount: number };
 }
@@ -161,6 +163,12 @@ export const useDeckStore = create<DeckState>()(
 
         if (group.cardType?.reference === 'HERO') return null;
 
+        // Taille max du deck
+        if (!isToken(group) && format?.maxCards != null) {
+          const { playableCount } = deckStats();
+          if (playableCount >= format.maxCards) return 'DECK_FULL';
+        }
+
         // Faction
         if (deck.hero) {
           const heroFaction = getCardGroupFaction(deck.hero);
@@ -198,6 +206,42 @@ export const useDeckStore = create<DeckState>()(
         }
 
         return null;
+      },
+
+      hasDeckViolations: () => {
+        const { deck, deckStats } = get();
+        const format = deck.format;
+        if (!format) return false;
+
+        const { rareCount, uniqueCount, exaltedCount } = deckStats();
+        const uniqueMax = getUniqueLimit(format, deck.hero?.name ?? null);
+
+        // Limites globales de rareté
+        if (format.limits.rare != null && rareCount > format.limits.rare) return true;
+        if (uniqueMax != null && uniqueCount > uniqueMax) return true;
+        if (format.limits.exalted != null && exaltedCount > format.limits.exalted) return true;
+
+        // Limites par carte
+        for (const dc of deck.cards) {
+          const rarity = getRarityFromSlug(dc.cardGroup.slug);
+          if (rarity === 'UNIQUE') {
+            const maxPerName = format.limits.maxCopiesPerRarity ?? format.limits.maxCopiesPerName ?? null;
+            if (maxPerName != null) {
+              const countSameName = deck.cards
+                .filter((c) => c.cardGroup.name === dc.cardGroup.name)
+                .reduce((sum, c) => sum + c.quantity, 0);
+              if (countSameName > maxPerName) return true;
+            }
+          } else {
+            const maxCopies = format.limits.maxCopiesPerRarity ?? format.limits.maxCopiesPerName ?? dc.cardGroup.deckLimit ?? 3;
+            const countSameName = deck.cards
+              .filter((c) => c.cardGroup.name === dc.cardGroup.name)
+              .reduce((sum, c) => sum + c.quantity, 0);
+            if (countSameName > maxCopies) return true;
+          }
+        }
+
+        return false;
       },
     }),
     { name: 'altered-deck' }
