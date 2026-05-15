@@ -65,6 +65,7 @@ const handler = NextAuth({
     },
     async session({ session, token }) {
       session.accessToken = token.accessToken as string
+      session.accessTokenExpires = token.accessTokenExpires as number
       return session
     }
   }

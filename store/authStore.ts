@@ -39,10 +39,9 @@ export const useAuthStore = create<AuthState>()(
           const session = await res.json();
           const newToken = session?.accessToken;
           if (newToken) {
-            
             set({
               token: newToken,
-              tokenExpiresAt: session.expires ?? null,
+              tokenExpiresAt: session.accessTokenExpires ?? null,
               refreshTokenPromise: null,
             });
             return newToken;
