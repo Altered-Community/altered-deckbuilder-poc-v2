@@ -23,7 +23,7 @@ const LEGALITY_KEYS: (keyof ApiLegalityDetail)[] = [
   'copies', 'uniqueQuantity', 'rareQuantity', 'exaltedQuantity',
 ];
 
-function DeckLegality({ legal, detail }: { legal: boolean | undefined; detail: ApiLegalityDetail | undefined }) {
+function DeckLegality({ legal, detail, formatErrors }: { legal: boolean | undefined; detail: ApiLegalityDetail | undefined; formatErrors?: string[] }) {
   const t = useTranslations('deckEdit');
 
   const labelKey: Record<keyof ApiLegalityDetail, string> = {
@@ -69,6 +69,13 @@ function DeckLegality({ legal, detail }: { legal: boolean | undefined; detail: A
               </div>
             );
           })}
+          {formatErrors && formatErrors.length > 0 && (
+            <div className="mt-2 pt-2 border-t border-c-border-subtle flex flex-col gap-1">
+              {formatErrors.map((err, i) => (
+                <p key={i} className="text-[11px] text-red-400 leading-tight">{err}</p>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -433,7 +440,7 @@ export default function DeckEditPage() {
                 )}
 
                 {/* Légalité */}
-                <DeckLegality legal={deck.legal} detail={deck.legalityDetail} />
+                <DeckLegality legal={deck.legal} detail={deck.legalityDetail} formatErrors={deck.formatErrors} />
 
                 {/* Statistiques */}
                 <div className="card-altered overflow-hidden">

@@ -70,6 +70,7 @@ export interface ApiDeckDetail extends ApiDeck {
   cards: ApiDeckCard[];
   legal?: boolean;
   legalityDetail?: ApiLegalityDetail;
+  formatErrors?: string[];
 }
 
 export interface DeckCard {
