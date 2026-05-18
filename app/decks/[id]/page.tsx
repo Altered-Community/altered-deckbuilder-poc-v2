@@ -9,12 +9,12 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, deleteDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard, ApiLegalityDetail } from '@/lib/types/deck';
-import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
+import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getHeroImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
-import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS, FACTION_GRADIENT_RGB } from '@/lib/types/constants';
+import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS, FACTION_HERO_GRADIENT } from '@/lib/types/constants';
 
 const TYPE_ORDER = ['HERO', 'CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
 
@@ -462,20 +462,21 @@ export default function DeckEditPage() {
   }, [deck]);
 
   const heroRef2    = deck?.stats?.hero?.reference ?? null;
-  const heroImage   = heroRef2 && getRarityFromSlug(heroRef2) !== 'UNIQUE' ? getCdnImageUrl(heroRef2, locale) : (deck?.stats?.hero?.imagePath ?? null);
+  const heroImage   = heroRef2 ? getHeroImageUrl(heroRef2) : (deck?.stats?.hero?.imagePath ?? null);
   const heroName    = deck?.stats?.hero?.name ?? null;
   const factionCode = getFactionCode(deck?.stats?.hero?.reference);
   const totalCards  = deck?.cards.reduce((s, dc) => s + dc.quantity, 0) ?? 0;
 
   const inputClass = 'w-full bg-c-surface border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-amber-400';
 
-  const bannerRgb = factionCode ? (FACTION_GRADIENT_RGB[factionCode] ?? '140,67,42') : '140,67,42';
+  const gradientColor = factionCode ? (FACTION_HERO_GRADIENT[factionCode] ?? null) : null;
   const bannerStyle: React.CSSProperties = heroImage
     ? {
         borderTop: '3px solid var(--primary-400)',
-        backgroundImage: `linear-gradient(to right, rgba(${bannerRgb},0.60) 35%, rgba(${bannerRgb},0.05) 100%), url(${heroImage})`,
+        backgroundImage: gradientColor
+          ? `linear-gradient(to right, ${gradientColor}cc 30%, ${gradientColor}00 50%), url(${heroImage})`
+          : `url(${heroImage})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'left -460px',
       }
     : { borderTop: '3px solid var(--primary-400)' };
 
@@ -627,7 +628,7 @@ export default function DeckEditPage() {
                   </div>
                 )}
 
-                <p style={{ fontSize: '.72rem', opacity: 0.5, color: '#fff', margin: '4px 0 0' }}>
+                <p style={{ fontSize: '.72rem', color: '#fff', margin: '4px 0 0', textShadow: '0 1px 3px rgba(0,0,0,0.8)' }}>
                   {deck.updatedAt
                     ? `${t('updatedAt')} ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(deck.updatedAt))}`
                     : `${t('createdAt')} ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(deck.createdAt))}`

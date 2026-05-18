@@ -43,6 +43,11 @@ export function getCardReference(group: CardGroup): string {
   return getStandardCard(group)?.reference ?? group.slug;
 }
 
+export function getHeroImageUrl(reference: string): string {
+  const ref = reference.replace(/_P_/, '_B_');
+  return `https://cdn.alteredcore.org/cards/hero/${ref}_1.webp`;
+}
+
 export function getCdnImageUrl(reference: string, locale = 'fr'): string | null {
   const parts = reference.split('_');
   if (parts[0] !== 'ALT' || parts.length < 6) return null;

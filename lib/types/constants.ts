@@ -16,6 +16,15 @@ export const FACTION_BADGE_COLORS: Record<string, string> = {
   YZ: 'bg-violet-600',
 };
 
+export const FACTION_HERO_GRADIENT: Record<string, string> = {
+  AX: '#8c432a',
+  BR: '#c32637',
+  LY: '#cf4171',
+  MU: '#3d6b42',
+  OR: '#0f6593',
+  YZ: '#764891',
+};
+
 export const FACTION_GRADIENT_RGB: Record<string, string> = {
   BR: '153,27,27',
   LY: '157,23,77',

@@ -8,8 +8,8 @@ import { getDecks, getPublicDecks, deleteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { FACTIONS, FACTION_GRADIENT_RGB } from '@/lib/types/constants';
-import { getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
+import { FACTIONS, FACTION_HERO_GRADIENT } from '@/lib/types/constants';
+import { getCdnImageUrl, getHeroImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 
 type Tab = 'public' | 'myDecks';
 
@@ -292,24 +292,25 @@ export default function DecksPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((deck) => {
                 const heroRef     = deck.stats?.hero?.reference;
-                const heroImage   = heroRef && getRarityFromSlug(heroRef) !== 'UNIQUE' ? getCdnImageUrl(heroRef, locale) : (deck.stats?.hero?.imagePath ?? null);
+                const heroImage   = heroRef ? getHeroImageUrl(heroRef) : (deck.stats?.hero?.imagePath ?? null);
                 const heroName    = deck.stats?.hero?.name ?? null;
                 const factionCode = getFactionCode(heroRef);
                 const totalCards    = deck.stats?.totalCards ?? 0;
                 const dateLabel    = deck.updatedAt ?? deck.createdAt;
 
-                const rgb = factionCode ? (FACTION_GRADIENT_RGB[factionCode] ?? '140,67,42') : '140,67,42';
+                const gradientColor = factionCode ? (FACTION_HERO_GRADIENT[factionCode] ?? null) : null;
                 const cardStyle: React.CSSProperties = heroImage
                   ? {
                       borderTop: `3px solid var(--primary-400)`,
-                      backgroundImage: `linear-gradient(to right, rgba(${rgb},0.75) 30%, rgba(${rgb},0) 100%), url(${heroImage})`,
+                      backgroundImage: gradientColor
+                        ? `linear-gradient(to right, ${gradientColor}cc 30%, ${gradientColor}00 50%), url(${heroImage})`
+                        : `url(${heroImage})`,
                       backgroundSize: 'cover',
-                      backgroundPosition: 'left -90px',
                     }
                   : { borderTop: '3px solid var(--primary-400)' };
 
                 return (
-                  <div key={deck.id} className="news-card" style={{ ...cardStyle, height: 180 }}>
+                  <div key={deck.id} className="news-card" style={{ ...cardStyle, height: 210 }}>
                     <div className="news-card-body">
                       <div className="flex flex-wrap gap-1 items-center">
                         {deck.format && (
@@ -358,28 +359,9 @@ export default function DecksPage() {
                         </p>
                       )}
 
-                      <div className="mt-auto pt-2 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.20)' }}>
-                        {/* Boutons edit/delete */}
-                        {activeTab === 'myDecks' && (
-                          <>
-                            <Link href={`/decks/${deck.id}`} className="ac-btn">
-                              <i className="fa-solid fa-pen" />
-                              {t('decks.edit')}
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(deck)}
-                              disabled={deleting === deck.id}
-                              className="ac-btn ac-btn-danger"
-                              style={{ opacity: deleting === deck.id ? 0.5 : 1 }}
-                            >
-                              <i className="fa-solid fa-trash" />
-                              {deleting === deck.id ? '...' : t('common.delete')}
-                            </button>
-                          </>
-                        )}
-
-                        {/* Gems */}
-                        <div className="flex items-center gap-2 flex-1" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                      <div className="mt-auto" style={{ borderTop: '1px solid rgba(255,255,255,0.20)' }}>
+                        {/* Ligne 1 : stats */}
+                        <div className="pt-2 flex items-center gap-2" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
                           <span style={{ fontSize: '.875rem', fontWeight: 700, color: '#fff' }}>{totalCards} {t('decks.cards')}</span>
                           {(['C', 'R', 'U', 'E'] as const).map((key) => {
                             const count = deck.stats?.byRarity[key] ?? 0;
@@ -394,11 +376,30 @@ export default function DecksPage() {
                           })}
                         </div>
 
-                        {/* View */}
-                        <Link href={`/decks/${deck.id}`} className="ac-btn">
-                          <i className="fa-solid fa-eye" />
-                          {t('decks.view')}
-                        </Link>
+                        {/* Ligne 2 : boutons */}
+                        <div className="pt-1.5 flex items-stretch gap-1.5">
+                          {activeTab === 'myDecks' && (
+                            <>
+                              <Link href={`/decks/${deck.id}`} className="ac-btn">
+                                <i className="fa-solid fa-pencil" />
+                                {t('decks.edit')}
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(deck)}
+                                disabled={deleting === deck.id}
+                                className="ac-btn ac-btn-danger"
+                                style={{ opacity: deleting === deck.id ? 0.5 : 1 }}
+                                title={t('common.delete')}
+                              >
+                                <i className="fa-solid fa-trash" />
+                              </button>
+                            </>
+                          )}
+                          <Link href={`/decks/${deck.id}`} className="ac-btn ml-auto">
+                            <i className="fa-solid fa-eye" />
+                            {t('decks.view')}
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
