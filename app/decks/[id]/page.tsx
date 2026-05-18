@@ -628,8 +628,12 @@ export default function DeckEditPage() {
       ctx.fillText('alteredcore.org', canvasW - PAD, canvasH - 6);
 
       const link = document.createElement('a');
-      link.download = `${deck.name.replace(/[^a-z0-9]/gi, '_')}.png`;
-      link.href = canvas.toDataURL('image/png');
+      // WebP at 92% — near-lossless for photos, 5-10× smaller than PNG
+      const supportsWebp = canvas.toDataURL('image/webp').startsWith('data:image/webp');
+      const format = supportsWebp ? 'image/webp' : 'image/jpeg';
+      const ext = supportsWebp ? 'webp' : 'jpg';
+      link.download = `${deck.name.replace(/[^a-z0-9]/gi, '_')}.${ext}`;
+      link.href = canvas.toDataURL(format, 1.0);
       link.click();
     } finally {
       setExporting(false);
