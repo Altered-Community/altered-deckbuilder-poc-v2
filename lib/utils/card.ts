@@ -49,10 +49,12 @@ export function getHeroImageUrl(reference: string): string {
 }
 
 export function getCdnImageUrl(reference: string, locale = 'fr'): string | null {
-  const parts = reference.split('_');
+  // COREKS uses the same artwork as CORE on the CDN
+  const normalized = reference.replace(/^ALT_COREKS_/, 'ALT_CORE_');
+  const parts = normalized.split('_');
   if (parts[0] !== 'ALT' || parts.length < 6) return null;
   const set = parts[1];
-  return `https://cdn.alteredcore.org/cards/${locale}/${set}/${reference}.webp`;
+  return `https://cdn.alteredcore.org/cards/${locale}/${set}/${normalized}.webp`;
 }
 
 export function getCardGroupImage(group: CardGroup, locale = 'fr'): string | null {

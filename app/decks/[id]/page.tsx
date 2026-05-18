@@ -384,14 +384,23 @@ export default function DeckEditPage() {
       const EXPORT_TYPE_ORDER = ['CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
       const nonHeroCards = deck.cards.filter((dc) => dc.cardTypeReference !== 'HERO');
 
+      // Merge same-card variants: COREKS→CORE + strip A/B printing variant (segment index 2)
+      // e.g. ALT_CYCLONE_A_MU_74_C and ALT_CYCLONE_B_MU_74_C → same key
+      const cardMergeKey = (ref: string) => {
+        const r = ref.replace(/^ALT_COREKS_/, 'ALT_CORE_');
+        const p = r.split('_');
+        // Remove printing variant (index 2): [ALT, SET, ?, FACTION, NUM, RARITY] → [ALT, SET, FACTION, NUM, RARITY]
+        return p.length >= 6 ? `${p[0]}_${p[1]}_${p[3]}_${p[4]}_${p[5]}` : r;
+      };
+
       const mergeMap = new Map<string, typeof nonHeroCards[number] & { quantity: number }>();
       for (const dc of nonHeroCards) {
-        const key = dc.cardReference.replace(/^ALT_COREKS_/, 'ALT_CORE_');
+        const key = cardMergeKey(dc.cardReference);
         const existing = mergeMap.get(key);
         if (existing) {
           existing.quantity += dc.quantity;
         } else {
-          mergeMap.set(key, { ...dc, cardReference: key });
+          mergeMap.set(key, { ...dc, cardReference: dc.cardReference.replace(/^ALT_COREKS_/, 'ALT_CORE_') });
         }
       }
 
@@ -444,7 +453,7 @@ export default function DeckEditPage() {
           // Render via the altered-card web component (uses its internal canvas)
           return renderUniqueCard(dc.cardReference);
         }
-        // Non-unique: CDN has CORS, load directly
+        // Non-unique: CDN has CORS (getCdnImageUrl handles COREKS→CORE internally)
         const url = getCdnImageUrl(dc.cardReference, locale);
         return url ? loadImage(url) : Promise.resolve(null);
       });
