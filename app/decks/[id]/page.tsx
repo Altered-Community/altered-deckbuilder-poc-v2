@@ -337,109 +337,282 @@ export default function DeckEditPage() {
     if (!deck || exporting) return;
     setExporting(true);
     try {
-      const hero = deck.cards.find((dc) => dc.cardTypeReference === 'HERO');
-      const others = TYPE_ORDER
+      const loadImage = (src: string): Promise<HTMLImageElement | null> =>
+        new Promise((resolve) => {
+          const img = new window.Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+
+      // Render an altered-card web component off-screen and extract its canvas
+      const renderUniqueCard = (reference: string): Promise<HTMLImageElement | null> =>
+        new Promise((resolve) => {
+          const container = document.createElement('div');
+          container.style.cssText = 'position:fixed;left:-9999px;top:0;width:220px;height:308px;overflow:hidden;pointer-events:none;';
+          document.body.appendChild(container);
+          const el = document.createElement('altered-card');
+          el.setAttribute('ref', reference);
+          el.setAttribute('locale', locale);
+          container.appendChild(el);
+
+          let attempts = 0;
+          const poll = () => {
+            const cv = container.querySelector('canvas') as HTMLCanvasElement | null;
+            if (cv && cv.width > 0) {
+              try {
+                const dataUrl = cv.toDataURL('image/png');
+                document.body.removeChild(container);
+                const img = new window.Image();
+                img.onload = () => resolve(img);
+                img.onerror = () => resolve(null);
+                img.src = dataUrl;
+              } catch {
+                document.body.removeChild(container);
+                resolve(null);
+              }
+              return;
+            }
+            if (++attempts < 80) setTimeout(poll, 100);
+            else { document.body.removeChild(container); resolve(null); }
+          };
+          setTimeout(poll, 300);
+        });
+
+      // Cards sorted by type, excluding hero
+      const cards = TYPE_ORDER
         .filter((t) => t !== 'HERO')
         .flatMap((type) => deck.cards.filter((dc) => dc.cardTypeReference === type));
-      const allCards = [...(hero ? [hero] : []), ...others];
+      const matchedRefs = new Set(cards.map((dc) => dc.cardReference));
+      const unmatched = deck.cards.filter((dc) => dc.cardTypeReference !== 'HERO' && !matchedRefs.has(dc.cardReference));
 
-      const COLS = 8;
-      const CARD_W = 190;
+      // Merge CORE + COREKS variants of the same card into one stack
+      const mergeMap = new Map<string, typeof cards[number] & { quantity: number }>();
+      for (const dc of [...cards, ...unmatched]) {
+        const key = dc.cardReference.replace(/^ALT_COREKS_/, 'ALT_CORE_');
+        const existing = mergeMap.get(key);
+        if (existing) {
+          existing.quantity += dc.quantity;
+        } else {
+          mergeMap.set(key, { ...dc, cardReference: key });
+        }
+      }
+      const allNonHero = Array.from(mergeMap.values());
+
+      const COLS = 7;
+      const CARD_W = 420;
       const CARD_H = Math.round(CARD_W * 1039 / 744);
-      const GAP = 6;
-      const PAD = 24;
-      const HEADER_H = 64;
+      const GAP = 12;
+      const PAD = 40;
+      const PEEK = 36;
+      const RADIUS = 10;
+      const HEADER_H = 300;
+      const SLOT_H = CARD_H + 2 * PEEK;
 
-      const rows = Math.ceil(allCards.length / COLS);
+      const rows = Math.ceil(allNonHero.length / COLS);
       const canvasW = PAD * 2 + COLS * CARD_W + (COLS - 1) * GAP;
-      const canvasH = HEADER_H + PAD + rows * CARD_H + (rows - 1) * GAP + PAD;
+      const canvasH = HEADER_H + PAD + rows * SLOT_H + (rows - 1) * GAP + PAD;
 
       const canvas = document.createElement('canvas');
       canvas.width = canvasW;
       canvas.height = canvasH;
       const ctx = canvas.getContext('2d')!;
 
-      // Fond
-      ctx.fillStyle = '#18181b';
+      // Background
+      ctx.fillStyle = '#f8f7f2';
       ctx.fillRect(0, 0, canvasW, canvasH);
 
-      // En-tête
-      ctx.fillStyle = '#f59e0b';
-      ctx.fillRect(0, 0, 4, HEADER_H);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 26px system-ui, sans-serif';
-      ctx.fillText(deck.name, PAD + 8, 36);
-      if (deck.format) {
-        ctx.fillStyle = '#a1a1aa';
-        ctx.font = '14px system-ui, sans-serif';
-        ctx.fillText(deck.format.toUpperCase(), PAD + 8, 54);
-      }
-
-      const proxyUrl = (url: string) => `/api/image-proxy?url=${encodeURIComponent(url)}`;
-
-      const loadImage = (src: string): Promise<HTMLImageElement | null> =>
-        new Promise((resolve) => {
-          const img = new window.Image();
-          img.onload = () => resolve(img);
-          img.onerror = () => resolve(null);
-          img.src = src;
-        });
-
-      const images = await Promise.all(
-        allCards.map((dc) => {
-          const url = dc.imagePath ?? getCdnImageUrl(dc.cardReference, locale);
-          return url ? loadImage(proxyUrl(url)) : Promise.resolve(null);
-        })
+      // Load hero + banner + gem + card images in parallel
+      const exportFactionCode = getFactionCode(deck.stats?.hero?.reference);
+      const heroImgPromise = deck.stats?.hero
+        ? loadImage(getHeroImageUrl(deck.stats.hero.reference))
+        : Promise.resolve(null);
+      const bannerImgPromise = exportFactionCode
+        ? loadImage(`/banner_${exportFactionCode}.png`)
+        : Promise.resolve(null);
+      const gemPromises = (['C', 'R', 'U', 'E'] as const).map((k) =>
+        loadImage(`https://alteredcore.org/assets/gems/${k}.png`)
       );
+      const cardImgPromises = allNonHero.map((dc) => {
+        const isUnique = getRarityFromSlug(dc.cardReference) === 'UNIQUE';
+        if (isUnique) {
+          // Render via the altered-card web component (uses its internal canvas)
+          return renderUniqueCard(dc.cardReference);
+        }
+        // Non-unique: CDN has CORS, load directly
+        const url = getCdnImageUrl(dc.cardReference, locale);
+        return url ? loadImage(url) : Promise.resolve(null);
+      });
 
-      const RADIUS = 8;
-      allCards.forEach((dc, i) => {
-        const col = i % COLS;
-        const row = Math.floor(i / COLS);
-        const x = PAD + col * (CARD_W + GAP);
-        const y = HEADER_H + PAD + row * (CARD_H + GAP);
-        const img = images[i];
+      const [heroImg, bannerImg, ...rest] = await Promise.all([heroImgPromise, bannerImgPromise, ...gemPromises, ...cardImgPromises]);
+      const gemImgs = rest.slice(0, 4) as (HTMLImageElement | null)[];
+      const cardImgs = rest.slice(4) as (HTMLImageElement | null)[];
+
+      // Header background (faction color) with white border
+      const factionColor = exportFactionCode ? (FACTION_HERO_GRADIENT[exportFactionCode] ?? '#1e293b') : '#1e293b';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvasW, HEADER_H);
+      ctx.fillStyle = factionColor;
+      ctx.fillRect(3, 3, canvasW - 6, HEADER_H - 3);
+
+      // Type counts (computed before drawing)
+      const typeCounts: Record<string, number> = {};
+      for (const dc of deck.cards) {
+        if (dc.cardTypeReference === 'HERO') continue;
+        const t = dc.cardTypeReference ?? 'OTHER';
+        typeCounts[t] = (typeCounts[t] ?? 0) + dc.quantity;
+      }
+      const typeLabel = Object.entries(typeCounts)
+        .map(([t, n]) => `${n} ${CARD_TYPE_LABELS[t] ?? t}`)
+        .join('  ·  ');
+
+      // Hero image with diagonal right-edge separator (cover crop, no distortion)
+      const SLANT = 38;
+      let textX = PAD + 12;
+      let heroDrawW = 0;
+      if (heroImg) {
+        const natW = heroImg.naturalWidth;
+        const natH = heroImg.naturalHeight;
+        const destH = HEADER_H - 3;
+        const destW = Math.round(destH * 2.2); // target display width
+        heroDrawW = destW;
+
+        // Cover crop: fill destW x destH from center of source
+        const scaleByH = destH / natH;
+        let srcW = Math.round(destW / scaleByH);
+        let srcX = Math.round((natW - srcW) / 2);
+        if (srcW > natW) { srcW = natW; srcX = 0; }
 
         ctx.save();
         ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(x, y, CARD_W, CARD_H, RADIUS);
-        } else {
-          ctx.rect(x, y, CARD_W, CARD_H);
-        }
+        ctx.moveTo(3, 3);
+        ctx.lineTo(destW + 3, 3);
+        ctx.lineTo(destW + 3 - SLANT, HEADER_H);
+        ctx.lineTo(3, HEADER_H);
+        ctx.closePath();
         ctx.clip();
-
-        if (img) {
-          ctx.drawImage(img, x, y, CARD_W, CARD_H);
-        } else {
-          ctx.fillStyle = '#27272a';
-          ctx.fillRect(x, y, CARD_W, CARD_H);
-        }
-
+        ctx.drawImage(heroImg, srcX, 0, srcW, natH, 3, 3, destW, destH);
         ctx.restore();
 
-        if (dc.quantity > 1) {
-          const bx = x + CARD_W - 18;
-          const by = y + 18;
-          ctx.fillStyle = 'rgba(0,0,0,0.85)';
-          ctx.beginPath();
-          ctx.arc(bx, by, 14, 0, Math.PI * 2);
-          ctx.fill();
+        heroDrawW = destW + 3;
+        textX = heroDrawW + 20;
+      }
+
+      // Banner width reservation (for text max-width calculation)
+      const BANNER_DISPLAY_H = 260;
+      const BANNER_OVERFLOW = 28;
+      const bannerReservedW = bannerImg
+        ? Math.round(BANNER_DISPLAY_H * (bannerImg.naturalWidth / bannerImg.naturalHeight)) + PAD + 16
+        : 0;
+      const maxTextW = canvasW - textX - bannerReservedW;
+
+      // Deck name (top)
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 42px system-ui, sans-serif';
+      ctx.fillText(deck.name, textX, 64, maxTextW);
+
+      // Type breakdown aligned bottom-left
+      ctx.fillStyle = 'rgba(255,255,255,0.8)';
+      ctx.font = '22px system-ui, sans-serif';
+      ctx.fillText(typeLabel, textX, HEADER_H - 24, maxTextW);
+
+      // Banner: smaller, overflowing top and bottom
+      const byRarity = deck.stats?.byRarity ?? {};
+      const gemKeys = ['C', 'R', 'U', 'E'] as const;
+
+      if (bannerImg) {
+        const bannerNatW = bannerImg.naturalWidth;
+        const bannerNatH = bannerImg.naturalHeight;
+        const bannerW = Math.round(BANNER_DISPLAY_H * (bannerNatW / bannerNatH));
+        const bannerX = canvasW - bannerW - PAD;
+        // Draw at natural aspect ratio, no stretching
+        ctx.drawImage(bannerImg, 0, 0, bannerNatW, bannerNatH, bannerX, -BANNER_OVERFLOW, bannerW, BANNER_DISPLAY_H);
+
+        // Rarities below banner: number then icon, displayed horizontally
+        const GEM_SLOT_W = 38;
+        const GEM_GAP = 10;
+        const GEM_H = Math.round(GEM_SLOT_W * 0.77);
+        const activeGems = gemKeys.filter((k) => (byRarity[k] ?? 0) > 0);
+        const totalRarityW = activeGems.length * GEM_SLOT_W + (activeGems.length - 1) * GEM_GAP;
+        let gx = bannerX + Math.round((bannerW - totalRarityW) / 2);
+        const numY = BANNER_DISPLAY_H - BANNER_OVERFLOW + 20;
+        const icnY = numY + 6;
+
+        ctx.textAlign = 'center';
+        activeGems.forEach((key) => {
+          const i = gemKeys.indexOf(key);
+          const count = byRarity[key] ?? 0;
+          const cx = gx + GEM_SLOT_W / 2;
           ctx.fillStyle = '#ffffff';
-          ctx.font = 'bold 13px system-ui, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(`×${dc.quantity}`, bx, by);
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'alphabetic';
+          ctx.font = 'bold 18px system-ui, sans-serif';
+          ctx.fillText(String(count), cx, numY);
+          const gemImg = gemImgs[i];
+          if (gemImg) ctx.drawImage(gemImg, gx, icnY, GEM_SLOT_W, GEM_H);
+          gx += GEM_SLOT_W + GEM_GAP;
+        });
+        ctx.textAlign = 'left';
+      } else {
+        // Fallback: inline gem counts in header
+        let gemX = textX;
+        const gemY = HEADER_H - 30;
+        gemKeys.forEach((key, i) => {
+          const count = byRarity[key] ?? 0;
+          if (!count) return;
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 14px system-ui, sans-serif';
+          const countStr = String(count);
+          ctx.fillText(countStr, gemX, gemY);
+          const cw = ctx.measureText(countStr).width;
+          const gemImg = gemImgs[i];
+          if (gemImg) ctx.drawImage(gemImg, gemX + cw + 2, gemY - 12, 16, 12);
+          gemX += cw + (gemImg ? 24 : 20);
+        });
+      }
+
+      // Draw cards with stacking effect
+      const clip = (x: number, y: number, w: number, h: number, r: number) => {
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x, y, w, h, r);
+        else ctx.rect(x, y, w, h);
+        ctx.clip();
+      };
+
+      allNonHero.forEach((dc, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const slotX = PAD + col * (CARD_W + GAP);
+        const slotY = HEADER_H + PAD + row * (SLOT_H + GAP);
+        const img = cardImgs[i];
+        const n = Math.min(dc.quantity, 3);
+
+        // Draw from back to front; front card is bottom-aligned in slot
+        for (let p = n - 1; p >= 0; p--) {
+          const cardY = slotY + (SLOT_H - CARD_H) - p * PEEK;
+          ctx.save();
+          clip(slotX, cardY, CARD_W, CARD_H, RADIUS);
+          if (img) {
+            ctx.drawImage(img, slotX, cardY, CARD_W, CARD_H);
+          } else {
+            ctx.fillStyle = '#27272a';
+            ctx.fillRect(slotX, cardY, CARD_W, CARD_H);
+            if (p === 0) {
+              ctx.fillStyle = '#71717a';
+              ctx.font = '16px system-ui, sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText(dc.name ?? dc.cardReference, slotX + CARD_W / 2, cardY + CARD_H / 2);
+              ctx.textAlign = 'left';
+            }
+          }
+          ctx.restore();
         }
       });
 
       // Watermark
-      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.fillStyle = 'rgba(0,0,0,0.25)';
       ctx.font = '11px system-ui, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText('alteredcore.org', canvasW - PAD, canvasH - 8);
+      ctx.fillText('alteredcore.org', canvasW - PAD, canvasH - 6);
 
       const link = document.createElement('a');
       link.download = `${deck.name.replace(/[^a-z0-9]/gi, '_')}.png`;
