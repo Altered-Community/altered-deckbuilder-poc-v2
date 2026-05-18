@@ -14,7 +14,7 @@ import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import DeckDetailStats from '@/components/deck/DeckDetailStats';
 import SiteLayout from '@/components/layout/SiteLayout';
 import { useDeckStore } from '@/store/deckStore';
-import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS } from '@/lib/types/constants';
+import { FACTION_BADGE_COLORS, CARD_TYPE_LABELS, FACTION_GRADIENT_RGB } from '@/lib/types/constants';
 
 const TYPE_ORDER = ['HERO', 'CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
 
@@ -225,6 +225,7 @@ export default function DeckEditPage() {
   const [renaming, setRenaming] = useState(false);
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const fetcher = token ? getDeckDetail(id, locale) : getDeckDetailPublic(id, locale);
@@ -332,6 +333,123 @@ export default function DeckEditPage() {
     setTimeout(() => setCopied(false), 2000);
   }, [deck]);
 
+  const handleExportImage = useCallback(async () => {
+    if (!deck || exporting) return;
+    setExporting(true);
+    try {
+      const hero = deck.cards.find((dc) => dc.cardTypeReference === 'HERO');
+      const others = TYPE_ORDER
+        .filter((t) => t !== 'HERO')
+        .flatMap((type) => deck.cards.filter((dc) => dc.cardTypeReference === type));
+      const allCards = [...(hero ? [hero] : []), ...others];
+
+      const COLS = 8;
+      const CARD_W = 190;
+      const CARD_H = Math.round(CARD_W * 1039 / 744);
+      const GAP = 6;
+      const PAD = 24;
+      const HEADER_H = 64;
+
+      const rows = Math.ceil(allCards.length / COLS);
+      const canvasW = PAD * 2 + COLS * CARD_W + (COLS - 1) * GAP;
+      const canvasH = HEADER_H + PAD + rows * CARD_H + (rows - 1) * GAP + PAD;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = canvasW;
+      canvas.height = canvasH;
+      const ctx = canvas.getContext('2d')!;
+
+      // Fond
+      ctx.fillStyle = '#18181b';
+      ctx.fillRect(0, 0, canvasW, canvasH);
+
+      // En-tête
+      ctx.fillStyle = '#f59e0b';
+      ctx.fillRect(0, 0, 4, HEADER_H);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 26px system-ui, sans-serif';
+      ctx.fillText(deck.name, PAD + 8, 36);
+      if (deck.format) {
+        ctx.fillStyle = '#a1a1aa';
+        ctx.font = '14px system-ui, sans-serif';
+        ctx.fillText(deck.format.toUpperCase(), PAD + 8, 54);
+      }
+
+      const proxyUrl = (url: string) => `/api/image-proxy?url=${encodeURIComponent(url)}`;
+
+      const loadImage = (src: string): Promise<HTMLImageElement | null> =>
+        new Promise((resolve) => {
+          const img = new window.Image();
+          img.onload = () => resolve(img);
+          img.onerror = () => resolve(null);
+          img.src = src;
+        });
+
+      const images = await Promise.all(
+        allCards.map((dc) => {
+          const url = dc.imagePath ?? getCdnImageUrl(dc.cardReference, locale);
+          return url ? loadImage(proxyUrl(url)) : Promise.resolve(null);
+        })
+      );
+
+      const RADIUS = 8;
+      allCards.forEach((dc, i) => {
+        const col = i % COLS;
+        const row = Math.floor(i / COLS);
+        const x = PAD + col * (CARD_W + GAP);
+        const y = HEADER_H + PAD + row * (CARD_H + GAP);
+        const img = images[i];
+
+        ctx.save();
+        ctx.beginPath();
+        if (ctx.roundRect) {
+          ctx.roundRect(x, y, CARD_W, CARD_H, RADIUS);
+        } else {
+          ctx.rect(x, y, CARD_W, CARD_H);
+        }
+        ctx.clip();
+
+        if (img) {
+          ctx.drawImage(img, x, y, CARD_W, CARD_H);
+        } else {
+          ctx.fillStyle = '#27272a';
+          ctx.fillRect(x, y, CARD_W, CARD_H);
+        }
+
+        ctx.restore();
+
+        if (dc.quantity > 1) {
+          const bx = x + CARD_W - 18;
+          const by = y + 18;
+          ctx.fillStyle = 'rgba(0,0,0,0.85)';
+          ctx.beginPath();
+          ctx.arc(bx, by, 14, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = '#ffffff';
+          ctx.font = 'bold 13px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(`×${dc.quantity}`, bx, by);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+        }
+      });
+
+      // Watermark
+      ctx.fillStyle = 'rgba(255,255,255,0.2)';
+      ctx.font = '11px system-ui, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('alteredcore.org', canvasW - PAD, canvasH - 8);
+
+      const link = document.createElement('a');
+      link.download = `${deck.name.replace(/[^a-z0-9]/gi, '_')}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    } finally {
+      setExporting(false);
+    }
+  }, [deck, exporting, locale]);
+
   const handleShare = useCallback(async () => {
     const url = window.location.href;
     if (navigator.share) {
@@ -351,10 +469,11 @@ export default function DeckEditPage() {
 
   const inputClass = 'w-full bg-c-surface border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-amber-400';
 
+  const bannerRgb = factionCode ? (FACTION_GRADIENT_RGB[factionCode] ?? '140,67,42') : '140,67,42';
   const bannerStyle: React.CSSProperties = heroImage
     ? {
         borderTop: '3px solid var(--primary-400)',
-        backgroundImage: `linear-gradient(to right, rgba(140,67,42,0.50) 35%, rgba(140,67,42,0.05) 100%), url(${heroImage})`,
+        backgroundImage: `linear-gradient(to right, rgba(${bannerRgb},0.60) 35%, rgba(${bannerRgb},0.05) 100%), url(${heroImage})`,
         backgroundSize: 'cover',
         backgroundPosition: 'left -460px',
       }
@@ -388,8 +507,7 @@ export default function DeckEditPage() {
             <button
               onClick={handleOpenInBuilder}
               disabled={loadingBuilder}
-              className="btn-primary-altered btn-sm disabled:opacity-40"
-              style={{ background: 'var(--primary-500, var(--primary-400))' }}
+              className="ac-btn disabled:opacity-40"
             >
               <i className="fa-solid fa-pen-to-square" />
               {loadingBuilder ? '…' : t('builder')}
@@ -426,6 +544,13 @@ export default function DeckEditPage() {
             )}
 
             {deck && (
+              <button onClick={handleExportImage} disabled={exporting} className="ac-btn disabled:opacity-40">
+                <i className={`fa-solid ${exporting ? 'fa-spinner fa-spin' : 'fa-image'}`} />
+                {exporting ? t('exporting') : t('exportImage')}
+              </button>
+            )}
+
+            {deck && (
               <button onClick={handleShare} className="ac-btn">
                 <i className={`fa-solid ${shared ? 'fa-check' : 'fa-share-nodes'}`} />
                 {shared ? t('shared') : t('share')}
@@ -447,6 +572,18 @@ export default function DeckEditPage() {
                   {deck.format && (
                     <span className="ac-badge" style={{ background: 'var(--primary-400)', color: '#fff' }}>
                       {deck.format}
+                    </span>
+                  )}
+                  {deck.legal !== undefined && (
+                    <span
+                      className="ac-badge"
+                      style={deck.legal
+                        ? { background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#16a34a' }
+                        : { background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#dc2626' }
+                      }
+                    >
+                      <i className={`fa-solid ${deck.legal ? 'fa-circle-check' : 'fa-circle-xmark'}`} />
+                      {deck.legal ? t('legalityLegal') : t('legalityIllegal')}
                     </span>
                   )}
                   <span
@@ -472,6 +609,30 @@ export default function DeckEditPage() {
                 {heroName && (
                   <p style={{ fontSize: '.8rem', opacity: 0.75, color: '#fff', margin: 0 }}>{heroName}</p>
                 )}
+
+                {/* Gems */}
+                {deck.stats?.byRarity && (
+                  <div className="flex items-center gap-3 mt-1" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
+                    {(['C', 'R', 'U', 'E'] as const).map((key) => {
+                      const count = deck.stats?.byRarity[key] ?? 0;
+                      if (!count) return null;
+                      return (
+                        <span key={key} className="flex items-center gap-1" style={{ fontSize: '.85rem', fontWeight: 600, color: '#fff' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={`https://alteredcore.org/assets/gems/${key}.png`} alt={key} style={{ width: 14, height: 14, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
+                          {count}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                <p style={{ fontSize: '.72rem', opacity: 0.5, color: '#fff', margin: '4px 0 0' }}>
+                  {deck.updatedAt
+                    ? `${t('updatedAt')} ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(deck.updatedAt))}`
+                    : `${t('createdAt')} ${new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(deck.createdAt))}`
+                  }
+                </p>
               </div>
             </div>
 

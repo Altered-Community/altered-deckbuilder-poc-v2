@@ -8,7 +8,7 @@ import { getDecks, getPublicDecks, deleteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteLayout from '@/components/layout/SiteLayout';
-import { FACTIONS } from '@/lib/types/constants';
+import { FACTIONS, FACTION_GRADIENT_RGB } from '@/lib/types/constants';
 import { getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 
 type Tab = 'public' | 'myDecks';
@@ -295,15 +295,14 @@ export default function DecksPage() {
                 const heroImage   = heroRef && getRarityFromSlug(heroRef) !== 'UNIQUE' ? getCdnImageUrl(heroRef, locale) : (deck.stats?.hero?.imagePath ?? null);
                 const heroName    = deck.stats?.hero?.name ?? null;
                 const factionCode = getFactionCode(heroRef);
-                const totalCards  = deck.stats?.totalCards ?? 0;
-                const commonCount = deck.stats?.byRarity['C'] ?? 0;
-                const rareCount   = deck.stats?.byRarity['R'] ?? 0;
-                const uniqueCount = deck.stats?.byRarity['U'] ?? 0;
+                const totalCards    = deck.stats?.totalCards ?? 0;
+                const dateLabel    = deck.updatedAt ?? deck.createdAt;
 
+                const rgb = factionCode ? (FACTION_GRADIENT_RGB[factionCode] ?? '140,67,42') : '140,67,42';
                 const cardStyle: React.CSSProperties = heroImage
                   ? {
-                      borderTop: '3px solid var(--primary-400)',
-                      backgroundImage: `linear-gradient(to right, rgba(140,67,42,0.70) 30%, rgba(140,67,42,0) 100%), url(${heroImage})`,
+                      borderTop: `3px solid var(--primary-400)`,
+                      backgroundImage: `linear-gradient(to right, rgba(${rgb},0.75) 30%, rgba(${rgb},0) 100%), url(${heroImage})`,
                       backgroundSize: 'cover',
                       backgroundPosition: 'left -90px',
                     }
@@ -316,6 +315,18 @@ export default function DecksPage() {
                         {deck.format && (
                           <span className="ac-badge" style={{ background: 'var(--primary-400)', color: '#fff' }}>
                             {deck.format}
+                          </span>
+                        )}
+                        {deck.legal !== undefined && (
+                          <span
+                            className="ac-badge"
+                            style={deck.legal
+                              ? { background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#16a34a' }
+                              : { background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#dc2626' }
+                            }
+                          >
+                            <i className={`fa-solid ${deck.legal ? 'fa-circle-check' : 'fa-circle-xmark'}`} />
+                            {deck.legal ? t('deckEdit.legalityLegal') : t('deckEdit.legalityIllegal')}
                           </span>
                         )}
                         {factionCode && (
@@ -341,6 +352,11 @@ export default function DecksPage() {
                       {heroName && (
                         <p style={{ fontSize: '.85rem', fontWeight: 700, color: '#fff', margin: 0, textAlign: 'left', textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>{heroName}</p>
                       )}
+                      {dateLabel && (
+                        <p style={{ fontSize: '.7rem', opacity: 0.5, color: '#fff', margin: 0 }}>
+                          {new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(new Date(dateLabel))}
+                        </p>
+                      )}
 
                       <div className="mt-auto pt-2 flex items-center gap-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.20)' }}>
                         {/* Boutons edit/delete */}
@@ -365,32 +381,23 @@ export default function DecksPage() {
                         {/* Gems */}
                         <div className="flex items-center gap-2 flex-1" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.9)' }}>
                           <span style={{ fontSize: '.875rem', fontWeight: 700, color: '#fff' }}>{totalCards} {t('decks.cards')}</span>
-                          {commonCount > 0 && (
-                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/C.png" alt="C" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
-                              <span style={{ color: '#fff' }}>{commonCount}</span>
-                            </span>
-                          )}
-                          {rareCount > 0 && (
-                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/R.png" alt="R" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
-                              <span style={{ color: '#fff' }}>{rareCount}</span>
-                            </span>
-                          )}
-                          {uniqueCount > 0 && (
-                            <span className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src="https://alteredcore.org/assets/gems/U.png" alt="U" style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
-                              <span style={{ color: '#fff' }}>{uniqueCount}</span>
-                            </span>
-                          )}
+                          {(['C', 'R', 'U', 'E'] as const).map((key) => {
+                            const count = deck.stats?.byRarity[key] ?? 0;
+                            if (!count) return null;
+                            return (
+                              <span key={key} className="flex items-center gap-0.5" style={{ fontSize: '.875rem', fontWeight: 600 }}>
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={`https://alteredcore.org/assets/gems/${key}.png`} alt={key} style={{ width: 15, height: 15, objectFit: 'contain', filter: 'drop-shadow(0 1px 3px rgba(0,0,0,0.8))' }} />
+                                <span style={{ color: '#fff' }}>{count}</span>
+                              </span>
+                            );
+                          })}
                         </div>
 
                         {/* View */}
-                        <Link href={`/decks/${deck.id}`} className="btn-primary-altered btn-sm">
-                          {t('decks.view')} <i className="fa-solid fa-eye" />
+                        <Link href={`/decks/${deck.id}`} className="ac-btn">
+                          <i className="fa-solid fa-eye" />
+                          {t('decks.view')}
                         </Link>
                       </div>
                     </div>

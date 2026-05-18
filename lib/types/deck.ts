@@ -31,6 +31,7 @@ export interface ApiDeck {
   description: string | null;
   format: string | null;
   isPublic: boolean;
+  legal?: boolean;
   stats: {
     totalCards: number;
     byRarity: Record<string, number>;

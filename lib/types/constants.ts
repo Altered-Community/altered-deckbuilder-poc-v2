@@ -10,10 +10,18 @@ export const FACTIONS: Record<string, string> = {
 export const FACTION_BADGE_COLORS: Record<string, string> = {
   AX: 'bg-blue-600',
   BR: 'bg-red-600',
-  LY: 'bg-yellow-500',
+  LY: 'bg-pink-500',
   MU: 'bg-green-600',
-  OR: 'bg-purple-600',
-  YZ: 'bg-cyan-600',
+  OR: 'bg-blue-500',
+  YZ: 'bg-violet-600',
+};
+
+export const FACTION_GRADIENT_RGB: Record<string, string> = {
+  BR: '153,27,27',
+  LY: '157,23,77',
+  MU: '20,83,45',
+  OR: '59,130,246',
+  YZ: '76,29,149',
 };
 
 export const RARITIES = [

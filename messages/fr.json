@@ -145,7 +145,11 @@
     "copyDecklist": "Copier la decklist",
     "copied": "Copié !",
     "share": "Partager",
-    "shared": "Lien copié !"
+    "shared": "Lien copié !",
+    "exportImage": "Exporter image",
+    "exporting": "Export...",
+    "updatedAt": "Mis à jour le",
+    "createdAt": "Créé le"
   },
   "importAltered": {
     "title": "Importer depuis Altered",
