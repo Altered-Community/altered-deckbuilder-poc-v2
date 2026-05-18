@@ -136,7 +136,16 @@
     "legalityCopies": "Copies",
     "legalityUniqueQuantity": "Unique quantity",
     "legalityRareQuantity": "Rare quantity",
-    "legalityExaltedQuantity": "Exalted quantity"
+    "legalityExaltedQuantity": "Exalted quantity",
+    "delete": "Delete",
+    "deleteConfirm": "Confirm?",
+    "cancel": "Cancel",
+    "rename": "Rename",
+    "renameTitle": "Rename deck",
+    "copyDecklist": "Copy decklist",
+    "copied": "Copied!",
+    "share": "Share",
+    "shared": "Link copied!"
   },
   "importAltered": {
     "title": "Import from Altered",

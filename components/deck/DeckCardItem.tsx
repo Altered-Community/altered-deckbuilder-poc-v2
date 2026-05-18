@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 import type { DeckCard } from '@/lib/types/deck';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import { getCardGroupName, getCardGroupFaction, getCardGroupImage, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
@@ -19,11 +20,12 @@ interface DeckCardItemProps {
 }
 
 export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
+  const locale = useLocale();
   const { addCard, decrementCard, removeCard, canAddCard } = useDeckStore();
   const { cardGroup, quantity } = deckCard;
 
   const name      = getCardGroupName(cardGroup);
-  const image     = getCardGroupImage(cardGroup);
+  const image     = getCardGroupImage(cardGroup, locale);
   const faction   = getCardGroupFaction(cardGroup);
   const badge     = faction ? (FACTION_BADGE_COLORS[faction] ?? 'bg-gray-600') : '';
   const rarity    = getRarityFromSlug(cardGroup.slug);

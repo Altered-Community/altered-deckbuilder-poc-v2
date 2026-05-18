@@ -94,7 +94,7 @@ export default function DecksPage() {
       if (!name || seen.has(name)) continue;
       seen.add(name);
       const hRef = d.stats?.hero?.reference ?? null;
-      const hImg = hRef && getRarityFromSlug(hRef) !== 'UNIQUE' ? getCdnImageUrl(hRef) : (d.stats?.hero?.imagePath ?? null);
+      const hImg = hRef && getRarityFromSlug(hRef) !== 'UNIQUE' ? getCdnImageUrl(hRef, locale) : (d.stats?.hero?.imagePath ?? null);
       result.push({ name, imagePath: hImg });
     }
     return result;
@@ -292,7 +292,7 @@ export default function DecksPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((deck) => {
                 const heroRef     = deck.stats?.hero?.reference;
-                const heroImage   = heroRef && getRarityFromSlug(heroRef) !== 'UNIQUE' ? getCdnImageUrl(heroRef) : (deck.stats?.hero?.imagePath ?? null);
+                const heroImage   = heroRef && getRarityFromSlug(heroRef) !== 'UNIQUE' ? getCdnImageUrl(heroRef, locale) : (deck.stats?.hero?.imagePath ?? null);
                 const heroName    = deck.stats?.hero?.name ?? null;
                 const factionCode = getFactionCode(heroRef);
                 const totalCards  = deck.stats?.totalCards ?? 0;

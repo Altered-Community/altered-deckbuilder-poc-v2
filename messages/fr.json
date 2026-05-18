@@ -136,7 +136,16 @@
     "legalityCopies": "Copies",
     "legalityUniqueQuantity": "Quantité unique",
     "legalityRareQuantity": "Quantité rare",
-    "legalityExaltedQuantity": "Quantité exaltée"
+    "legalityExaltedQuantity": "Quantité exaltée",
+    "delete": "Supprimer",
+    "deleteConfirm": "Confirmer ?",
+    "cancel": "Annuler",
+    "rename": "Renommer",
+    "renameTitle": "Renommer le deck",
+    "copyDecklist": "Copier la decklist",
+    "copied": "Copié !",
+    "share": "Partager",
+    "shared": "Lien copié !"
   },
   "importAltered": {
     "title": "Importer depuis Altered",

@@ -131,6 +131,7 @@ function HeroCard({ hero, isSelected, onSelect }: {
   isSelected: boolean;
   onSelect: (h: CardGroup) => void;
 }) {
+  const locale = useLocale();
   const [imgIndex, setImgIndex] = useState(0);
 
   const name = getCardGroupName(hero);
@@ -139,7 +140,7 @@ function HeroCard({ hero, isSelected, onSelect }: {
   const factionName = factionCode ? FACTIONS[factionCode] : '';
 
   const images = hero.cards
-    .map((c) => getRarityFromSlug(c.reference) !== 'UNIQUE' ? getCdnImageUrl(c.reference) : c.imagePath)
+    .map((c) => getRarityFromSlug(c.reference) !== 'UNIQUE' ? getCdnImageUrl(c.reference, locale) : c.imagePath)
     .filter((p): p is string => !!p);
   const currentImage = images[imgIndex] ?? null;
   const hasMultiple = images.length > 1;

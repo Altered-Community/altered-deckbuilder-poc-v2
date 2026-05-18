@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, fetchFormats } from '@/lib/api/deckApi';
+import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, deleteDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard, ApiLegalityDetail } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
@@ -101,9 +101,10 @@ function groupByType(deckCards: ApiDeckCard[]) {
 }
 
 function CardRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
+  const locale = useLocale();
   const name = dc.name ?? dc.cardReference;
   const isUnique = getRarityFromSlug(dc.cardReference) === 'UNIQUE';
-  const image = isUnique ? null : getCdnImageUrl(dc.cardReference);
+  const image = isUnique ? null : getCdnImageUrl(dc.cardReference, locale);
 
   return (
     <div
@@ -217,6 +218,14 @@ export default function DeckEditPage() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [cardView, setCardView] = useState<'cards' | 'list'>('cards');
 
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [showRename, setShowRename] = useState(false);
+  const [renameInput, setRenameInput] = useState('');
+  const [renaming, setRenaming] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [shared, setShared] = useState(false);
+
   useEffect(() => {
     const fetcher = token ? getDeckDetail(id, locale) : getDeckDetailPublic(id, locale);
     fetcher
@@ -278,8 +287,64 @@ export default function DeckEditPage() {
     }
   };
 
+  const handleDelete = async () => {
+    if (!deleteConfirm) { setDeleteConfirm(true); return; }
+    setDeleting(true);
+    try {
+      await deleteDeck(id);
+      router.push('/decks');
+    } catch {
+      setDeleting(false);
+      setDeleteConfirm(false);
+    }
+  };
+
+  const handleOpenRename = () => {
+    setRenameInput(deck?.name ?? '');
+    setShowRename(true);
+  };
+
+  const handleRename = async () => {
+    const trimmed = renameInput.trim();
+    if (!trimmed) return;
+    setRenaming(true);
+    try {
+      await patchDeck(id, { name: trimmed });
+      setDeck((d) => d ? { ...d, name: trimmed } : d);
+      setName(trimmed);
+      setShowRename(false);
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  const handleCopyDecklist = useCallback(() => {
+    if (!deck) return;
+    const lines: string[] = [];
+    const hero = deck.cards.find((dc) => dc.cardTypeReference === 'HERO');
+    if (hero) lines.push(`1 ${hero.cardReference}`);
+    for (const dc of deck.cards) {
+      if (dc.cardTypeReference === 'HERO') continue;
+      lines.push(`${dc.quantity} ${dc.cardReference}`);
+    }
+    navigator.clipboard.writeText(lines.join('\n'));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [deck]);
+
+  const handleShare = useCallback(async () => {
+    const url = window.location.href;
+    if (navigator.share) {
+      try { await navigator.share({ title: deck?.name ?? '', url }); } catch { /* annulé */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
+    }
+  }, [deck]);
+
   const heroRef2    = deck?.stats?.hero?.reference ?? null;
-  const heroImage   = heroRef2 && getRarityFromSlug(heroRef2) !== 'UNIQUE' ? getCdnImageUrl(heroRef2) : (deck?.stats?.hero?.imagePath ?? null);
+  const heroImage   = heroRef2 && getRarityFromSlug(heroRef2) !== 'UNIQUE' ? getCdnImageUrl(heroRef2, locale) : (deck?.stats?.hero?.imagePath ?? null);
   const heroName    = deck?.stats?.hero?.name ?? null;
   const factionCode = getFactionCode(deck?.stats?.hero?.reference);
   const totalCards  = deck?.cards.reduce((s, dc) => s + dc.quantity, 0) ?? 0;
@@ -310,8 +375,9 @@ export default function DeckEditPage() {
               {loading ? '…' : (deck?.name ?? '')}
             </span>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {loadError && <span className="text-xs text-red-400">{loadError}</span>}
+
             <button
               onClick={handleOpenInBuilder}
               disabled={loadingBuilder}
@@ -321,6 +387,55 @@ export default function DeckEditPage() {
               <i className="fa-solid fa-pen-to-square" />
               {loadingBuilder ? '…' : t('builder')}
             </button>
+
+            {isOwner && (
+              <button onClick={handleOpenRename} className="ac-btn" title={t('rename')}>
+                <i className="fa-solid fa-pencil" />
+              </button>
+            )}
+
+            {deck && (
+              <button
+                onClick={handleCopyDecklist}
+                className="ac-btn"
+                title={t('copyDecklist')}
+              >
+                <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} />
+                {copied && <span>{t('copied')}</span>}
+              </button>
+            )}
+
+            {deck && (
+              <button onClick={handleShare} className="ac-btn" title={t('share')}>
+                <i className={`fa-solid ${shared ? 'fa-check' : 'fa-share-nodes'}`} />
+                {shared && <span>{t('shared')}</span>}
+              </button>
+            )}
+
+            {isOwner && (
+              deleteConfirm ? (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={handleDelete}
+                    disabled={deleting}
+                    className="ac-btn ac-btn-danger disabled:opacity-40"
+                  >
+                    <i className="fa-solid fa-trash" />
+                    {deleting ? '…' : t('deleteConfirm')}
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(false)}
+                    className="ac-btn"
+                  >
+                    {t('cancel')}
+                  </button>
+                </div>
+              ) : (
+                <button onClick={handleDelete} className="ac-btn ac-btn-danger" title={t('delete')}>
+                  <i className="fa-solid fa-trash" />
+                </button>
+              )
+            )}
           </div>
         </div>
 
@@ -454,6 +569,39 @@ export default function DeckEditPage() {
           </>
         )}
       </div>
+
+      {/* ── Modal rename ── */}
+      {showRename && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => setShowRename(false)}
+        >
+          <div
+            className="card-altered p-6 w-full max-w-sm flex flex-col gap-4 shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 className="text-sm font-semibold text-c-text">{t('renameTitle')}</h2>
+            <input
+              autoFocus
+              value={renameInput}
+              onChange={(e) => setRenameInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleRename(); if (e.key === 'Escape') setShowRename(false); }}
+              maxLength={150}
+              className="w-full bg-c-surface border border-c-border rounded-lg px-3 py-2 text-c-text text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+            />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setShowRename(false)} className="ac-btn">{t('cancel')}</button>
+              <button
+                onClick={handleRename}
+                disabled={renaming || !renameInput.trim()}
+                className="btn-primary-altered btn-sm disabled:opacity-40"
+              >
+                {renaming ? '…' : tc('save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </SiteLayout>
   );
 }

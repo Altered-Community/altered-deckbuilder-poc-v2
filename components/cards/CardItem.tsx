@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 import type { CardGroup } from '@/lib/types/card';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import { getCardGroupName, getCardGroupImage, getCardGroupFaction, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
@@ -20,10 +21,11 @@ interface CardItemProps {
 }
 
 export default function CardItem({ card, onZoom }: CardItemProps) {
+  const locale = useLocale();
   const { addCard, setHero, deck, canAddCard } = useDeckStore();
 
   const name = getCardGroupName(card);
-  const image = getCardGroupImage(card);
+  const image = getCardGroupImage(card, locale);
   const factionCode = getCardGroupFaction(card);
   const rarity = getRarityFromSlug(card.slug);
   const rarityBorder = RARITY_BORDER[rarity] ?? 'border-gray-600';
