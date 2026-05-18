@@ -380,16 +380,12 @@ export default function DeckEditPage() {
           setTimeout(poll, 300);
         });
 
-      // Cards sorted by type, excluding hero
-      const cards = TYPE_ORDER
-        .filter((t) => t !== 'HERO')
-        .flatMap((type) => deck.cards.filter((dc) => dc.cardTypeReference === type));
-      const matchedRefs = new Set(cards.map((dc) => dc.cardReference));
-      const unmatched = deck.cards.filter((dc) => dc.cardTypeReference !== 'HERO' && !matchedRefs.has(dc.cardReference));
+      // Merge CORE + COREKS variants, then sort: Characters by mainCost → Spells → Permanents → rest
+      const EXPORT_TYPE_ORDER = ['CHARACTER', 'SPELL', 'PERMANENT', 'LANDMARK_PERMANENT', 'EXPEDITION_PERMANENT', 'TOKEN', 'TOKEN_MANA'];
+      const nonHeroCards = deck.cards.filter((dc) => dc.cardTypeReference !== 'HERO');
 
-      // Merge CORE + COREKS variants of the same card into one stack
-      const mergeMap = new Map<string, typeof cards[number] & { quantity: number }>();
-      for (const dc of [...cards, ...unmatched]) {
+      const mergeMap = new Map<string, typeof nonHeroCards[number] & { quantity: number }>();
+      for (const dc of nonHeroCards) {
         const key = dc.cardReference.replace(/^ALT_COREKS_/, 'ALT_CORE_');
         const existing = mergeMap.get(key);
         if (existing) {
@@ -398,7 +394,15 @@ export default function DeckEditPage() {
           mergeMap.set(key, { ...dc, cardReference: key });
         }
       }
-      const allNonHero = Array.from(mergeMap.values());
+
+      const merged = Array.from(mergeMap.values());
+      const allNonHero = EXPORT_TYPE_ORDER
+        .flatMap((type) => {
+          const group = merged.filter((dc) => dc.cardTypeReference === type);
+          if (type === 'CHARACTER') group.sort((a, b) => (a.mainCost ?? 99) - (b.mainCost ?? 99));
+          return group;
+        })
+        .concat(merged.filter((dc) => !EXPORT_TYPE_ORDER.includes(dc.cardTypeReference ?? '')));
 
       const COLS = 7;
       const CARD_W = 420;
