@@ -378,6 +378,13 @@ export default function DeckEditPage() {
           <div className="flex items-center gap-2 flex-wrap">
             {loadError && <span className="text-xs text-red-400">{loadError}</span>}
 
+            {isOwner && (
+              <button onClick={handleOpenRename} className="ac-btn">
+                <i className="fa-solid fa-pencil" />
+                {t('rename')}
+              </button>
+            )}
+
             <button
               onClick={handleOpenInBuilder}
               disabled={loadingBuilder}
@@ -387,30 +394,6 @@ export default function DeckEditPage() {
               <i className="fa-solid fa-pen-to-square" />
               {loadingBuilder ? '…' : t('builder')}
             </button>
-
-            {isOwner && (
-              <button onClick={handleOpenRename} className="ac-btn" title={t('rename')}>
-                <i className="fa-solid fa-pencil" />
-              </button>
-            )}
-
-            {deck && (
-              <button
-                onClick={handleCopyDecklist}
-                className="ac-btn"
-                title={t('copyDecklist')}
-              >
-                <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} />
-                {copied && <span>{t('copied')}</span>}
-              </button>
-            )}
-
-            {deck && (
-              <button onClick={handleShare} className="ac-btn" title={t('share')}>
-                <i className={`fa-solid ${shared ? 'fa-check' : 'fa-share-nodes'}`} />
-                {shared && <span>{t('shared')}</span>}
-              </button>
-            )}
 
             {isOwner && (
               deleteConfirm ? (
@@ -423,18 +406,30 @@ export default function DeckEditPage() {
                     <i className="fa-solid fa-trash" />
                     {deleting ? '…' : t('deleteConfirm')}
                   </button>
-                  <button
-                    onClick={() => setDeleteConfirm(false)}
-                    className="ac-btn"
-                  >
+                  <button onClick={() => setDeleteConfirm(false)} className="ac-btn">
                     {t('cancel')}
                   </button>
                 </div>
               ) : (
-                <button onClick={handleDelete} className="ac-btn ac-btn-danger" title={t('delete')}>
+                <button onClick={handleDelete} className="ac-btn ac-btn-danger">
                   <i className="fa-solid fa-trash" />
+                  {t('delete')}
                 </button>
               )
+            )}
+
+            {deck && (
+              <button onClick={handleCopyDecklist} className="ac-btn">
+                <i className={`fa-solid ${copied ? 'fa-check' : 'fa-copy'}`} />
+                {copied ? t('copied') : t('copyDecklist')}
+              </button>
+            )}
+
+            {deck && (
+              <button onClick={handleShare} className="ac-btn">
+                <i className={`fa-solid ${shared ? 'fa-check' : 'fa-share-nodes'}`} />
+                {shared ? t('shared') : t('share')}
+              </button>
             )}
           </div>
         </div>
