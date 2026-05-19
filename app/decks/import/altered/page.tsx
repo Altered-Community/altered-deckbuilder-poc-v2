@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { saveDeck } from '@/lib/api/deckApi';
+import { saveDeck, getDeckByAlteredId } from '@/lib/api/deckApi';
 import { normalizeFormatCode } from '@/lib/utils/format';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
@@ -22,6 +22,7 @@ interface AlteredCard {
 interface AlteredDeck {
   name: string;
   format: string;
+  alteredId: string;
   hero: AlteredCard;
   cards: AlteredCard[];
 }
@@ -73,6 +74,7 @@ function parseAlteredJson(data: unknown): AlteredDeck[] {
     return {
       name: (inner.name as string) ?? 'Deck sans nom',
       format: normalizeFormatCode((inner.eventFormat as string) ?? '') ?? '',
+      alteredId: (inner.id as string) ?? '',
       hero,
       cards,
     };
@@ -98,6 +100,7 @@ export default function ImportFromAlteredPage() {
   const [savingAll, setSavingAll] = useState(false);
   const [verifiedRefs, setVerifiedRefs] = useState<Map<string, boolean>>(new Map());
   const [verifying, setVerifying] = useState(false);
+  const [existingDeckIds, setExistingDeckIds] = useState<Map<string, string>>(new Map()); // alteredId → existing deck id
   const [urlInput, setUrlInput] = useState('');
   const [loadingUrl, setLoadingUrl] = useState(false);
 
@@ -165,21 +168,32 @@ export default function ImportFromAlteredPage() {
     if (target.length === 0) return;
     setVerifying(true);
     setVerifiedRefs(new Map());
+    setExistingDeckIds(new Map());
 
     const allRefs = target.flatMap((d) => [
       d.hero.reference,
       ...d.cards.map((c) => c.reference),
     ]);
-
     const uniqueRefs = [...new Set(allRefs.filter(Boolean))];
 
     try {
-      const { found } = await verifyCardReferences(uniqueRefs, locale);
+      const [{ found }, ...existingResults] = await Promise.all([
+        verifyCardReferences(uniqueRefs, locale),
+        ...target.filter((d) => d.alteredId).map((d) =>
+          getDeckByAlteredId(d.alteredId).then((existing) => ({ alteredId: d.alteredId, existing }))
+        ),
+      ]);
+
       const refMap = new Map<string, boolean>();
-      uniqueRefs.forEach((ref) => {
-        refMap.set(ref, found.includes(ref));
-      });
+      uniqueRefs.forEach((ref) => refMap.set(ref, found.includes(ref)));
       setVerifiedRefs(refMap);
+
+      const existingMap = new Map<string, string>();
+      existingResults.forEach((r) => {
+        const { alteredId, existing } = r as { alteredId: string; existing: import('@/lib/types/deck').ApiDeck | null };
+        if (existing) existingMap.set(alteredId, existing.id);
+      });
+      setExistingDeckIds(existingMap);
     } catch (err) {
       console.error('[verify] error:', err);
       setSaveError(t('verifyError'));
@@ -205,6 +219,7 @@ export default function ImportFromAlteredPage() {
         name: deck.name,
         format: deck.format || null,
         isPublic: false,
+        alteredId: deck.alteredId || null,
         deckCards,
       });
 
@@ -233,6 +248,7 @@ export default function ImportFromAlteredPage() {
           name: deck.name,
           format: deck.format || null,
           isPublic: false,
+          alteredId: deck.alteredId || null,
           deckCards,
         });
         saved.push(result.id);
@@ -363,6 +379,15 @@ export default function ImportFromAlteredPage() {
                         {deck.cards.reduce((s, c) => s + c.quantity, 0) + 1} cartes
                         {deck.format && ` — Format: ${deck.format}`}
                       </p>
+                      {deck.alteredId && existingDeckIds.has(deck.alteredId) && (
+                        <a
+                          href={`/decks/${existingDeckIds.get(deck.alteredId)}`}
+                          className="inline-flex items-center gap-1 mt-1 text-xs text-amber-400 hover:text-amber-300"
+                        >
+                          <i className="fa-solid fa-triangle-exclamation" />
+                          Deck déjà importé — voir
+                        </a>
+                      )}
                     </div>
                     <div className="flex items-center gap-3">
                       {saveError && <span className="text-xs text-red-400 max-w-[200px]">{saveError}</span>}

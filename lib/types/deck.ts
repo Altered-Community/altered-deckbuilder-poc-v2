@@ -31,6 +31,7 @@ export interface SaveDeckPayload {
   description?: string | null;
   format?: string | null;
   isPublic?: boolean;
+  alteredId?: string | null;
   deckCards: { cardReference: string; quantity: number }[];
 }
 
@@ -40,6 +41,7 @@ export interface ApiDeck {
   description: string | null;
   format: string | null;
   isPublic: boolean;
+  alteredId?: string | null;
   legal?: boolean;
   stats: {
     totalCards: number;

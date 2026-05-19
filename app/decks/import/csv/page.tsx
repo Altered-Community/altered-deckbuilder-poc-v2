@@ -4,7 +4,7 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { saveDeck } from '@/lib/api/deckApi';
+import { saveDeck, getDeckByAlteredId } from '@/lib/api/deckApi';
 import { normalizeFormatCode } from '@/lib/utils/format';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
@@ -115,6 +115,7 @@ export default function ImportFromCsvPage() {
   const [savingAll, setSavingAll] = useState(false);
   const [verifiedRefs, setVerifiedRefs] = useState<Map<string, boolean>>(new Map());
   const [verifying, setVerifying] = useState(false);
+  const [existingDeckIds, setExistingDeckIds] = useState<Map<string, string>>(new Map());
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
@@ -151,15 +152,29 @@ export default function ImportFromCsvPage() {
     if (target.length === 0) return;
     setVerifying(true);
     setVerifiedRefs(new Map());
+    setExistingDeckIds(new Map());
 
     const allRefs = target.flatMap((d) => [d.hero.reference, ...d.cards.map((c) => c.reference)]);
     const uniqueRefs = [...new Set(allRefs.filter(Boolean))];
 
     try {
-      const { found } = await verifyCardReferences(uniqueRefs, locale);
+      const [{ found }, ...existingResults] = await Promise.all([
+        verifyCardReferences(uniqueRefs, locale),
+        ...target.filter((d) => d.id).map((d) =>
+          getDeckByAlteredId(d.id).then((existing) => ({ alteredId: d.id, existing }))
+        ),
+      ]);
+
       const refMap = new Map<string, boolean>();
       uniqueRefs.forEach((ref) => refMap.set(ref, found.includes(ref)));
       setVerifiedRefs(refMap);
+
+      const existingMap = new Map<string, string>();
+      existingResults.forEach((r) => {
+        const { alteredId, existing } = r as { alteredId: string; existing: import('@/lib/types/deck').ApiDeck | null };
+        if (existing) existingMap.set(alteredId, existing.id);
+      });
+      setExistingDeckIds(existingMap);
     } catch (err) {
       console.error('[verify] error:', err);
       setSaveError(t('verifyError'));
@@ -183,6 +198,7 @@ export default function ImportFromCsvPage() {
         name: deck.name,
         format: deck.format || null,
         isPublic: false,
+        alteredId: deck.id || null,
         deckCards: buildDeckCards(deck),
       });
       router.push(`/decks/${result.id}`);
@@ -205,6 +221,7 @@ export default function ImportFromCsvPage() {
           name: deck.name,
           format: deck.format || null,
           isPublic: false,
+          alteredId: deck.id || null,
           deckCards: buildDeckCards(deck),
         });
         saved.push(result.id);
@@ -295,6 +312,15 @@ export default function ImportFromCsvPage() {
                         {deck.cards.reduce((s, c) => s + c.quantity, 0) + 1} cartes
                         {deck.format && ` — Format : ${deck.format}`}
                       </p>
+                      {deck.id && existingDeckIds.has(deck.id) && (
+                        <a
+                          href={`/decks/${existingDeckIds.get(deck.id)}`}
+                          className="inline-flex items-center gap-1 mt-1 text-xs text-amber-400 hover:text-amber-300"
+                        >
+                          <i className="fa-solid fa-triangle-exclamation" />
+                          Deck déjà importé — voir
+                        </a>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                       {saveError && <span className="text-xs text-red-400 max-w-[200px]">{saveError}</span>}

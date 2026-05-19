@@ -46,6 +46,14 @@ function normalizePaginated<T>(data: Record<string, unknown>): ApiPaginatedRespo
   };
 }
 
+export async function getDeckByAlteredId(alteredId: string): Promise<ApiDeck | null> {
+  const res = await deckFetch(`/decks?alteredId=${encodeURIComponent(alteredId)}&itemsPerPage=1`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  const items = normalizeArray<ApiDeck>(data);
+  return items[0] ?? null;
+}
+
 export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedResponse<ApiDeck>> {
   const res = await deckFetch(`/decks?locale=${locale}&page=${page}`);
   if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);

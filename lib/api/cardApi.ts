@@ -70,19 +70,26 @@ export async function fetchFactions(): Promise<ApiFaction[]> {
   return normalizeList<ApiFaction>(await res.json());
 }
 
+const VERIFY_BATCH_SIZE = 50;
+
 export async function verifyCardReferences(references: string[], locale = 'fr'): Promise<{ found: string[]; notFound: string[] }> {
   if (references.length === 0) return { found: [], notFound: [] };
 
   const found: string[] = [];
-  const params = references.map((ref) => `cards.reference[]=${encodeURIComponent(ref)}`).join('&');
-  const res = await fetch(`${API_BASE}/card_groups?${params}&locale=${locale}&itemsPerPage=250`);
-  if (!res.ok) throw new Error('Erreur lors de la vérification des cartes');
 
-  const data = await res.json();
-  (data.member ?? []).forEach((c: { reference?: string; cards?: Array<{ reference?: string }> }) => {
-    if (c.reference) found.push(c.reference);
-    c.cards?.forEach((v) => v.reference && found.push(v.reference));
-  });
+  // Split into batches to avoid 414 Request-URI Too Large
+  for (let i = 0; i < references.length; i += VERIFY_BATCH_SIZE) {
+    const batch = references.slice(i, i + VERIFY_BATCH_SIZE);
+    const params = batch.map((ref) => `cards.reference[]=${encodeURIComponent(ref)}`).join('&');
+    const res = await fetch(`${API_BASE}/card_groups?${params}&locale=${locale}&itemsPerPage=${VERIFY_BATCH_SIZE}`);
+    if (!res.ok) throw new Error('Erreur lors de la vérification des cartes');
+
+    const data = await res.json();
+    (data.member ?? []).forEach((c: { reference?: string; cards?: Array<{ reference?: string }> }) => {
+      if (c.reference) found.push(c.reference);
+      c.cards?.forEach((v) => v.reference && found.push(v.reference));
+    });
+  }
 
   const notFound = references.filter((ref) => !found.includes(ref));
 
