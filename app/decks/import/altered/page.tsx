@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck } from '@/lib/api/deckApi';
+import { normalizeFormatCode } from '@/lib/utils/format';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteFooter from '@/components/layout/SiteFooter';
@@ -71,7 +72,7 @@ function parseAlteredJson(data: unknown): AlteredDeck[] {
 
     return {
       name: (inner.name as string) ?? 'Deck sans nom',
-      format: (inner.eventFormat as string) ?? '',
+      format: normalizeFormatCode((inner.eventFormat as string) ?? '') ?? '',
       hero,
       cards,
     };

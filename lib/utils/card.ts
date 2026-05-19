@@ -44,13 +44,13 @@ export function getCardReference(group: CardGroup): string {
 }
 
 export function getHeroImageUrl(reference: string): string {
-  const ref = reference.replace(/_P_/, '_B_');
+  const ref = reference.replace(/^ALT_WCS25_/, 'ALT_CORE_').replace(/_P_/, '_B_');
   return `https://cdn.alteredcore.org/cards/hero/${ref}_1.webp`;
 }
 
 export function getCdnImageUrl(reference: string, locale = 'fr'): string | null {
-  // COREKS uses the same artwork as CORE on the CDN
-  const normalized = reference.replace(/^ALT_COREKS_/, 'ALT_CORE_');
+  // COREKS and WCS25 use the same artwork as CORE on the CDN
+  const normalized = reference.replace(/^ALT_COREKS_/, 'ALT_CORE_').replace(/^ALT_WCS25_/, 'ALT_CORE_');
   const parts = normalized.split('_');
   if (parts[0] !== 'ALT' || parts.length < 6) return null;
   const set = parts[1];

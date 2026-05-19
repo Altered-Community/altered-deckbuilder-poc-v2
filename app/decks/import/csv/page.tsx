@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { saveDeck } from '@/lib/api/deckApi';
+import { normalizeFormatCode } from '@/lib/utils/format';
 import { verifyCardReferences } from '@/lib/api/cardApi';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteFooter from '@/components/layout/SiteFooter';
@@ -78,7 +79,7 @@ function parseCsv(text: string): CsvDeck[] {
       deckMap.set(deckId, {
         id: deckId,
         name: cols[idx.deck_name],
-        format: cols[idx.deck_format],
+        format: normalizeFormatCode(cols[idx.deck_format]) ?? '',
         hero: { reference: cols[idx.hero_reference], name: cols[idx.hero_name] },
         cards: [],
       });
