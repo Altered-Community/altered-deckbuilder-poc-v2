@@ -203,13 +203,13 @@ export default function DeckEditPage() {
 
   const { data: formats = [] } = useQuery({ queryKey: ['formats'], queryFn: fetchFormats, staleTime: Infinity });
 
-  const { data: myDecks = [] } = useQuery({
+  const { data: myDecks } = useQuery({
     queryKey: ['my-decks', locale],
     queryFn: () => getDecks(locale),
     enabled: !!token,
     staleTime: 60_000,
   });
-  const isOwner = !!token && myDecks.some((d) => d.id === id);
+  const isOwner = !!token && (myDecks?.items ?? []).some((d) => d.id === id);
 
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);

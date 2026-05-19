@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useLocale } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { ThemeBtn, LangBtn } from './SiteHeader';
-import type { FooterColumn, AlteredCoreLayout } from '@/lib/api/alteredcoreLayout';
+import type { FooterColumn } from '@/lib/api/alteredcoreLayout';
 
 const LOCAL_LINKS = [
   { href: '/',                     icon: 'fa-solid fa-hammer',           label: { en: 'Deck Builder',   fr: 'Deckbuilder'   } },

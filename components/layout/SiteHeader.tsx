@@ -180,6 +180,7 @@ export default function SiteHeader({
 
           {/* Brand */}
           <a href="https://alteredcore.org" className="navbar-brand-ac" title="AlteredCore">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logoUrl} alt="AlteredCore" className="navbar-logo-custom" />
             <span className="navbar-site-name-ac">AlteredCore</span>
           </a>

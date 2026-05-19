@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
@@ -22,7 +22,7 @@ function getFactionCode(heroRef: string | undefined): string | null {
 export default function DecksPage() {
   const t = useTranslations();
   const locale = useLocale();
-  const { token, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('public');
 
   /* Pagination */
@@ -43,8 +43,6 @@ export default function DecksPage() {
   const [myLoading, setMyLoading] = useState(true);
   const [myError, setMyError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
-
-  const mounted = useRef(true);
 
   /* Filtres */
   const [filterFaction, setFilterFaction] = useState<string | null>(null);
