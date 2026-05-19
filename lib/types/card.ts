@@ -32,6 +32,9 @@ export interface CardGroup {
   forestPower?: number | null;
   permanent?: string;
   deckLimit: number;
+  isSuspended?: boolean;
+  isBanned?: boolean;
+  isErrated?: boolean;
   cards: CardGroupVariant[];
   name: string;
   mainEffect: string | null;

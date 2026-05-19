@@ -43,7 +43,14 @@ function parseCsv(text: string, t: (k: string, v?: Record<string, string>) => st
     return { valid, errors, totalCards: 0, uniqueCount: 0 };
   }
 
-  const header = parseCsvLine(lines[0]).map((h) => h.toLowerCase().replace(/[^a-z_]/g, ''));
+  // Certains exports Altered ont un timestamp sur la première ligne — on cherche la ligne d'en-tête
+  let headerLineIdx = 0;
+  let header = parseCsvLine(lines[0]).map((h) => h.toLowerCase().replace(/[^a-z_]/g, ''));
+  if (!header.includes('card_reference') && lines.length > 1) {
+    header = parseCsvLine(lines[1]).map((h) => h.toLowerCase().replace(/[^a-z_]/g, ''));
+    headerLineIdx = 1;
+  }
+
   const idxRef = header.indexOf('card_reference');
   const idxName = header.indexOf('card_name');
   const idxRarity = header.indexOf('rarity');
@@ -54,7 +61,7 @@ function parseCsv(text: string, t: (k: string, v?: Record<string, string>) => st
     return { valid, errors, totalCards: 0, uniqueCount: 0 };
   }
 
-  for (let i = 1; i < lines.length; i++) {
+  for (let i = headerLineIdx + 1; i < lines.length; i++) {
     const cols = parseCsvLine(lines[i]);
     const cardReference = cols[idxRef] ?? '';
     const cardName = cols[idxName] ?? '';

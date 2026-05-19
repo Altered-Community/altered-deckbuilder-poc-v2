@@ -54,6 +54,7 @@
     "oceanPower": "Force mer",
     "mountainPower": "Force mont.",
     "forestPower": "Force forêt",
+    "ownedOnly": "Mes cartes",
     "resetFilters": "Réinitialiser les filtres",
     "page": "Page {current} / {last}",
     "count": "{count} cartes",

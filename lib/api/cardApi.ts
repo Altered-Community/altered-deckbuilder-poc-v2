@@ -70,6 +70,23 @@ export async function fetchFactions(): Promise<ApiFaction[]> {
   return normalizeList<ApiFaction>(await res.json());
 }
 
+const REF_BATCH_SIZE = 50;
+
+export async function fetchCardGroupsByRefs(refs: string[], locale = 'fr'): Promise<CardGroup[]> {
+  if (refs.length === 0) return [];
+  const all: CardGroup[] = [];
+  for (let i = 0; i < refs.length; i += REF_BATCH_SIZE) {
+    const batch = refs.slice(i, i + REF_BATCH_SIZE);
+    const params = new URLSearchParams({ locale, itemsPerPage: String(REF_BATCH_SIZE) });
+    batch.forEach((ref) => params.append('cards.reference[]', ref));
+    const res = await fetch(`${API_BASE}/card_groups?${params}`);
+    if (!res.ok) throw new Error('Erreur récupération cartes collection');
+    const data = normalizeCollection<CardGroup>(await res.json());
+    all.push(...data.data);
+  }
+  return all;
+}
+
 const VERIFY_BATCH_SIZE = 50;
 
 export async function verifyCardReferences(references: string[], locale = 'fr'): Promise<{ found: string[]; notFound: string[] }> {

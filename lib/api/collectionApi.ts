@@ -19,8 +19,11 @@ async function collectionFetch(path: string, options: RequestInit = {}): Promise
   });
 }
 
-export async function getCollection(): Promise<ApiCollectionEntry[]> {
-  const res = await collectionFetch('/api/collection');
+export async function getCollection(params?: { faction?: string }): Promise<ApiCollectionEntry[]> {
+  const qs = new URLSearchParams();
+  if (params?.faction) qs.set('faction', params.faction);
+  const query = qs.toString() ? `?${qs}` : '';
+  const res = await collectionFetch(`/api/collection${query}`);
   if (!res.ok) throw new Error(`Erreur chargement collection : ${res.status}`);
   return res.json();
 }

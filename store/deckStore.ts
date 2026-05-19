@@ -227,6 +227,11 @@ export const useDeckStore = create<DeckState>()(
 
       hasDeckViolations: () => {
         const { deck, deckStats } = get();
+
+        // Cartes bannies ou suspendues — indépendant du format
+        if (deck.hero?.isSuspended || deck.hero?.isBanned) return true;
+        if (deck.cards.some((dc) => dc.cardGroup.isSuspended || dc.cardGroup.isBanned)) return true;
+
         const format = deck.format;
         if (!format) return false;
 

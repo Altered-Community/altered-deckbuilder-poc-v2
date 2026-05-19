@@ -13,11 +13,14 @@ interface CardFiltersProps {
   selectedRarities?: string[];
   onToggleRarity?: (ref: string) => void;
   excludeTypes?: string[];
+  showOnlyOwned?: boolean;
+  onToggleOwned?: () => void;
+  isAuthenticated?: boolean;
 }
 
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
-export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity, excludeTypes = [] }: CardFiltersProps) {
+export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity, excludeTypes = [], showOnlyOwned = false, onToggleOwned, isAuthenticated = false }: CardFiltersProps) {
   const t = useTranslations('cards');
 
   const { data: sets = [] } = useQuery({
@@ -115,7 +118,7 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
         </select>
       </div>
 
-      {/* Ligne 3 : Rareté (multi-select) */}
+      {/* Ligne 3 : Rareté (multi-select) + filtre collection */}
       <div className="flex items-center gap-3 flex-wrap">
         {RARITIES.map((r) => (
           <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -128,6 +131,20 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
             <span className="text-xs text-c-text-secondary">{t(`rarities.${r.value}`)}</span>
           </label>
         ))}
+        {isAuthenticated && (
+          <>
+            <span className="text-c-border-subtle">|</span>
+            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={showOnlyOwned}
+                onChange={onToggleOwned}
+                className="w-3.5 h-3.5 accent-amber-500"
+              />
+              <span className="text-xs text-amber-400 font-medium">{t('ownedOnly')}</span>
+            </label>
+          </>
+        )}
       </div>
 
       {hasActiveFilters && (

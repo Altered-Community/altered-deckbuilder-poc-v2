@@ -54,6 +54,7 @@
     "oceanPower": "Ocean power",
     "mountainPower": "Mountain power",
     "forestPower": "Forest power",
+    "ownedOnly": "My cards",
     "resetFilters": "Reset filters",
     "page": "Page {current} / {last}",
     "count": "{count} cards",

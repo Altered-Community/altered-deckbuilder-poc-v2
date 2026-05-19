@@ -29,7 +29,9 @@ export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
   const faction   = getCardGroupFaction(cardGroup);
   const badge     = faction ? (FACTION_BADGE_COLORS[faction] ?? 'bg-gray-600') : '';
   const rarity    = getRarityFromSlug(cardGroup.slug);
-  const ring      = RARITY_RING[rarity] ?? '';
+  const isBanned    = !!cardGroup.isBanned;
+  const isSuspended = !!cardGroup.isSuspended;
+  const ring        = isBanned || isSuspended ? 'ring-red-500' : (RARITY_RING[rarity] ?? '');
   const addable   = canAddCard(cardGroup) === null;
 
   return (
@@ -67,6 +69,18 @@ export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
           )}
         </div>
       </div>
+
+      {/* Badge banni/suspendu */}
+      {(isBanned || isSuspended) && (
+        <div className="absolute top-1 left-1 z-10 flex items-center gap-0.5">
+          <span
+            className={`text-[8px] font-bold px-1 py-0.5 rounded text-white ${isBanned ? 'bg-red-600' : 'bg-orange-500'}`}
+            title={isBanned ? 'Carte bannie' : 'Carte suspendue'}
+          >
+            {isBanned ? 'BAN' : 'SUS'}
+          </span>
+        </div>
+      )}
 
       {/* Quantité (haut droite) — caché au survol */}
       <div className="absolute top-1 right-1 bg-black/75 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center group-hover:opacity-0 transition-opacity">

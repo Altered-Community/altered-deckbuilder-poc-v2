@@ -1,13 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
-import { fetchCardGroups } from '@/lib/api/cardApi';
+import { fetchCardGroups, fetchCardGroupsByRefs } from '@/lib/api/cardApi';
 import { getCardGroupFaction, getCardGroupImage, getCardGroupName, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
 import type { CardGroupFilters, CardGroup } from '@/lib/types/card';
 import { useDeckStore } from '@/store/deckStore';
+import { useAuth } from '@/lib/hooks/useAuth';
+import { useCollection } from '@/lib/hooks/useCollection';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
 import CardFiltersPanel from './CardFilters';
 import CardItem from './CardItem';
@@ -22,8 +24,10 @@ export default function CardBrowser({ initialFaction }: Props) {
   const t = useTranslations('cards');
   const locale = useLocale();
   const hero = useDeckStore((s) => s.deck.hero);
+  const { isAuthenticated } = useAuth();
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
+  const [showOnlyOwned, setShowOnlyOwned] = useState(false);
 
   const [filters, setFilters] = useState<CardGroupFilters>({
     page: 1,
@@ -34,19 +38,58 @@ export default function CardBrowser({ initialFaction }: Props) {
 
   const factionCode = hero ? getCardGroupFaction(hero) : initialFaction;
 
-  const { data, isLoading, isFetching, isError } = useQuery({
+  const { data: normalData, isLoading: normalLoading, isFetching: normalFetching, isError: normalError } = useQuery({
     queryKey: ['cards', filters, factionCode, locale],
-    queryFn: () =>
-        fetchCardGroups({
-          ...filters,
-          'faction': factionCode,
-          excludeCardTypes: ['HERO'],
-        }, locale),
-    enabled: !!factionCode,
+    queryFn: () => fetchCardGroups({ ...filters, faction: factionCode, excludeCardTypes: ['HERO'] }, locale),
+    enabled: !!factionCode && !showOnlyOwned,
     placeholderData: (prev) => prev,
   });
 
-  const cards: CardGroup[] = data?.data ?? [];
+  const { data: collectionEntries } = useCollection(isAuthenticated && showOnlyOwned);
+
+  const ownedRefs = useMemo(
+    () => (collectionEntries ? collectionEntries.map((e) => e.cardReference) : null),
+    [collectionEntries],
+  );
+
+  const { data: ownedGroups, isLoading: ownedLoading, isFetching: ownedFetching, isError: ownedError } = useQuery({
+    queryKey: ['cards-owned', locale, ownedRefs?.length ?? 0],
+    queryFn: () => fetchCardGroupsByRefs(ownedRefs!, locale),
+    enabled: showOnlyOwned && ownedRefs !== null,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
+
+  const filteredOwnedGroups = useMemo(() => {
+    if (!ownedGroups) return [];
+    return ownedGroups.filter((g) => {
+      if (g.cardType?.reference === 'HERO') return false;
+      if (factionCode && g.faction?.code !== factionCode) return false;
+      const name = filters.name?.toLowerCase();
+      if (name && !g.name?.toLowerCase().includes(name)) return false;
+      const rarity = Array.isArray(filters.rarity) ? filters.rarity : filters.rarity ? [filters.rarity] : [];
+      if (rarity.length && !rarity.includes(getRarityFromSlug(g.slug))) return false;
+      const ct = Array.isArray(filters.cardType) ? filters.cardType : filters.cardType ? [filters.cardType] : [];
+      if (ct.length && !ct.includes(g.cardType?.reference ?? '')) return false;
+      if (filters.mainCost !== undefined && filters.mainCost !== '' && g.mainCost !== Number(filters.mainCost)) return false;
+      if (filters.recallCost !== undefined && filters.recallCost !== '' && g.recallCost !== Number(filters.recallCost)) return false;
+      if (filters['set.reference'] && !g.cards.some((v) => v.set.reference === filters['set.reference'])) return false;
+      return true;
+    });
+  }, [ownedGroups, factionCode, filters]);
+
+  const isLoading  = showOnlyOwned ? ownedLoading  : normalLoading;
+  const isFetching = showOnlyOwned ? ownedFetching  : normalFetching;
+  const isError    = showOnlyOwned ? ownedError     : normalError;
+
+  const ITEMS_PER_PAGE = 30;
+  const currentPage = filters.page ?? 1;
+
+  const cards: CardGroup[] = useMemo(() => {
+    if (!showOnlyOwned) return normalData?.data ?? [];
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredOwnedGroups.slice(start, start + ITEMS_PER_PAGE);
+  }, [showOnlyOwned, normalData, filteredOwnedGroups, currentPage]);
 
   useEffect(() => {
     if (lightboxIdx === null) return;
@@ -64,9 +107,10 @@ export default function CardBrowser({ initialFaction }: Props) {
   const lbReference    = lightboxCard ? getCardReference(lightboxCard) : null;
   const lbImage        = lightboxCard && lbRarity !== 'UNIQUE' ? getCardGroupImage(lightboxCard, locale) : null;
   const lbName         = lightboxCard ? getCardGroupName(lightboxCard) : '';
-  const totalItems = data?.pagination?.totalItems ?? 0;
-  const currentPage = filters.page ?? 1;
-  const lastPage = data?.pagination?.lastPage ?? 1;
+  const totalItems = showOnlyOwned ? filteredOwnedGroups.length : (normalData?.pagination?.totalItems ?? 0);
+  const lastPage   = showOnlyOwned
+    ? Math.max(1, Math.ceil(filteredOwnedGroups.length / ITEMS_PER_PAGE))
+    : (normalData?.pagination?.lastPage ?? 1);
 
   const rarityFilter = filters['rarity'];
   const selectedRarities = Array.isArray(rarityFilter) ? rarityFilter : rarityFilter ? [rarityFilter] : [];
@@ -90,6 +134,9 @@ export default function CardBrowser({ initialFaction }: Props) {
         selectedRarities={selectedRarities}
         onToggleRarity={toggleRarity}
         excludeTypes={['HERO']}
+        showOnlyOwned={showOnlyOwned}
+        onToggleOwned={() => { setShowOnlyOwned((v) => !v); setFilters((f) => ({ ...f, page: 1 })); }}
+        isAuthenticated={isAuthenticated}
       />
 
       {/* Pagination — au-dessus des cartes */}
