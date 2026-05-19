@@ -1,4 +1,4 @@
-import type { ApiDeck, ApiDeckDetail, ApiFormat, SaveDeckPayload } from '@/lib/types/deck';
+import type { ApiDeck, ApiDeckDetail, ApiFormat, ApiPaginatedResponse, SaveDeckPayload } from '@/lib/types/deck';
 import { getValidToken } from '@/store/authStore';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -34,18 +34,30 @@ export async function fetchFormats(): Promise<ApiFormat[]> {
   return normalizeArray<ApiFormat>(await res.json());
 }
 
-export async function getDecks(locale = 'fr'): Promise<ApiDeck[]> {
-  const res = await deckFetch(`/decks?locale=${locale}`);
-  if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);
-  return normalizeArray<ApiDeck>(await res.json());
+function normalizePaginated<T>(data: Record<string, unknown>): ApiPaginatedResponse<T> {
+  const items = normalizeArray<T>(data);
+  return {
+    items,
+    totalItems: (data.totalItems as number) ?? items.length,
+    currentPage: (data.currentPage as number) ?? 1,
+    lastPage: (data.lastPage as number) ?? 1,
+    nextPage: (data.nextPage as number | null) ?? null,
+    previousPage: (data.previousPage as number | null) ?? null,
+  };
 }
 
-export async function getPublicDecks(locale = 'fr'): Promise<ApiDeck[]> {
-  const res = await fetch(`${DECK_API_BASE}/decks/public?locale=${locale}`, {
+export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedResponse<ApiDeck>> {
+  const res = await deckFetch(`/decks?locale=${locale}&page=${page}`);
+  if (!res.ok) throw new Error(`Erreur chargement decks : ${res.status}`);
+  return normalizePaginated<ApiDeck>(await res.json());
+}
+
+export async function getPublicDecks(locale = 'fr', page = 1): Promise<ApiPaginatedResponse<ApiDeck>> {
+  const res = await fetch(`${DECK_API_BASE}/decks/public?locale=${locale}&page=${page}`, {
     headers: { Accept: 'application/json' },
   });
   if (!res.ok) throw new Error(`Erreur chargement decks publics : ${res.status}`);
-  return normalizeArray<ApiDeck>(await res.json());
+  return normalizePaginated<ApiDeck>(await res.json());
 }
 
 export async function getDeckDetail(id: string, locale = 'fr'): Promise<ApiDeckDetail> {

@@ -1,5 +1,14 @@
 import type { CardGroup } from './card';
 
+export interface ApiPaginatedResponse<T> {
+  items: T[];
+  totalItems: number;
+  currentPage: number;
+  lastPage: number;
+  nextPage: number | null;
+  previousPage: number | null;
+}
+
 export interface ApiFormatLimits {
   unique: number | null;
   rare: number | null;

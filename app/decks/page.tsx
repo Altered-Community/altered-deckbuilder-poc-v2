@@ -23,8 +23,15 @@ export default function DecksPage() {
   const t = useTranslations();
   const locale = useLocale();
   const { token, isAuthenticated, isLoading: authLoading } = useAuth();
-
   const [activeTab, setActiveTab] = useState<Tab>('public');
+
+  /* Pagination */
+  const [publicPage, setPublicPage] = useState(1);
+  const [myPage, setMyPage] = useState(1);
+  const [publicLastPage, setPublicLastPage] = useState(1);
+  const [myLastPage, setMyLastPage] = useState(1);
+  const [publicTotal, setPublicTotal] = useState(0);
+  const [myTotal, setMyTotal] = useState(0);
 
   /* Decks publics */
   const [publicDecks, setPublicDecks] = useState<ApiDeck[]>([]);
@@ -48,23 +55,37 @@ export default function DecksPage() {
   /* Fetch decks publics */
   useEffect(() => {
     mounted.current = true;
-    getPublicDecks(locale)
-      .then((data) => { if (mounted.current) setPublicDecks(data); })
+    setPublicLoading(true);
+    setPublicError(null);
+    getPublicDecks(locale, publicPage)
+      .then((res) => {
+        if (!mounted.current) return;
+        setPublicDecks(res.items);
+        setPublicLastPage(res.lastPage);
+        setPublicTotal(res.totalItems);
+      })
       .catch((e) => { if (mounted.current) setPublicError(e instanceof Error ? e.message : t('common.unknownError')); })
       .finally(() => { if (mounted.current) setPublicLoading(false); });
     return () => { mounted.current = false; };
-  }, [locale, t]);
+  }, [locale, publicPage, t]);
 
   /* Fetch mes decks */
   useEffect(() => {
     if (!isAuthenticated) return;
     mounted.current = true;
-    getDecks(locale)
-      .then((data) => { if (mounted.current) setMyDecks(data); })
+    setMyLoading(true);
+    setMyError(null);
+    getDecks(locale, myPage)
+      .then((res) => {
+        if (!mounted.current) return;
+        setMyDecks(res.items);
+        setMyLastPage(res.lastPage);
+        setMyTotal(res.totalItems);
+      })
       .catch((e) => { if (mounted.current) setMyError(e instanceof Error ? e.message : t('common.unknownError')); })
       .finally(() => { if (mounted.current) setMyLoading(false); });
     return () => { mounted.current = false; };
-  }, [isAuthenticated, locale, t]);
+  }, [isAuthenticated, locale, myPage, t]);
 
   /* Reset filtres au changement de tab */
   const handleTabChange = (tab: Tab) => {
@@ -74,6 +95,11 @@ export default function DecksPage() {
     setFilterFormat('');
     setFilterSearch('');
   };
+
+  const currentPage = activeTab === 'public' ? publicPage : myPage;
+  const lastPage = activeTab === 'public' ? publicLastPage : myLastPage;
+  const totalItems = activeTab === 'public' ? publicTotal : myTotal;
+  const setPage = activeTab === 'public' ? setPublicPage : setMyPage;
 
   const handleFactionClick = (code: string) => {
     const next = filterFaction === code ? null : code;
@@ -139,11 +165,9 @@ export default function DecksPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="section-title mb-0">
             <span>{t('decks.title')}</span>
-            {activeDecks.length > 0 && (
+            {totalItems > 0 && (
               <span className="ml-2 text-sm font-normal" style={{ color: 'var(--neutral-600)' }}>
-                {filtered.length !== activeDecks.length
-                  ? `${filtered.length} / ${activeDecks.length}`
-                  : `${activeDecks.length} deck${activeDecks.length !== 1 ? 's' : ''}`}
+                {totalItems} deck{totalItems !== 1 ? 's' : ''}
               </span>
             )}
           </div>
@@ -165,17 +189,18 @@ export default function DecksPage() {
 
         {/* ── Tabs ── */}
         <div className="flex gap-1 border-b border-c-border">
-          {(['public', 'myDecks'] as Tab[]).map((tab) => (
+          {(['myDecks', 'public'] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => handleTabChange(tab)}
-              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${
+              className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px flex items-center gap-1.5 ${
                 activeTab === tab
                   ? 'border-amber-400 text-amber-400'
                   : 'border-transparent text-c-text-subtle hover:text-c-text'
               }`}
             >
-              {t(tab === 'public' ? 'decks.tabPublic' : 'decks.tabMyDecks')}
+              <i className={tab === 'myDecks' ? 'fa-solid fa-user' : 'fa-solid fa-globe'} />
+              {t(tab === 'myDecks' ? 'decks.tabMyDecks' : 'decks.tabPublic')}
             </button>
           ))}
         </div>
@@ -277,6 +302,7 @@ export default function DecksPage() {
           {activeTab === 'public' && !isLoading && !error && publicDecks.length === 0 && (
             <p className="text-center mt-20 text-sm" style={{ color: 'var(--neutral-600)' }}>{t('decks.noPublicDecks')}</p>
           )}
+
           {activeTab === 'myDecks' && isAuthenticated && !isLoading && !error && myDecks.length === 0 && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.noDecks')}</p>
@@ -405,6 +431,39 @@ export default function DecksPage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {/* Pagination */}
+          {lastPage > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="ac-btn disabled:opacity-40"
+              >
+                <i className="fa-solid fa-chevron-left" />
+              </button>
+              {Array.from({ length: lastPage }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={`w-8 h-8 rounded text-sm font-medium transition-colors ${
+                    p === currentPage
+                      ? 'bg-amber-400 text-white'
+                      : 'text-c-text-subtle hover:text-c-text hover:bg-c-elevated'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setPage((p) => Math.min(lastPage, p + 1))}
+                disabled={currentPage === lastPage}
+                className="ac-btn disabled:opacity-40"
+              >
+                <i className="fa-solid fa-chevron-right" />
+              </button>
             </div>
           )}
         </div>
