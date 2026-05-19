@@ -54,37 +54,47 @@ export default function DecksPage() {
 
   /* Fetch decks publics */
   useEffect(() => {
-    mounted.current = true;
-    setPublicLoading(true);
-    setPublicError(null);
-    getPublicDecks(locale, publicPage)
-      .then((res) => {
-        if (!mounted.current) return;
+    let active = true;
+    async function load() {
+      setPublicLoading(true);
+      setPublicError(null);
+      try {
+        const res = await getPublicDecks(locale, publicPage);
+        if (!active) return;
         setPublicDecks(res.items);
         setPublicLastPage(res.lastPage);
         setPublicTotal(res.totalItems);
-      })
-      .catch((e) => { if (mounted.current) setPublicError(e instanceof Error ? e.message : t('common.unknownError')); })
-      .finally(() => { if (mounted.current) setPublicLoading(false); });
-    return () => { mounted.current = false; };
+      } catch (e) {
+        if (active) setPublicError(e instanceof Error ? e.message : t('common.unknownError'));
+      } finally {
+        if (active) setPublicLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
   }, [locale, publicPage, t]);
 
   /* Fetch mes decks */
   useEffect(() => {
     if (!isAuthenticated) return;
-    mounted.current = true;
-    setMyLoading(true);
-    setMyError(null);
-    getDecks(locale, myPage)
-      .then((res) => {
-        if (!mounted.current) return;
+    let active = true;
+    async function load() {
+      setMyLoading(true);
+      setMyError(null);
+      try {
+        const res = await getDecks(locale, myPage);
+        if (!active) return;
         setMyDecks(res.items);
         setMyLastPage(res.lastPage);
         setMyTotal(res.totalItems);
-      })
-      .catch((e) => { if (mounted.current) setMyError(e instanceof Error ? e.message : t('common.unknownError')); })
-      .finally(() => { if (mounted.current) setMyLoading(false); });
-    return () => { mounted.current = false; };
+      } catch (e) {
+        if (active) setMyError(e instanceof Error ? e.message : t('common.unknownError'));
+      } finally {
+        if (active) setMyLoading(false);
+      }
+    }
+    load();
+    return () => { active = false; };
   }, [isAuthenticated, locale, myPage, t]);
 
   /* Reset filtres au changement de tab */
@@ -124,7 +134,7 @@ export default function DecksPage() {
       result.push({ name, imagePath: hImg });
     }
     return result;
-  }, [activeDecks, filterFaction]);
+  }, [activeDecks, filterFaction, locale]);
 
   const formats = useMemo(() => {
     const seen = new Set<string>();
