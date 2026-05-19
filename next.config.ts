@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const API_URL = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000/api').replace(/\/$/, '');
 const DECK_API_URL = (process.env.NEXT_PUBLIC_DECK_API_URL ?? 'http://localhost:4000').replace(/\/$/, '');
+const COLLECTION_API_URL = (process.env.NEXT_PUBLIC_COLLECTION_API_URL ?? 'http://localhost:5000').replace(/\/$/, '');
 
 const nextConfig: NextConfig = {
   async rewrites() {
@@ -16,6 +17,10 @@ const nextConfig: NextConfig = {
       {
         source: '/deck-api-proxy/:path*',
         destination: `${DECK_API_URL}/:path*`,
+      },
+      {
+        source: '/collection-api-proxy/:path*',
+        destination: `${COLLECTION_API_URL}/:path*`,
       },
     ];
   },

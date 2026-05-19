@@ -1,3 +1,14 @@
+export const SET_NAMES: Record<string, { fr: string; en: string }> = {
+  FUGUE:   { fr: 'La Traversée Éternelle',       en: 'The Eternal Crossing' },
+  EOLE:    { fr: 'Les Racines de la Corruption',  en: 'The Roots of Corruption' },
+  DUSTER:  { fr: "Les Graines de l'Unité",        en: 'The Seeds of Unity' },
+  CYCLONE: { fr: 'Odyssée des Cieux',              en: 'Odyssey of the Skies' },
+  BISE:    { fr: 'Murmures du Labyrinthe',         en: 'Whispers of the Labyrinth' },
+  ALIZE:   { fr: 'Épreuve du Froid',               en: 'Trial of the Cold' },
+  COREKS:  { fr: 'Au-delà des Portes – Éd. KS',   en: 'Beyond the Gates – KS Edition' },
+  CORE:    { fr: 'Au-delà des Portes',             en: 'Beyond the Gates' },
+};
+
 export const FACTIONS: Record<string, string> = {
   AX: 'Axiom',
   BR: 'Bravos',

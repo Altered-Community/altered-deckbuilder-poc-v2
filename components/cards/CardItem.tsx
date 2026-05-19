@@ -5,8 +5,8 @@ import { useLocale } from 'next-intl';
 import type { CardGroup } from '@/lib/types/card';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import { getCardGroupName, getCardGroupImage, getCardGroupFaction, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
-import { useDeckStore } from '@/store/deckStore';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
+import { useDeckStore } from '@/store/deckStore';
 
 const RARITY_BORDER: Record<string, string> = {
   COMMON: 'border-gray-500',

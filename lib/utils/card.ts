@@ -57,6 +57,17 @@ export function getCdnImageUrl(reference: string, locale = 'fr'): string | null 
   return `https://cdn.alteredcore.org/cards/${locale}/${set}/${normalized}.webp`;
 }
 
+export function getUniqueIllustrationUrl(reference: string): string | null {
+  const normalized = reference.replace(/^ALT_COREKS_/, 'ALT_CORE_').replace(/^ALT_WCS25_/, 'ALT_CORE_');
+  const parts = normalized.split('_');
+  // Need at least ALT_{set}_{x}_{faction}_{num}_{rarity=U}_{id}
+  if (parts[0] !== 'ALT' || parts.length < 7) return null;
+  const set = parts[1];
+  // bgref = first 5 parts + first char of 6th (always 'U' for unique)
+  const bgref = parts.slice(0, 5).join('_') + '_' + (parts[5]?.[0] ?? '');
+  return `https://cdn.alteredcore.org/illustrations/${set}/${bgref}_FRAMELESS_T1.webp`;
+}
+
 export function getCardGroupImage(group: CardGroup, locale = 'fr'): string | null {
   if (!group.cards.length) return null;
   const card = getStandardCard(group);

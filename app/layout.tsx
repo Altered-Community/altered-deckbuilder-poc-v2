@@ -28,6 +28,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
           crossOrigin="anonymous"
         />
+        <link
+          rel="stylesheet"
+          href="https://alteredcore.org/assets/font/alteredicons.css"
+          crossOrigin="anonymous"
+        />
       </head>
       <body className="text-c-text antialiased">
         <Script

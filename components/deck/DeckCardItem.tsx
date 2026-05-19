@@ -5,8 +5,8 @@ import { useLocale } from 'next-intl';
 import type { DeckCard } from '@/lib/types/deck';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import { getCardGroupName, getCardGroupFaction, getCardGroupImage, getRarityFromSlug, getCardReference } from '@/lib/utils/card';
-import { useDeckStore } from '@/store/deckStore';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
+import { useDeckStore } from '@/store/deckStore';
 
 const RARITY_RING: Record<string, string> = {
   RARE:    'ring-blue-400',
