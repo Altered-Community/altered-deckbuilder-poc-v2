@@ -58,6 +58,19 @@ export async function batchAddCollectionEntries(
   return res.json();
 }
 
+export async function updateCollectionEntry(id: number, quantity: number): Promise<ApiCollectionEntry> {
+  const res = await collectionFetch(`/api/collection/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/merge-patch+json' },
+    body: JSON.stringify({ quantity }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`${res.status}${text ? ' — ' + text : ''}`);
+  }
+  return res.json();
+}
+
 export async function deleteCollectionEntry(id: number): Promise<void> {
   const res = await collectionFetch(`/api/collection/${id}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error(`Suppression échouée : ${res.status}`);

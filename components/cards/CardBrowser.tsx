@@ -16,6 +16,9 @@ import CardItem from './CardItem';
 
 const DEFAULT_RARITIES = ['COMMON', 'RARE', 'EXALTED'];
 
+const normalizeRef = (ref: string) =>
+  ref.replace(/^ALT_COREKS_/, 'ALT_CORE_').replace(/^ALT_WCS25_/, 'ALT_CORE_');
+
 interface Props {
   initialFaction?: string;
 }
@@ -45,12 +48,23 @@ export default function CardBrowser({ initialFaction }: Props) {
     placeholderData: (prev) => prev,
   });
 
-  const { data: collectionEntries } = useCollection(isAuthenticated && showOnlyOwned);
+  const { data: collectionEntries } = useCollection(isAuthenticated);
 
   const ownedRefs = useMemo(
     () => (collectionEntries ? collectionEntries.map((e) => e.cardReference) : null),
     [collectionEntries],
   );
+
+  // Map base-ref → quantité possédée (pour badge sur CardItem)
+  const ownedCountMap = useMemo(() => {
+    if (!collectionEntries) return new Map<string, number>();
+    const map = new Map<string, number>();
+    for (const e of collectionEntries) {
+      const base = normalizeRef(e.cardReference).split('_').slice(0, 6).join('_');
+      map.set(base, (map.get(base) ?? 0) + e.quantity);
+    }
+    return map;
+  }, [collectionEntries]);
 
   const { data: ownedGroups, isLoading: ownedLoading, isFetching: ownedFetching, isError: ownedError } = useQuery({
     queryKey: ['cards-owned', locale, ownedRefs?.length ?? 0],
@@ -179,9 +193,23 @@ export default function CardBrowser({ initialFaction }: Props) {
           <div
             className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
           >
-            {cards.map((card, idx) => (
-              <CardItem key={card.slug} card={card} onZoom={() => setLightboxIdx(idx)} />
-            ))}
+            {cards.map((card, idx) => {
+              // Essaie chaque variant jusqu'à trouver une correspondance dans la collection
+              let ownedCount: number | undefined;
+              for (const v of card.cards) {
+                const base = normalizeRef(v.reference).split('_').slice(0, 6).join('_');
+                const count = ownedCountMap.get(base);
+                if (count !== undefined) { ownedCount = count; break; }
+              }
+              return (
+                <CardItem
+                  key={card.slug}
+                  card={card}
+                  onZoom={() => setLightboxIdx(idx)}
+                  ownedCount={ownedCount}
+                />
+              );
+            })}
           </div>
         )}
       </div>

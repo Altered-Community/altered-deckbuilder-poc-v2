@@ -18,9 +18,10 @@ const RARITY_BORDER: Record<string, string> = {
 interface CardItemProps {
   card: CardGroup;
   onZoom?: () => void;
+  ownedCount?: number;
 }
 
-export default function CardItem({ card, onZoom }: CardItemProps) {
+export default function CardItem({ card, onZoom, ownedCount }: CardItemProps) {
   const locale = useLocale();
   const { addCard, setHero, deck, canAddCard } = useDeckStore();
 
@@ -103,6 +104,12 @@ export default function CardItem({ card, onZoom }: CardItemProps) {
         {(deckEntry || isHeroSelected) && (
           <div className="absolute top-1 right-1 z-20 bg-black/80 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
             {isHero ? '★' : deckEntry?.quantity}
+          </div>
+        )}
+
+        {ownedCount != null && ownedCount > 0 && (
+          <div className="absolute bottom-0 left-0 right-0 z-20 bg-amber-500 text-black text-xs font-bold text-center py-0.5 leading-none">
+            ×{ownedCount}
           </div>
         )}
       </div>

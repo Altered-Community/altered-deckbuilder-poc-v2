@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getCollection, deleteCollectionEntry } from '@/lib/api/collectionApi';
+import { getCollection, deleteCollectionEntry, updateCollectionEntry } from '@/lib/api/collectionApi';
 import type { ApiCollectionEntry } from '@/lib/types/collection';
 import { getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import { FACTIONS, FACTION_BADGE_COLORS, SET_NAMES, CARD_TYPES } from '@/lib/types/constants';
@@ -38,7 +38,8 @@ export default function CollectionPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<number | null>(null);
-  const [lightbox, setLightbox] = useState<ApiCollectionEntry | null>(null);
+  const [updating, setUpdating] = useState<number | null>(null);
+  const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [gridSize, setGridSize] = useState<'sm' | 'md' | 'lg'>('md');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 48;
@@ -68,17 +69,60 @@ export default function CollectionPage() {
     return () => { active = false; };
   }, [isAuthenticated, tc]);
 
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return entries.filter((e) => {
+      if (q && !(e.name ?? e.cardReference).toLowerCase().includes(q) && !e.cardReference.toLowerCase().includes(q)) return false;
+      if (filterFactions.length && !filterFactions.includes(e.faction)) return false;
+      if (filterRarities.length && !filterRarities.includes(e.rarity?.toUpperCase())) return false;
+      if (filterSets.length && !filterSets.includes(e.cardSet)) return false;
+      if (filterTypes.length && !filterTypes.includes(e.cardType?.toUpperCase() ?? '')) return false;
+      return true;
+    });
+  }, [entries, search, filterFactions, filterRarities, filterSets, filterTypes]);
+
+  const lightbox = lightboxIdx !== null ? (filtered[lightboxIdx] ?? null) : null;
+
   const handleDelete = async (id: number) => {
     if (!confirm(t('deleteConfirm'))) return;
     setDeleting(id);
     try {
       await deleteCollectionEntry(id);
       setEntries((prev) => prev.filter((e) => e.id !== id));
-      if (lightbox?.id === id) setLightbox(null);
+      if (lightbox?.id === id) setLightboxIdx(null);
     } finally {
       setDeleting(null);
     }
   };
+
+  const handleUpdateQuantity = async (entry: ApiCollectionEntry, delta: number) => {
+    const newQty = entry.quantity + delta;
+    if (newQty <= 0) {
+      await handleDelete(entry.id);
+      return;
+    }
+    setUpdating(entry.id);
+    try {
+      const updated = await updateCollectionEntry(entry.id, newQty);
+      setEntries((prev) => prev.map((e) => e.id === entry.id ? { ...e, quantity: updated.quantity } : e));
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const lightboxPrev = useCallback(() => setLightboxIdx((i) => (i !== null && i > 0 ? i - 1 : i)), []);
+  const lightboxNext = useCallback(() => setLightboxIdx((i) => (i !== null && i < filtered.length - 1 ? i + 1 : i)), [filtered.length]);
+
+  useEffect(() => {
+    if (lightboxIdx === null) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft')  lightboxPrev();
+      if (e.key === 'ArrowRight') lightboxNext();
+      if (e.key === 'Escape')     setLightboxIdx(null);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightboxIdx, lightboxPrev, lightboxNext]);
 
   const totalCards = entries.reduce((s, e) => s + e.quantity, 0);
   const byRarity = entries.reduce<Record<string, number>>((acc, e) => {
@@ -90,24 +134,13 @@ export default function CollectionPage() {
     if (e.faction) acc[e.faction] = (acc[e.faction] ?? 0) + e.quantity;
     return acc;
   }, {});
+  void byFaction;
 
   const ownedSets = useMemo(
     () => new Set(entries.map((e) => e.cardSet).filter(Boolean)),
     [entries],
   );
   const allSets = Object.keys(SET_NAMES);
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return entries.filter((e) => {
-      if (q && !(e.name ?? e.cardReference).toLowerCase().includes(q) && !e.cardReference.toLowerCase().includes(q)) return false;
-      if (filterFactions.length && !filterFactions.includes(e.faction)) return false;
-      if (filterRarities.length && !filterRarities.includes(e.rarity?.toUpperCase())) return false;
-      if (filterSets.length && !filterSets.includes(e.cardSet)) return false;
-      if (filterTypes.length && !filterTypes.includes(e.cardType?.toUpperCase() ?? '')) return false;
-      return true;
-    });
-  }, [entries, search, filterFactions, filterRarities, filterSets]);
 
   const rarityLabel = (r: string) => t(`rarity${r.charAt(0) + r.slice(1).toLowerCase()}` as Parameters<typeof t>[0]);
 
@@ -351,43 +384,67 @@ export default function CollectionPage() {
             {/* Card grid */}
             <div className="card-altered p-4">
               <div className={`grid gap-2 ${
-                gridSize === 'sm' ? 'grid-cols-8' : gridSize === 'md' ? 'grid-cols-6' : 'grid-cols-4'
+                gridSize === 'sm' ? 'grid-cols-4 sm:grid-cols-8' : gridSize === 'md' ? 'grid-cols-3 sm:grid-cols-6' : 'grid-cols-2 sm:grid-cols-4'
               }`}>
-                {filtered.slice(0, page * PAGE_SIZE).map((entry) => {
+                {filtered.slice(0, page * PAGE_SIZE).map((entry, idx) => {
                   const isUnique = getRarityFromSlug(entry.cardReference) === 'UNIQUE';
                   const imgUrl = isUnique ? null : getCdnImageUrl(entry.cardReference, locale);
+                  const isBusy = deleting === entry.id || updating === entry.id;
                   return (
                     <div
                       key={entry.id}
-                      onClick={() => setLightbox(entry)}
-                      className={`relative group rounded-lg overflow-hidden border border-c-border bg-c-surface cursor-zoom-in ${!isUnique ? 'aspect-[744/1039]' : ''}`}
+                      className="relative group rounded-lg overflow-hidden border border-c-border bg-c-surface flex flex-col"
                     >
-                      {isUnique ? (
-                        <UniqueCardRenderer reference={entry.cardReference} locale={locale} className="w-full" />
-                      ) : imgUrl ? (
-                        <Image src={imgUrl} alt={entry.name ?? entry.cardReference} fill sizes="150px" className="object-cover" unoptimized />
-                      ) : (
-                        <div className="absolute inset-0 flex items-center justify-center p-1">
-                          <span className="text-[9px] text-c-text-muted text-center font-mono leading-tight">{entry.cardReference}</span>
-                        </div>
-                      )}
-                      {entry.quantity > 1 && (
-                        <span className="absolute top-1 right-1 text-xs font-bold text-white bg-black/70 px-1.5 py-0.5 rounded-full z-10">
-                          x{entry.quantity}
-                        </span>
-                      )}
-                      {entry.isFoil && (
-                        <span className="absolute top-1 left-1 text-[9px] font-bold text-amber-300 bg-black/70 px-1 py-0.5 rounded z-10">
-                          FOIL
-                        </span>
-                      )}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
-                        disabled={deleting === entry.id}
-                        className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600/80 hover:bg-red-500 text-white rounded p-1 text-[10px] z-10"
+                      {/* Image */}
+                      <div
+                        onClick={() => setLightboxIdx(idx)}
+                        className={`relative cursor-zoom-in ${!isUnique ? 'aspect-[744/1039]' : ''}`}
                       >
-                        <i className="fa-solid fa-trash" />
-                      </button>
+                        {isUnique ? (
+                          <UniqueCardRenderer reference={entry.cardReference} locale={locale} className="w-full" />
+                        ) : imgUrl ? (
+                          <Image src={imgUrl} alt={entry.name ?? entry.cardReference} fill sizes="150px" className="object-cover" unoptimized />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center p-1">
+                            <span className="text-[9px] text-c-text-muted text-center font-mono leading-tight">{entry.cardReference}</span>
+                          </div>
+                        )}
+
+                        {entry.isFoil && (
+                          <span className="absolute top-1 left-1 text-[9px] font-bold text-amber-300 bg-black/70 px-1 py-0.5 rounded z-10">
+                            FOIL
+                          </span>
+                        )}
+
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(entry.id); }}
+                          disabled={isBusy}
+                          className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-red-600/80 hover:bg-red-500 text-white rounded p-1 text-[10px] z-10"
+                        >
+                          <i className="fa-solid fa-trash" />
+                        </button>
+                      </div>
+
+                      {/* Quantité — sous la carte */}
+                      <div className="flex items-center bg-c-elevated border-t border-c-border">
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(entry, -1); }}
+                          disabled={isBusy}
+                          className="flex-1 py-2 flex items-center justify-center text-c-text-muted hover:bg-red-600 hover:text-white active:bg-red-700 transition-colors disabled:opacity-30 text-base font-bold"
+                        >
+                          −
+                        </button>
+                        <span className="text-sm font-bold text-amber-400 px-2 min-w-[32px] text-center">
+                          {isBusy ? '…' : `×${entry.quantity}`}
+                        </span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleUpdateQuantity(entry, +1); }}
+                          disabled={isBusy || (isUnique && entry.quantity >= 1)}
+                          className="flex-1 py-2 flex items-center justify-center text-c-text-muted hover:bg-green-600 hover:text-white active:bg-green-700 transition-colors disabled:opacity-30 text-base font-bold"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
@@ -413,14 +470,14 @@ export default function CollectionPage() {
       {lightbox && (
         <div
           className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setLightbox(null)}
+          onClick={() => setLightboxIdx(null)}
         >
           <div
             className="relative flex flex-col items-center gap-3"
             onClick={(e) => e.stopPropagation()}
           >
             <button
-              onClick={() => setLightbox(null)}
+              onClick={() => setLightboxIdx(null)}
               className="absolute -top-3 -right-3 z-10 bg-c-surface border border-c-border rounded-full w-8 h-8 flex items-center justify-center text-c-text-muted hover:text-c-text transition"
             >
               <i className="fa-solid fa-xmark text-sm" />
@@ -448,11 +505,44 @@ export default function CollectionPage() {
             <div className="text-center">
               <p className="text-sm font-semibold text-c-text">{lightbox.name ?? lightbox.cardReference}</p>
               <p className="text-xs text-c-text-muted font-mono">{lightbox.cardReference}</p>
-              {lightbox.quantity > 1 && (
-                <p className="text-xs text-amber-400 mt-0.5">×{lightbox.quantity}</p>
-              )}
+              <div className="flex items-center justify-center gap-3 mt-2">
+                <button
+                  onClick={() => handleUpdateQuantity(lightbox, -1)}
+                  disabled={updating === lightbox.id || deleting === lightbox.id}
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-c-input hover:bg-red-600 text-c-text hover:text-white transition disabled:opacity-30 text-xl font-bold"
+                >
+                  −
+                </button>
+                <span className="text-xl font-bold text-amber-400 min-w-[3rem] text-center">×{lightbox.quantity}</span>
+                <button
+                  onClick={() => handleUpdateQuantity(lightbox, +1)}
+                  disabled={updating === lightbox.id || deleting === lightbox.id || (getRarityFromSlug(lightbox.cardReference) === 'UNIQUE' && lightbox.quantity >= 1)}
+                  className="w-11 h-11 flex items-center justify-center rounded-full bg-c-input hover:bg-green-600 text-c-text hover:text-white transition disabled:opacity-30 text-xl font-bold"
+                >
+                  +
+                </button>
+              </div>
+              <p className="text-xs text-white/40 mt-1">{(lightboxIdx ?? 0) + 1} / {filtered.length}</p>
             </div>
           </div>
+
+          {/* Prev */}
+          <button
+            onClick={(e) => { e.stopPropagation(); lightboxPrev(); }}
+            disabled={lightboxIdx === 0}
+            className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white disabled:opacity-20 transition"
+          >
+            <i className="fa-solid fa-chevron-left text-base" />
+          </button>
+
+          {/* Next */}
+          <button
+            onClick={(e) => { e.stopPropagation(); lightboxNext(); }}
+            disabled={lightboxIdx === filtered.length - 1}
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/25 text-white disabled:opacity-20 transition"
+          >
+            <i className="fa-solid fa-chevron-right text-base" />
+          </button>
         </div>
       )}
     </SiteLayout>
