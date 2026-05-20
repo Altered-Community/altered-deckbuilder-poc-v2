@@ -52,6 +52,9 @@ export interface ApiDeck {
   } | null;
   createdAt: string;
   updatedAt: string | null;
+  viewCount?: number;
+  upvoteCount?: number;
+  hasUpvoted?: boolean;
 }
 
 export interface ApiDeckCard {

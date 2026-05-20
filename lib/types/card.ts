@@ -45,7 +45,7 @@ export interface CardGroup {
 
 export interface CardGroupFilters {
   name?: string;
-  faction?: string;
+  faction?: string | string[];
   cardType?: string | string[];
   excludeCardTypes?: string[];
   excludeCardSubTypes?: string[];
@@ -56,7 +56,7 @@ export interface CardGroupFilters {
   mountainPower?: string;
   forestPower?: string;
   'order[set.date]'?: 'asc' | 'desc';
-  'set.reference'?: string;
+  'set.reference'?: string | string[];
   promo?: string;
   page?: number;
   itemsPerPage?: number;

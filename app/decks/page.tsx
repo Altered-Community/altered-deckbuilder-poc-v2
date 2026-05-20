@@ -4,7 +4,8 @@ import { useEffect, useState, useMemo } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDecks, getPublicDecks, deleteDeck } from '@/lib/api/deckApi';
+import { signIn } from 'next-auth/react';
+import { getDecks, getPublicDecks, deleteDeck, upvoteDeck } from '@/lib/api/deckApi';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteLayout from '@/components/layout/SiteLayout';
@@ -49,15 +50,20 @@ export default function DecksPage() {
   const [filterHero, setFilterHero] = useState<string | null>(null);
   const [filterFormat, setFilterFormat] = useState<string>('');
   const [filterSearch, setFilterSearch] = useState<string>('');
+  const [filterCardName, setFilterCardName] = useState<string>('');
+  const [sortBy, setSortBy] = useState<'recent' | 'upvotes' | 'views'>('recent');
+
+  /* Upvotes (optimistic) */
+  const [upvoting, setUpvoting] = useState<string | null>(null);
 
   /* Fetch decks publics */
   useEffect(() => {
     let active = true;
-    async function load() {
+    const timer = setTimeout(async () => {
       setPublicLoading(true);
       setPublicError(null);
       try {
-        const res = await getPublicDecks(locale, publicPage);
+        const res = await getPublicDecks(locale, publicPage, { cardName: filterCardName || undefined, sortBy });
         if (!active) return;
         setPublicDecks(res.items);
         setPublicLastPage(res.lastPage);
@@ -67,10 +73,9 @@ export default function DecksPage() {
       } finally {
         if (active) setPublicLoading(false);
       }
-    }
-    load();
-    return () => { active = false; };
-  }, [locale, publicPage, t]);
+    }, filterCardName ? 400 : 0);
+    return () => { active = false; clearTimeout(timer); };
+  }, [locale, publicPage, filterCardName, sortBy, t]);
 
   /* Fetch mes decks */
   useEffect(() => {
@@ -95,6 +100,9 @@ export default function DecksPage() {
     return () => { active = false; };
   }, [isAuthenticated, locale, myPage, t]);
 
+  /* Reset page quand les filtres serveur changent */
+  useEffect(() => { setPublicPage(1); }, [filterCardName, sortBy]);
+
   /* Reset filtres au changement de tab */
   const handleTabChange = (tab: Tab) => {
     setActiveTab(tab);
@@ -102,6 +110,35 @@ export default function DecksPage() {
     setFilterHero(null);
     setFilterFormat('');
     setFilterSearch('');
+    setFilterCardName('');
+    setSortBy('recent');
+  };
+
+  const handleUpvote = async (deck: ApiDeck) => {
+    if (!isAuthenticated) { signIn('keycloak'); return; }
+    if (upvoting) return;
+    setUpvoting(deck.id);
+    // optimistic update
+    setPublicDecks((prev) => prev.map((d) =>
+      d.id !== deck.id ? d : {
+        ...d,
+        upvoteCount: (d.upvoteCount ?? 0) + (d.hasUpvoted ? -1 : 1),
+        hasUpvoted: !d.hasUpvoted,
+      }
+    ));
+    try {
+      const res = await upvoteDeck(deck.id);
+      setPublicDecks((prev) => prev.map((d) =>
+        d.id !== deck.id ? d : { ...d, upvoteCount: res.upvoteCount, hasUpvoted: res.hasUpvoted }
+      ));
+    } catch {
+      // revert on error
+      setPublicDecks((prev) => prev.map((d) =>
+        d.id !== deck.id ? d : { ...d, upvoteCount: deck.upvoteCount, hasUpvoted: deck.hasUpvoted }
+      ));
+    } finally {
+      setUpvoting(null);
+    }
   };
 
   const currentPage = activeTab === 'public' ? publicPage : myPage;
@@ -160,7 +197,7 @@ export default function DecksPage() {
     return result;
   }, [activeDecks, activeTab, filterFaction, filterHero, filterFormat, filterSearch]);
 
-  const hasFilter = !!(filterFaction || filterHero || filterFormat || filterSearch);
+  const hasFilter = !!(filterFaction || filterHero || filterFormat || filterSearch || filterCardName);
 
   const isLoading = activeTab === 'public' ? publicLoading : (isAuthenticated ? myLoading : false);
   const error = activeTab === 'public' ? publicError : myError;
@@ -221,9 +258,26 @@ export default function DecksPage() {
               type="text"
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
-              placeholder="Rechercher un deck…"
-              className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-44"
+              placeholder="Nom du deck…"
+              className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-36"
             />
+            {activeTab === 'public' && (
+              <>
+                <span className="filter-label" style={{ marginLeft: '0.5rem' }}>
+                  <i className="fa-solid fa-layer-group mr-1 opacity-60" />Carte
+                </span>
+                <div className="relative">
+                  <i className="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-c-text-muted text-[10px] pointer-events-none" />
+                  <input
+                    type="text"
+                    value={filterCardName}
+                    onChange={(e) => setFilterCardName(e.target.value)}
+                    placeholder="Contient la carte…"
+                    className="pl-6 pr-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-40"
+                  />
+                </div>
+              </>
+            )}
             {formats.length > 0 && (
               <>
                 <span className="filter-label" style={{ marginLeft: '0.5rem' }}>Format</span>
@@ -237,9 +291,23 @@ export default function DecksPage() {
                 </select>
               </>
             )}
+            {activeTab === 'public' && (
+              <>
+                <span className="filter-label" style={{ marginLeft: '0.5rem' }}>Tri</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
+                >
+                  <option value="recent">Récents</option>
+                  <option value="upvotes">Upvotes</option>
+                  <option value="views">Vus</option>
+                </select>
+              </>
+            )}
             {hasFilter && (
               <button
-                onClick={() => { setFilterFaction(null); setFilterHero(null); setFilterFormat(''); setFilterSearch(''); }}
+                onClick={() => { setFilterFaction(null); setFilterHero(null); setFilterFormat(''); setFilterSearch(''); setFilterCardName(''); setSortBy('recent'); }}
                 className="ml-auto text-xs text-c-text-subtle hover:text-amber-500 underline transition"
               >
                 {t('decks.reset')}
@@ -410,8 +478,31 @@ export default function DecksPage() {
                           })}
                         </div>
 
-                        {/* Ligne 2 : boutons */}
-                        <div className="pt-1.5 flex items-stretch gap-1.5">
+                        {/* Ligne 2 : vues + upvotes + boutons */}
+                        <div className="pt-1.5 flex items-center gap-2">
+                          {/* View count — public seulement */}
+                          {activeTab === 'public' && deck.viewCount != null && (
+                            <span className="flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full bg-black/40 text-white backdrop-blur-sm">
+                              <i className="fa-solid fa-eye text-xs opacity-80" />
+                              {deck.viewCount}
+                            </span>
+                          )}
+                          {/* Upvote — public seulement */}
+                          {activeTab === 'public' && (
+                            <button
+                              onClick={(e) => { e.preventDefault(); handleUpvote(deck); }}
+                              disabled={upvoting === deck.id}
+                              title={isAuthenticated ? (deck.hasUpvoted ? 'Retirer mon upvote' : 'Upvoter') : 'Se connecter pour upvoter'}
+                              className={`flex items-center gap-1.5 text-sm font-semibold px-3 py-1 rounded-full transition-all ${
+                                deck.hasUpvoted
+                                  ? 'bg-amber-400 text-white shadow-[0_0_10px_rgba(251,191,36,0.6)]'
+                                  : 'bg-black/40 text-white/90 hover:bg-amber-400/80 hover:text-white backdrop-blur-sm'
+                              } disabled:cursor-default`}
+                            >
+                              <i className={`fa-${deck.hasUpvoted ? 'solid' : 'regular'} fa-thumbs-up text-xs`} />
+                              {deck.upvoteCount ?? 0}
+                            </button>
+                          )}
                           {activeTab === 'myDecks' && (
                             <>
                               <Link href={`/decks/${deck.id}`} className="ac-btn">
@@ -421,7 +512,7 @@ export default function DecksPage() {
                               <button
                                 onClick={() => handleDelete(deck)}
                                 disabled={deleting === deck.id}
-                                className="ac-btn ac-btn-danger"
+                                className="ac-btn ac-btn-danger self-stretch px-2.5"
                                 style={{ opacity: deleting === deck.id ? 0.5 : 1 }}
                                 title={t('common.delete')}
                               >

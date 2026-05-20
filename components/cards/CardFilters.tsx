@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { fetchSets, fetchFactions } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
 import type { CardGroupFilters } from '@/lib/types/card';
+import MultiSelect from '@/components/ui/MultiSelect';
 
 interface CardFiltersProps {
   filters: CardGroupFilters;
@@ -44,6 +45,10 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
     onChange({ ...filters, [key]: value || undefined, page: 1 });
   };
 
+  const updateMulti = (key: keyof CardGroupFilters, values: string[]) => {
+    onChange({ ...filters, [key]: values.length ? values : undefined, page: 1 });
+  };
+
   const hasActiveFilters = Object.entries(filters).some(
     ([k, v]) => k !== 'page' && v !== undefined && v !== ''
   );
@@ -64,30 +69,24 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
 
       {/* Ligne 1 : Type · Faction · Set */}
       <div className="grid grid-cols-3 gap-2">
-        <select
-          value={Array.isArray(filters.cardType) ? (filters.cardType[0] ?? '') : (filters.cardType ?? '')}
-          onChange={(e) => onChange({ ...filters, cardType: e.target.value ? [e.target.value] : undefined, page: 1 })}
-          className={selectClass}
-        >
-          <option value="">{t('allTypes')}</option>
-          {CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => (
-            <option key={type.value} value={type.value}>{type.label}</option>
-          ))}
-        </select>
-
-        <select value={filters['faction'] ?? ''} onChange={(e) => update('faction', e.target.value)} className={selectClass}>
-          <option value="">{t('allFactions')}</option>
-          {factions.map(({ code, name }) => (
-            <option key={code} value={code}>{name}</option>
-          ))}
-        </select>
-
-        <select value={filters['set.reference'] ?? ''} onChange={(e) => update('set.reference', e.target.value)} className={selectClass}>
-          <option value="">{t('allSets')}</option>
-          {sets.map((s) => (
-            <option key={s.reference} value={s.reference}>{s.name}</option>
-          ))}
-        </select>
+        <MultiSelect
+          options={CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => ({ value: type.value, label: type.label }))}
+          value={Array.isArray(filters.cardType) ? filters.cardType : (filters.cardType ? [filters.cardType] : [])}
+          onChange={(vals) => updateMulti('cardType', vals)}
+          placeholder={t('allTypes')}
+        />
+        <MultiSelect
+          options={factions.map(({ code, name }) => ({ value: code, label: name }))}
+          value={Array.isArray(filters.faction) ? filters.faction : (filters.faction ? [filters.faction] : [])}
+          onChange={(vals) => updateMulti('faction', vals)}
+          placeholder={t('allFactions')}
+        />
+        <MultiSelect
+          options={sets.map((s) => ({ value: s.reference, label: s.name }))}
+          value={Array.isArray(filters['set.reference']) ? filters['set.reference'] : (filters['set.reference'] ? [filters['set.reference']] : [])}
+          onChange={(vals) => updateMulti('set.reference', vals)}
+          placeholder={t('allSets')}
+        />
       </div>
 
       {/* Ligne 2 : Coût main · Réserve · Mer · Montagne · Forêt */}

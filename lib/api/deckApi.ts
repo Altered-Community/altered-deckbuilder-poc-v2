@@ -14,7 +14,6 @@ const DECK_API_BASE =
 
 async function deckFetch(path: string, options: RequestInit = {}): Promise<Response> {
   const token = await getValidToken();
-  
   return fetch(`${DECK_API_BASE}${path}`, {
     ...options,
     headers: {
@@ -24,6 +23,10 @@ async function deckFetch(path: string, options: RequestInit = {}): Promise<Respo
       ...options.headers,
     },
   });
+}
+
+async function tryGetToken(): Promise<string | null> {
+  try { return await getValidToken(); } catch { return null; }
 }
 
 export async function fetchFormats(): Promise<ApiFormat[]> {
@@ -60,12 +63,26 @@ export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedRes
   return normalizePaginated<ApiDeck>(await res.json());
 }
 
-export async function getPublicDecks(locale = 'fr', page = 1): Promise<ApiPaginatedResponse<ApiDeck>> {
-  const res = await fetch(`${DECK_API_BASE}/decks/public?locale=${locale}&page=${page}`, {
-    headers: { Accept: 'application/json' },
-  });
+export async function getPublicDecks(
+  locale = 'fr',
+  page = 1,
+  filters: { cardName?: string; sortBy?: 'recent' | 'upvotes' | 'views' } = {},
+): Promise<ApiPaginatedResponse<ApiDeck>> {
+  const params = new URLSearchParams({ locale, page: String(page) });
+  if (filters.cardName) params.set('cardName', filters.cardName);
+  if (filters.sortBy) params.set('sortBy', filters.sortBy);
+  const token = await tryGetToken();
+  const headers: HeadersInit = { Accept: 'application/json' };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const res = await fetch(`${DECK_API_BASE}/decks/public?${params}`, { headers });
   if (!res.ok) throw new Error(`Erreur chargement decks publics : ${res.status}`);
   return normalizePaginated<ApiDeck>(await res.json());
+}
+
+export async function upvoteDeck(id: string): Promise<{ upvoteCount: number; hasUpvoted: boolean }> {
+  const res = await deckFetch(`/decks/${id}/upvote`, { method: 'POST' });
+  if (!res.ok) throw new Error(`Upvote échoué : ${res.status}`);
+  return res.json();
 }
 
 export async function getDeckDetail(id: string, locale = 'fr'): Promise<ApiDeckDetail> {

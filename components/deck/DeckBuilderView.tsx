@@ -10,6 +10,7 @@ import { useDeckStore } from '@/store/deckStore';
 import { getCardGroupFaction } from '@/lib/utils/card';
 import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
 
+
 interface Props {
   initialFaction?: string;
 }
@@ -33,6 +34,9 @@ export default function DeckBuilderView({ initialFaction }: Props) {
   const factionCode = getCardGroupFaction(hero);
   const factionName = factionCode ? FACTIONS[factionCode] : '';
   const factionBadge = factionCode ? (FACTION_BADGE_COLORS[factionCode] ?? 'bg-gray-600') : 'bg-gray-700';
+  const format = useDeckStore((s) => s.deck.format);
+  const isSandbox = format?.code === 'sandbox';
+  const browserFaction = isSandbox ? undefined : (factionCode ?? initialFaction);
 
   return (
     <div className="flex flex-col overflow-hidden" style={{ height: 'calc(100dvh - var(--nav-h))', minHeight: 0 }}>
@@ -59,7 +63,7 @@ export default function DeckBuilderView({ initialFaction }: Props) {
             {t('deckBuilder.cardLibrary')}
           </h2>
           <div className="flex-1 overflow-hidden">
-            <CardBrowser key={factionCode ?? initialFaction} initialFaction={factionCode ?? initialFaction} />
+            <CardBrowser key={browserFaction ?? 'no-faction'} initialFaction={browserFaction} />
           </div>
         </div>
 
@@ -80,7 +84,7 @@ export default function DeckBuilderView({ initialFaction }: Props) {
         {/* ── Mobile : onglet actif seulement ── */}
         <div className={`flex-1 flex-col p-3 overflow-hidden ${mobileTab === 'cards' ? 'flex' : 'hidden'} md:hidden`}>
           <div className="flex-1 overflow-hidden">
-            <CardBrowser key={factionCode ?? initialFaction} initialFaction={factionCode ?? initialFaction} />
+            <CardBrowser key={browserFaction ?? 'no-faction'} initialFaction={browserFaction} />
           </div>
         </div>
 

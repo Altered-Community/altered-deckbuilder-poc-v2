@@ -40,11 +40,17 @@ export default function CardBrowser({ initialFaction }: Props) {
   });
 
   const factionCode = hero ? getCardGroupFaction(hero) : initialFaction;
+  const format = useDeckStore((s) => s.deck.format);
+  const isSandbox = format?.code === 'sandbox';
+
+  useEffect(() => {
+    setFilters((f) => ({ ...f, faction: undefined, page: 1 }));
+  }, [isSandbox]);
 
   const { data: normalData, isLoading: normalLoading, isFetching: normalFetching, isError: normalError } = useQuery({
-    queryKey: ['cards', filters, factionCode, locale],
-    queryFn: () => fetchCardGroups({ ...filters, faction: factionCode, excludeCardTypes: ['HERO'] }, locale),
-    enabled: !!factionCode && !showOnlyOwned,
+    queryKey: ['cards', filters, isSandbox ? 'sandbox' : factionCode, locale],
+    queryFn: () => fetchCardGroups({ ...filters, faction: isSandbox ? filters.faction : factionCode, excludeCardTypes: ['HERO'] }, locale),
+    enabled: (isSandbox || !!factionCode) && !showOnlyOwned,
     placeholderData: (prev) => prev,
   });
 
@@ -78,7 +84,11 @@ export default function CardBrowser({ initialFaction }: Props) {
     if (!ownedGroups) return [];
     return ownedGroups.filter((g) => {
       if (g.cardType?.reference === 'HERO') return false;
-      if (factionCode && g.faction?.code !== factionCode) return false;
+      if (!isSandbox && factionCode && g.faction?.code !== factionCode) return false;
+      if (isSandbox) {
+        const factionFilters = Array.isArray(filters.faction) ? filters.faction : filters.faction ? [filters.faction] : [];
+        if (factionFilters.length && !factionFilters.includes(g.faction?.code ?? '')) return false;
+      }
       const name = filters.name?.toLowerCase();
       if (name && !g.name?.toLowerCase().includes(name)) return false;
       const rarity = Array.isArray(filters.rarity) ? filters.rarity : filters.rarity ? [filters.rarity] : [];

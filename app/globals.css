@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "tom-select/dist/css/tom-select.css";
 @variant dark (.dark &);
 
 /* Light mode */
@@ -718,4 +719,60 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
+}
+
+/* ── Tom Select theme override ── */
+.ts-wrapper.multi .ts-control {
+  background: var(--c-input);
+  border-color: var(--c-border);
+  border-radius: 6px;
+  padding: 3px 6px;
+  min-height: 30px;
+  gap: 3px;
+  flex-wrap: wrap;
+  cursor: text;
+}
+.ts-wrapper.multi .ts-control input {
+  color: var(--c-text);
+  font-size: .75rem;
+}
+.ts-wrapper.multi .ts-control input::placeholder {
+  color: var(--c-text-muted);
+}
+.ts-wrapper.multi .ts-control .item {
+  background: var(--primary-400, #f59e0b);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  font-size: .7rem;
+  padding: 1px 5px;
+}
+.ts-wrapper.multi .ts-control .item .remove {
+  color: rgba(255,255,255,0.7);
+  border-left: none;
+  padding: 0 2px;
+}
+.ts-wrapper .ts-dropdown {
+  background: var(--c-surface);
+  border-color: var(--c-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  font-size: .75rem;
+}
+.ts-wrapper .ts-dropdown .option {
+  color: var(--c-text);
+  padding: 5px 10px;
+}
+.ts-wrapper .ts-dropdown .option:hover,
+.ts-wrapper .ts-dropdown .option.active {
+  background: var(--c-elevated);
+  color: var(--c-text);
+}
+.ts-wrapper .ts-dropdown .option.selected {
+  background: color-mix(in srgb, var(--primary-400, #f59e0b) 20%, transparent);
+}
+.ts-wrapper.focus .ts-control {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 1px #f59e0b;
+  outline: none;
 }

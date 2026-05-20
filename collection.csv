@@ -1,0 +1,696 @@
+﻿"2026-05-19 21:17:49";;;
+card_reference;card_name;rarity;quantity
+ALT_ALIZE_A_BR_37_C;"Gericht, Bretteur Honoré";Commun;1
+ALT_ALIZE_A_MU_35_C;"Saskia, Naturaliste Rusée";Commun;1
+ALT_ALIZE_A_MU_35_R2;"Saskia, Naturaliste Rusée";Rare;1
+ALT_ALIZE_A_OR_47_C;"Lac Saisi par les Glaces";Commun;3
+ALT_ALIZE_B_AX_32_C;"La Machine dans la Glace";Commun;4
+ALT_ALIZE_B_AX_32_U_10696;"La machine dans la glace";Unique;1
+ALT_ALIZE_B_AX_33_C;"Macareux à Roquettes";Commun;4
+ALT_ALIZE_B_AX_33_R2;"Macareux à Roquettes";Rare;1
+ALT_ALIZE_B_AX_34_C;"La Petite Fille aux Allumettes";Commun;4
+ALT_ALIZE_B_AX_34_R2;"La Petite Fille aux Allumettes";Rare;1
+ALT_ALIZE_B_AX_35_C;"Vaike, l'Énergéticienne";Commun;4
+ALT_ALIZE_B_AX_36_C;"Éclaireur Morse";Commun;4
+ALT_ALIZE_B_AX_36_R2;"Éclaireur Morse";Rare;1
+ALT_ALIZE_B_AX_37_C;"Porteuse Intrépide";Commun;4
+ALT_ALIZE_B_AX_38_C;"Prototype Défectueux";Commun;4
+ALT_ALIZE_B_AX_38_R2;"Prototype Défectueux";Rare;2
+ALT_ALIZE_B_AX_39_C;Vishvakarma;Commun;4
+ALT_ALIZE_B_AX_39_R2;Vishvakarma;Rare;1
+ALT_ALIZE_B_AX_40_C;Gibil;Commun;4
+ALT_ALIZE_B_AX_41_C;"Livraison Gelée";Commun;4
+ALT_ALIZE_B_AX_41_R1;"Livraison Gelée";Rare;1
+ALT_ALIZE_B_AX_42_C;Avalanche;Commun;4
+ALT_ALIZE_B_AX_42_R2;Avalanche;Rare;1
+ALT_ALIZE_B_AX_43_C;"Radiateur Kélonique";Commun;4
+ALT_ALIZE_B_AX_44_C;"Lord Kelvin";Commun;4
+ALT_ALIZE_B_AX_45_C;"Recycleur Gelé";Commun;4
+ALT_ALIZE_B_AX_45_R2;"Recycleur Gelé";Rare;1
+ALT_ALIZE_B_AX_46_C;"Galeries Saisies par les Glaces";Commun;4
+ALT_ALIZE_B_AX_46_R2;"Galeries Saisies par les Glaces";Rare;1
+ALT_ALIZE_B_BR_01_C;"Kojo & Booda";Commun;1
+ALT_ALIZE_B_BR_03_C;"Basira & Kaizaimon";Commun;1
+ALT_ALIZE_B_BR_32_C;"Lapin Ardent";Commun;1
+ALT_ALIZE_B_BR_32_R2;"Lapin Ardent";Rare;1
+ALT_ALIZE_B_BR_33_C;Skadi;Commun;2
+ALT_ALIZE_B_BR_34_C;"Seiringar de Havre";Commun;3
+ALT_ALIZE_B_BR_35_C;"Déblayeur Bravos";Commun;3
+ALT_ALIZE_B_BR_35_R1;"Déblayeur Bravos";Rare;1
+ALT_ALIZE_B_BR_35_R2;"Déblayeur Bravos";Rare;1
+ALT_ALIZE_B_BR_36_C;"Secouriste Bravos";Commun;4
+ALT_ALIZE_B_BR_37_C;"Gericht, Bretteur Honoré";Commun;1
+ALT_ALIZE_B_BR_38_C;Akhlut;Commun;3
+ALT_ALIZE_B_BR_39_C;Amarok;Commun;4
+ALT_ALIZE_B_BR_40_C;Éros;Commun;4
+ALT_ALIZE_B_BR_40_R2;Éros;Rare;1
+ALT_ALIZE_B_BR_41_C;"Embrasement de Mana";Commun;3
+ALT_ALIZE_B_BR_41_R2;"Embrasement de Mana";Rare;1
+ALT_ALIZE_B_BR_42_C;Geyser;Commun;3
+ALT_ALIZE_B_BR_42_R1;Geyser;Rare;1
+ALT_ALIZE_B_BR_43_C;"Lait d'Arcolano";Commun;4
+ALT_ALIZE_B_BR_43_R1;"Lait d'Arcolano";Rare;1
+ALT_ALIZE_B_BR_44_C;"Bottes Techniques";Commun;4
+ALT_ALIZE_B_BR_45_C;"Barre Énergétique Mangez-Moi";Commun;4
+ALT_ALIZE_B_BR_46_C;"Pic Saisi par les Glaces";Commun;3
+ALT_ALIZE_B_LY_02_C;"Auraq & Kibble";Commun;1
+ALT_ALIZE_B_LY_03_C;"Fen & Crowbar";Commun;1
+ALT_ALIZE_B_LY_31_C;"Entasseur Magpeng";Commun;3
+ALT_ALIZE_B_LY_31_R1;"Entasseur Magpeng";Rare;1
+ALT_ALIZE_B_LY_31_R2;"Entasseur Magpeng";Rare;1
+ALT_ALIZE_B_LY_32_C;"Commando Boule-de-Neige";Commun;4
+ALT_ALIZE_B_LY_32_R1;"Commando Boule-de-Neige";Rare;1
+ALT_ALIZE_B_LY_33_C;"Le Bonhomme de Neige";Commun;1
+ALT_ALIZE_B_LY_34_C;"Nyala, Habile Illusionniste";Commun;4
+ALT_ALIZE_B_LY_34_R1;"Nyala, Habile Illusionniste";Rare;1
+ALT_ALIZE_B_LY_35_C;"Feu Follet";Commun;4
+ALT_ALIZE_B_LY_36_C;Nisse;Commun;1
+ALT_ALIZE_B_LY_37_C;"Le Père Noël";Commun;3
+ALT_ALIZE_B_LY_37_R1;"Le Père Noël";Rare;1
+ALT_ALIZE_B_LY_38_C;Heimdall;Commun;3
+ALT_ALIZE_B_LY_39_C;"Tour de Passe-Passe";Commun;4
+ALT_ALIZE_B_LY_40_C;"Virée Endiablée";Commun;1
+ALT_ALIZE_B_LY_40_R1;"Virée Endiablée";Rare;1
+ALT_ALIZE_B_LY_41_C;"Douce Nuit";Commun;1
+ALT_ALIZE_B_LY_41_R2;"Douce Nuit";Rare;1
+ALT_ALIZE_B_LY_42_R2;"Briser la Glace";Rare;1
+ALT_ALIZE_B_LY_43_C;"Tenue Hivernale";Commun;4
+ALT_ALIZE_B_LY_43_R1;"Tenue Hivernale";Rare;1
+ALT_ALIZE_B_LY_44_C;"Le Traîneau Enchanté";Commun;3
+ALT_ALIZE_B_LY_45_C;"Toundra Saisie par les Glaces";Commun;4
+ALT_ALIZE_B_MU_02_C;"Arjun & Spike";Commun;1
+ALT_ALIZE_B_MU_03_C;"Rin & Orchid";Commun;1
+ALT_ALIZE_B_MU_31_C;"Jack Frost";Commun;3
+ALT_ALIZE_B_MU_31_R2;"Jack Frost";Rare;1
+ALT_ALIZE_B_MU_32_C;"Champignon Exténueur";Commun;3
+ALT_ALIZE_B_MU_33_C;Perséphone;Commun;2
+ALT_ALIZE_B_MU_33_R2;Perséphone;Rare;1
+ALT_ALIZE_B_MU_34_C;"Loutre Rempoteuse";Commun;3
+ALT_ALIZE_B_MU_34_R2;"Loutre Rempoteuse";Rare;2
+ALT_ALIZE_B_MU_35_C;"Saskia, Naturaliste Rusée";Commun;1
+ALT_ALIZE_B_MU_35_R1;"Saskia, Naturaliste Rusée";Rare;1
+ALT_ALIZE_B_MU_36_C;Yéti;Commun;2
+ALT_ALIZE_B_MU_37_C;"Puissant Simbi";Commun;4
+ALT_ALIZE_B_MU_37_R2;"Puissant Simbi";Rare;1
+ALT_ALIZE_B_MU_38_C;Liéchi;Commun;1
+ALT_ALIZE_B_MU_38_R1;Liéchi;Rare;1
+ALT_ALIZE_B_MU_38_R2;Liéchi;Rare;2
+ALT_ALIZE_B_MU_40_C;Déméter;Commun;4
+ALT_ALIZE_B_MU_40_R1;Déméter;Rare;1
+ALT_ALIZE_B_MU_41_C;Semer;Commun;2
+ALT_ALIZE_B_MU_41_R1;Semer;Rare;1
+ALT_ALIZE_B_MU_41_R2;Semer;Rare;1
+ALT_ALIZE_B_MU_42_C;"Perdu en Forêt";Commun;4
+ALT_ALIZE_B_MU_43_C;"Haricots Magiques";Commun;4
+ALT_ALIZE_B_MU_43_R1;"Haricots Magiques";Rare;1
+ALT_ALIZE_B_MU_44_C;"Tente Florale";Commun;1
+ALT_ALIZE_B_MU_44_R1;"Tente Florale";Rare;1
+ALT_ALIZE_B_MU_44_R2;"Tente Florale";Rare;1
+ALT_ALIZE_B_MU_45_C;"Taïga Saisie par les Glaces";Commun;3
+ALT_ALIZE_B_MU_45_R1;"Taïga Saisie par les Glaces";Rare;1
+ALT_ALIZE_B_NE_FOILER_C;Foiler;Commun;12
+ALT_ALIZE_B_NE_FOILER_R;Foiler;Rare;6
+ALT_ALIZE_B_OR_03_C;"Gulrang & Tocsin";Commun;1
+ALT_ALIZE_B_OR_33_C;Limier;Commun;2
+ALT_ALIZE_B_OR_33_R1;Limier;Rare;2
+ALT_ALIZE_B_OR_34_C;"Superviseuse Ordis";Commun;4
+ALT_ALIZE_B_OR_34_R1;"Superviseuse Ordis";Rare;1
+ALT_ALIZE_B_OR_35_C;"Dong Da Shen";Commun;2
+ALT_ALIZE_B_OR_36_C;"Veilleur Ordis";Commun;3
+ALT_ALIZE_B_OR_37_C;"Ebenezer Scrooge";Commun;3
+ALT_ALIZE_B_OR_38_C;"Sunisa, Enseigne Dévouée";Commun;1
+ALT_ALIZE_B_OR_39_C;Valémon;Commun;3
+ALT_ALIZE_B_OR_39_R1;Valémon;Rare;1
+ALT_ALIZE_B_OR_40_C;Hypothermie;Commun;4
+ALT_ALIZE_B_OR_41_C;"Opératrice Ordis";Commun;4
+ALT_ALIZE_B_OR_42_C;"Case Prison";Commun;2
+ALT_ALIZE_B_OR_42_R1;"Case Prison";Rare;1
+ALT_ALIZE_B_OR_42_R2;"Case Prison";Rare;1
+ALT_ALIZE_B_OR_43_C;Renforts;Commun;3
+ALT_ALIZE_B_OR_43_R1;Renforts;Rare;1
+ALT_ALIZE_B_OR_44_C;"Cri de Ralliement";Commun;3
+ALT_ALIZE_B_OR_45_C;"Armurerie Mobile";Commun;3
+ALT_ALIZE_B_OR_46_C;Benzaiten;Commun;4
+ALT_ALIZE_B_OR_46_R1;Benzaiten;Rare;1
+ALT_ALIZE_B_OR_46_U_11422;Benzaiten;Unique;1
+ALT_ALIZE_B_OR_47_C;"Lac Saisi par les Glaces";Commun;4
+ALT_ALIZE_B_OR_47_R1;"Lac Saisi par les Glaces";Rare;2
+ALT_ALIZE_B_YZ_01_C;"Akesha & Taru";Commun;1
+ALT_ALIZE_B_YZ_03_C;"Afanas & Senka";Commun;1
+ALT_ALIZE_B_YZ_32_C;"Larve de Phalène";Commun;4
+ALT_ALIZE_B_YZ_32_R2;"Larve de Phalène";Rare;1
+ALT_ALIZE_B_YZ_33_C;Chrysalide;Commun;3
+ALT_ALIZE_B_YZ_34_C;Pamola;Commun;4
+ALT_ALIZE_B_YZ_35_C;Belasenka;Commun;4
+ALT_ALIZE_B_YZ_36_C;"Aroro, Rempart d'Asgartha";Commun;4
+ALT_ALIZE_B_YZ_36_R1;"Aroro, Rempart d'Asgartha";Rare;1
+ALT_ALIZE_B_YZ_36_R2;"Aroro, Rempart d'Asgartha";Rare;1
+ALT_ALIZE_B_YZ_37_C;"Nova Hivernale";Commun;4
+ALT_ALIZE_B_YZ_38_C;"La Reine des Neiges";Commun;4
+ALT_ALIZE_B_YZ_38_R2;"La Reine des Neiges";Rare;1
+ALT_ALIZE_B_YZ_39_C;Givre;Commun;4
+ALT_ALIZE_B_YZ_39_R2;Givre;Rare;1
+ALT_ALIZE_B_YZ_40_C;Gel;Commun;4
+ALT_ALIZE_B_YZ_41_C;"Invocation de Phalène";Commun;4
+ALT_ALIZE_B_YZ_41_R2;"Invocation de Phalène";Rare;1
+ALT_ALIZE_B_YZ_42_C;Blizzard;Commun;4
+ALT_ALIZE_B_YZ_43_C;"Nuée de Phalènes";Commun;4
+ALT_ALIZE_B_YZ_44_C;"Lanterne aux Phalènes";Commun;2
+ALT_ALIZE_B_YZ_44_R1;"Lanterne aux Phalènes";Rare;1
+ALT_ALIZE_B_YZ_45_C;"Le Nilam, Arbre-Monde Flétri";Commun;4
+ALT_ALIZE_B_YZ_45_R2;"Le Nilam, Arbre-Monde Flétri";Rare;1
+ALT_ALIZE_B_YZ_46_C;"Col Saisi par les Glaces";Commun;4
+ALT_ALIZE_B_YZ_46_R1;"Col Saisi par les Glaces";Rare;1
+ALT_BISE_B_NE_FOILER_C;Foiler;Commun;8
+ALT_BISE_B_NE_FOILER_R;Foiler;Rare;4
+ALT_CORE_A_AX_22_C;"Entraînement Mécanique";Commun;3
+ALT_CORE_A_AX_22_R1;"Entraînement Mécanique";Rare;3
+ALT_CORE_A_AX_22_R2;"Entraînement Mécanique";Rare;3
+ALT_CORE_A_BR_31_C;Booda;Commun;1
+ALT_CORE_A_YZ_31_C;Maw;Commun;1
+ALT_CORE_B_AX_07_R2;"Mécanicienne de la Fonderie";Rare;1
+ALT_CORE_B_AX_09_U_2751;"Fée Clochette";Unique;1
+ALT_CORE_B_AX_11_U_2249;"Amelia Earhart";Unique;1
+ALT_CORE_B_AX_16_U_2240;"Armurière de la Fonderie";Unique;1
+ALT_CORE_B_AX_18_U_2601;Athéna;Unique;1
+ALT_CORE_B_BR_04_R2;Ratatosk;Rare;1
+ALT_CORE_B_BR_14_U_4110;"Avant-Garde Bravos";Unique;1
+ALT_CORE_B_LY_18_U_5963;"Le Chapelier";Unique;1
+ALT_CORE_B_NE_FOILER_C;Foiler;Commun;11
+ALT_CORE_B_NE_FOILER_R;Foiler;Rare;11
+ALT_CORE_B_NE_FOILER_U;Foiler;Unique;8
+ALT_CORE_B_OR_01_C;"Sigismar & Wingspan";Commun;1
+ALT_CORE_B_OR_05_C;"Troupière Ordis";Commun;2
+ALT_CORE_B_OR_05_R1;"Troupière Ordis";Rare;1
+ALT_CORE_B_OR_06_C;"Cadets Ordis";Commun;3
+ALT_CORE_B_OR_07_C;"Scribe Runique du Monolithe";Commun;2
+ALT_CORE_B_OR_07_R1;"Scribe Runique du Monolithe";Rare;1
+ALT_CORE_B_OR_09_C;"Le Roi-Grenouille";Commun;3
+ALT_CORE_B_OR_13_C;"Gardienne Ordis";Commun;3
+ALT_CORE_B_OR_14_C;"Espionne Ordis";Commun;2
+ALT_CORE_B_OR_14_R1;"Espionne Ordis";Rare;1
+ALT_CORE_B_OR_15_C;"Kakoba, Commandant de Légion";Commun;2
+ALT_CORE_B_OR_15_R1;"Kakoba, Commandant de Légion";Rare;1
+ALT_CORE_B_OR_17_C;"Jeanne d'Arc";Commun;2
+ALT_CORE_B_OR_17_R1;"Jeanne d'Arc";Rare;1
+ALT_CORE_B_OR_19_U_5207;Issitoq;Unique;1
+ALT_CORE_B_OR_21_U_5037;"Robin des Bois";Unique;1
+ALT_CORE_B_OR_23_C;Chargez !;Commun;3
+ALT_CORE_B_OR_25_C;"Sceaux Adhésifs";Commun;3
+ALT_CORE_B_OR_26_R1;"Ouvrez les Portes";Rare;1
+ALT_CORE_B_OR_28_C;"Le Monolithe, Bastion Ordis";Commun;3
+ALT_CORE_B_OR_29_R1;"Grand Projet";Rare;1
+ALT_CORE_B_OR_30_C;"Transporteur Ordis";Commun;3
+ALT_CORE_B_YZ_09_U_635;"Dame du Lac";Unique;1
+ALT_CORE_B_YZ_13_R1;Alice;Rare;1
+ALT_CORE_B_YZ_17_U_4354;"Le Kraken";Unique;1
+ALT_CORE_P_OR_02_C;"Waru & Mack";Commun;1
+ALT_CORE_P_YZ_02_C;"Lindiwe & Maw";Commun;1
+ALT_CORE_P_YZ_03_C;"Afanas & Senka";Commun;1
+ALT_COREKS_B_AX_01_C;"Sierra & Oddball";Commun;4
+ALT_COREKS_B_AX_02_C;"Treyst & Rossum";Commun;2
+ALT_COREKS_B_AX_03_C;"Subhash & Marmo";Commun;1
+ALT_COREKS_B_AX_04_C;"Élémentaire de Kélon";Commun;2
+ALT_COREKS_B_AX_04_R1;"Élémentaire de Kélon";Rare;1
+ALT_COREKS_B_AX_04_R2;"Élémentaire de Kélon";Rare;1
+ALT_COREKS_B_AX_05_C;"Ingénieure de la Fonderie";Commun;2
+ALT_COREKS_B_AX_05_R1;"Ingénieure de la Fonderie";Rare;1
+ALT_COREKS_B_AX_05_R2;"Ingénieure de la Fonderie";Rare;1
+ALT_COREKS_B_AX_06_C;Ogun;Commun;3
+ALT_COREKS_B_AX_06_R1;Ogun;Rare;1
+ALT_COREKS_B_AX_06_R2;Ogun;Rare;1
+ALT_COREKS_B_AX_07_C;"Mécanicienne de la Fonderie";Commun;2
+ALT_COREKS_B_AX_07_R1;"Mécanicienne de la Fonderie";Rare;1
+ALT_COREKS_B_AX_07_U_5745;"Mécanicienne de la Fonderie";Unique;1
+ALT_COREKS_B_AX_08_C;"Récupérateur Axiom";Commun;2
+ALT_COREKS_B_AX_08_R1;"Récupérateur Axiom";Rare;1
+ALT_COREKS_B_AX_08_R2;"Récupérateur Axiom";Rare;1
+ALT_COREKS_B_AX_09_C;"Fée Clochette";Commun;2
+ALT_COREKS_B_AX_09_R1;"Fée Clochette";Rare;1
+ALT_COREKS_B_AX_09_R2;"Fée Clochette";Rare;1
+ALT_COREKS_B_AX_10_C;"Jian, Superviseur d'Assemblage";Commun;1
+ALT_COREKS_B_AX_10_R1;"Jian, Superviseur d'Assemblage";Rare;1
+ALT_COREKS_B_AX_10_R2;"Jian, Superviseur d'Assemblage";Rare;1
+ALT_COREKS_B_AX_11_C;"Amelia Earhart";Commun;2
+ALT_COREKS_B_AX_11_R1;"Amelia Earhart";Rare;1
+ALT_COREKS_B_AX_11_R2;"Amelia Earhart";Rare;1
+ALT_COREKS_B_AX_12_C;"Trois Petits Cochons";Commun;2
+ALT_COREKS_B_AX_12_R1;"Trois Petits Cochons";Rare;1
+ALT_COREKS_B_AX_12_R2;"Trois Petits Cochons";Rare;1
+ALT_COREKS_B_AX_13_C;"Ada Lovelace";Commun;2
+ALT_COREKS_B_AX_13_R1;"Ada Lovelace";Rare;1
+ALT_COREKS_B_AX_14_C;Coppélia;Commun;3
+ALT_COREKS_B_AX_14_R1;Coppélia;Rare;1
+ALT_COREKS_B_AX_14_R2;Coppélia;Rare;1
+ALT_COREKS_B_AX_14_U_1730;Coppélia;Unique;1
+ALT_COREKS_B_AX_15_C;"Brouilleur Axiom";Commun;3
+ALT_COREKS_B_AX_15_R1;"Brouilleur Axiom";Rare;1
+ALT_COREKS_B_AX_15_R2;"Brouilleur Axiom";Rare;1
+ALT_COREKS_B_AX_15_U_100;"Brouilleur Axiom";Unique;1
+ALT_COREKS_B_AX_16_C;"Armurière de la Fonderie";Commun;2
+ALT_COREKS_B_AX_16_R2;"Armurière de la Fonderie";Rare;1
+ALT_COREKS_B_AX_17_C;"Dr Frankenstein";Commun;2
+ALT_COREKS_B_AX_17_R1;"Dr Frankenstein";Rare;1
+ALT_COREKS_B_AX_17_R2;"Dr Frankenstein";Rare;1
+ALT_COREKS_B_AX_17_U_3486;"Dr Frankenstein";Unique;1
+ALT_COREKS_B_AX_18_C;Athéna;Commun;2
+ALT_COREKS_B_AX_18_R1;Athéna;Rare;1
+ALT_COREKS_B_AX_18_U_3175;Athéna;Unique;1
+ALT_COREKS_B_AX_19_C;Ganesh;Commun;2
+ALT_COREKS_B_AX_19_R1;Ganesh;Rare;1
+ALT_COREKS_B_AX_19_R2;Ganesh;Rare;1
+ALT_COREKS_B_AX_20_C;Happé;Commun;1
+ALT_COREKS_B_AX_20_R1;Happé;Rare;1
+ALT_COREKS_B_AX_20_R2;Happé;Rare;1
+ALT_COREKS_B_AX_21_C;Boum !;Commun;3
+ALT_COREKS_B_AX_21_R1;Boum !;Rare;1
+ALT_COREKS_B_AX_21_R2;Boum !;Rare;1
+ALT_COREKS_B_AX_22_C;"Entraînement Mécanique";Commun;2
+ALT_COREKS_B_AX_22_R1;"Entraînement Mécanique";Rare;1
+ALT_COREKS_B_AX_22_R2;"Entraînement Mécanique";Rare;1
+ALT_COREKS_B_AX_23_C;"Décharge de Kélon";Commun;3
+ALT_COREKS_B_AX_23_R1;"Décharge de Kélon";Rare;1
+ALT_COREKS_B_AX_23_R2;"Décharge de Kélon";Rare;1
+ALT_COREKS_B_AX_24_C;"Hub des Scarabots";Commun;2
+ALT_COREKS_B_AX_24_R1;"Hub des Scarabots";Rare;1
+ALT_COREKS_B_AX_24_R2;"Hub des Scarabots";Rare;1
+ALT_COREKS_B_AX_25_C;"Recycleur Axiom";Commun;2
+ALT_COREKS_B_AX_25_R1;"Recycleur Axiom";Rare;1
+ALT_COREKS_B_AX_25_R2;"Recycleur Axiom";Rare;1
+ALT_COREKS_B_AX_26_C;"Cylindre de Kélon";Commun;3
+ALT_COREKS_B_AX_26_R2;"Cylindre de Kélon";Rare;1
+ALT_COREKS_B_AX_27_C;"Générateur Kélonique";Commun;3
+ALT_COREKS_B_AX_27_R1;"Générateur Kélonique";Rare;1
+ALT_COREKS_B_AX_27_R2;"Générateur Kélonique";Rare;1
+ALT_COREKS_B_AX_28_C;"Brouilleur Blindé";Commun;2
+ALT_COREKS_B_AX_28_R1;"Brouilleur Blindé";Rare;1
+ALT_COREKS_B_AX_28_R2;"Brouilleur Blindé";Rare;1
+ALT_COREKS_B_AX_29_C;"La Fonderie, Bastion Axiom";Commun;2
+ALT_COREKS_B_AX_29_R1;"La Fonderie, Bastion Axiom";Rare;1
+ALT_COREKS_B_AX_29_R2;"La Fonderie, Bastion Axiom";Rare;1
+ALT_COREKS_B_AX_30_C;"Ruche des Scarabots";Commun;3
+ALT_COREKS_B_AX_30_R1;"Ruche des Scarabots";Rare;1
+ALT_COREKS_B_AX_30_R2;"Ruche des Scarabots";Rare;1
+ALT_COREKS_B_BR_01_C;"Kojo & Booda";Commun;2
+ALT_COREKS_B_BR_02_C;"Atsadi & Surge";Commun;3
+ALT_COREKS_B_BR_03_C;"Basira & Kaizaimon";Commun;2
+ALT_COREKS_B_BR_04_C;Ratatosk;Commun;2
+ALT_COREKS_B_BR_04_R1;Ratatosk;Rare;1
+ALT_COREKS_B_BR_04_R2;Ratatosk;Rare;1
+ALT_COREKS_B_BR_05_C;Issun-bōshi;Commun;3
+ALT_COREKS_B_BR_05_R1;Issun-bōshi;Rare;1
+ALT_COREKS_B_BR_05_R2;Issun-bōshi;Rare;1
+ALT_COREKS_B_BR_06_C;"Petit Djinn";Commun;2
+ALT_COREKS_B_BR_06_R1;"Petit Djinn";Rare;1
+ALT_COREKS_B_BR_06_R2;"Petit Djinn";Rare;1
+ALT_COREKS_B_BR_06_U_1570;"Petit Djinn";Unique;1
+ALT_COREKS_B_BR_07_C;"Traceuse Bravos";Commun;3
+ALT_COREKS_B_BR_07_R1;"Traceuse Bravos";Rare;1
+ALT_COREKS_B_BR_07_R2;"Traceuse Bravos";Rare;1
+ALT_COREKS_B_BR_08_C;"Pionnière Bravos";Commun;2
+ALT_COREKS_B_BR_08_R1;"Pionnière Bravos";Rare;1
+ALT_COREKS_B_BR_08_R2;"Pionnière Bravos";Rare;1
+ALT_COREKS_B_BR_08_U_2067;"Pionnière Bravos";Unique;1
+ALT_COREKS_B_BR_09_C;"Aspirant de Havre";Commun;2
+ALT_COREKS_B_BR_09_R2;"Aspirant de Havre";Rare;1
+ALT_COREKS_B_BR_10_C;Red;Commun;3
+ALT_COREKS_B_BR_10_R2;Red;Rare;1
+ALT_COREKS_B_BR_10_U_3087;Red;Unique;1
+ALT_COREKS_B_BR_11_C;Chiron;Commun;1
+ALT_COREKS_B_BR_11_R1;Chiron;Rare;2
+ALT_COREKS_B_BR_11_R2;Chiron;Rare;1
+ALT_COREKS_B_BR_12_C;"Hua Mulan";Commun;2
+ALT_COREKS_B_BR_12_R2;"Hua Mulan";Rare;1
+ALT_COREKS_B_BR_13_C;Kappa;Commun;1
+ALT_COREKS_B_BR_13_R1;Kappa;Rare;2
+ALT_COREKS_B_BR_13_R2;Kappa;Rare;1
+ALT_COREKS_B_BR_14_C;"Avant-Garde Bravos";Commun;2
+ALT_COREKS_B_BR_14_R1;"Avant-Garde Bravos";Rare;1
+ALT_COREKS_B_BR_15_C;"Videuse Bravos";Commun;4
+ALT_COREKS_B_BR_15_R2;"Videuse Bravos";Rare;2
+ALT_COREKS_B_BR_16_C;"Danseuse de Lames Bravos";Commun;3
+ALT_COREKS_B_BR_16_R1;"Danseuse de Lames Bravos";Rare;2
+ALT_COREKS_B_BR_16_R2;"Danseuse de Lames Bravos";Rare;1
+ALT_COREKS_B_BR_17_C;"Guerrière de Havre";Commun;2
+ALT_COREKS_B_BR_17_R1;"Guerrière de Havre";Rare;1
+ALT_COREKS_B_BR_18_C;"Sun Wukong";Commun;2
+ALT_COREKS_B_BR_18_R1;"Sun Wukong";Rare;1
+ALT_COREKS_B_BR_18_R2;"Sun Wukong";Rare;1
+ALT_COREKS_B_BR_19_C;"Puissant Djinn";Commun;2
+ALT_COREKS_B_BR_19_R1;"Puissant Djinn";Rare;2
+ALT_COREKS_B_BR_19_R2;"Puissant Djinn";Rare;1
+ALT_COREKS_B_BR_20_C;Atlas;Commun;2
+ALT_COREKS_B_BR_20_R1;Atlas;Rare;1
+ALT_COREKS_B_BR_20_R2;Atlas;Rare;1
+ALT_COREKS_B_BR_21_C;Achille;Commun;2
+ALT_COREKS_B_BR_21_R1;Achille;Rare;1
+ALT_COREKS_B_BR_21_R2;Achille;Rare;1
+ALT_COREKS_B_BR_22_C;Shenlong;Commun;2
+ALT_COREKS_B_BR_22_R1;Shenlong;Rare;1
+ALT_COREKS_B_BR_22_R2;Shenlong;Rare;1
+ALT_COREKS_B_BR_23_C;"Tomoe Gozen";Commun;2
+ALT_COREKS_B_BR_23_R2;"Tomoe Gozen";Rare;1
+ALT_COREKS_B_BR_24_C;"Kaibara, Léviathan Asgarthi";Commun;2
+ALT_COREKS_B_BR_24_R1;"Kaibara, Léviathan Asgarthi";Rare;1
+ALT_COREKS_B_BR_24_R2;"Kaibara, Léviathan Asgarthi";Rare;1
+ALT_COREKS_B_BR_24_U_242;"Kaibara, Léviathan Asgarthi";Unique;1
+ALT_COREKS_B_BR_25_C;"Main Tendue";Commun;2
+ALT_COREKS_B_BR_26_C;"Entraînement Physique";Commun;2
+ALT_COREKS_B_BR_26_R1;"Entraînement Physique";Rare;1
+ALT_COREKS_B_BR_26_R2;"Entraînement Physique";Rare;1
+ALT_COREKS_B_BR_27_C;"Canalisation de Mana";Commun;3
+ALT_COREKS_B_BR_27_R2;"Canalisation de Mana";Rare;1
+ALT_COREKS_B_BR_28_C;Intimidation;Commun;2
+ALT_COREKS_B_BR_28_R1;Intimidation;Rare;1
+ALT_COREKS_B_BR_28_R2;Intimidation;Rare;1
+ALT_COREKS_B_BR_29_C;"Éruption de Mana";Commun;2
+ALT_COREKS_B_BR_29_R1;"Éruption de Mana";Rare;1
+ALT_COREKS_B_BR_30_C;"Havre, Bastion Bravos";Commun;2
+ALT_COREKS_B_BR_30_R1;"Havre, Bastion Bravos";Rare;1
+ALT_COREKS_B_BR_30_R2;"Havre, Bastion Bravos";Rare;1
+ALT_COREKS_B_LY_01_C;"Nevenka & Blotch";Commun;2
+ALT_COREKS_B_LY_02_C;"Auraq & Kibble";Commun;4
+ALT_COREKS_B_LY_03_C;"Fen & Crowbar";Commun;3
+ALT_COREKS_B_LY_04_C;Martengale;Commun;2
+ALT_COREKS_B_LY_04_R1;Martengale;Rare;1
+ALT_COREKS_B_LY_04_R2;Martengale;Rare;1
+ALT_COREKS_B_LY_05_C;"Comédien Lyra";Commun;3
+ALT_COREKS_B_LY_05_R1;"Comédien Lyra";Rare;1
+ALT_COREKS_B_LY_05_R2;"Comédien Lyra";Rare;1
+ALT_COREKS_B_LY_06_C;"Prestidigitatrice de l'Ouroboros";Commun;2
+ALT_COREKS_B_LY_06_R1;"Prestidigitatrice de l'Ouroboros";Rare;1
+ALT_COREKS_B_LY_06_R2;"Prestidigitatrice de l'Ouroboros";Rare;1
+ALT_COREKS_B_LY_06_U_2928;"Prestidigitatrice de l'Ouroboros";Unique;1
+ALT_COREKS_B_LY_07_C;Hathor;Commun;2
+ALT_COREKS_B_LY_07_R1;Hathor;Rare;1
+ALT_COREKS_B_LY_07_R2;Hathor;Rare;1
+ALT_COREKS_B_LY_08_C;"Skald Lyra";Commun;2
+ALT_COREKS_B_LY_08_R1;"Skald Lyra";Rare;1
+ALT_COREKS_B_LY_08_R2;"Skald Lyra";Rare;1
+ALT_COREKS_B_LY_09_C;Tanuki;Commun;2
+ALT_COREKS_B_LY_09_R1;Tanuki;Rare;1
+ALT_COREKS_B_LY_09_R2;Tanuki;Rare;1
+ALT_COREKS_B_LY_10_C;"Encrière de l'Ouroboros";Commun;3
+ALT_COREKS_B_LY_10_R1;"Encrière de l'Ouroboros";Rare;1
+ALT_COREKS_B_LY_11_C;Esmeralda;Commun;2
+ALT_COREKS_B_LY_11_R1;Esmeralda;Rare;1
+ALT_COREKS_B_LY_11_R2;Esmeralda;Rare;1
+ALT_COREKS_B_LY_12_C;"Navigatrice Lyra";Commun;2
+ALT_COREKS_B_LY_12_R1;"Navigatrice Lyra";Rare;1
+ALT_COREKS_B_LY_12_R2;"Navigatrice Lyra";Rare;2
+ALT_COREKS_B_LY_13_C;Anansi;Commun;2
+ALT_COREKS_B_LY_13_R1;Anansi;Rare;1
+ALT_COREKS_B_LY_13_R2;Anansi;Rare;1
+ALT_COREKS_B_LY_13_U_3999;Anansi;Unique;1
+ALT_COREKS_B_LY_14_C;"Danseuse d'Étoffe Lyra";Commun;2
+ALT_COREKS_B_LY_14_R1;"Danseuse d'Étoffe Lyra";Rare;1
+ALT_COREKS_B_LY_14_R2;"Danseuse d'Étoffe Lyra";Rare;1
+ALT_COREKS_B_LY_15_C;"Le Marchand de Sable";Commun;4
+ALT_COREKS_B_LY_15_R1;"Le Marchand de Sable";Rare;1
+ALT_COREKS_B_LY_15_R2;"Le Marchand de Sable";Rare;1
+ALT_COREKS_B_LY_16_C;"Chroniqueuse Lyra";Commun;2
+ALT_COREKS_B_LY_16_R1;"Chroniqueuse Lyra";Rare;1
+ALT_COREKS_B_LY_16_R2;"Chroniqueuse Lyra";Rare;1
+ALT_COREKS_B_LY_17_C;"Croupière de l'Ouroboros";Commun;1
+ALT_COREKS_B_LY_17_R1;"Croupière de l'Ouroboros";Rare;1
+ALT_COREKS_B_LY_17_R2;"Croupière de l'Ouroboros";Rare;1
+ALT_COREKS_B_LY_18_C;"Le Chapelier";Commun;3
+ALT_COREKS_B_LY_18_R1;"Le Chapelier";Rare;1
+ALT_COREKS_B_LY_18_R2;"Le Chapelier";Rare;1
+ALT_COREKS_B_LY_18_U_4963;"Le Chapelier";Unique;1
+ALT_COREKS_B_LY_19_C;"Amahle, Paria Asgarthi";Commun;3
+ALT_COREKS_B_LY_19_R1;"Amahle, Paria Asgarthi";Rare;1
+ALT_COREKS_B_LY_19_R2;"Amahle, Paria Asgarthi";Rare;1
+ALT_COREKS_B_LY_20_C;Asmodée;Commun;2
+ALT_COREKS_B_LY_20_R1;Asmodée;Rare;1
+ALT_COREKS_B_LY_21_C;Loki;Commun;2
+ALT_COREKS_B_LY_21_R1;Loki;Rare;1
+ALT_COREKS_B_LY_21_R2;Loki;Rare;1
+ALT_COREKS_B_LY_22_C;"Entraînement A Cappella";Commun;2
+ALT_COREKS_B_LY_22_R1;"Entraînement A Cappella";Rare;1
+ALT_COREKS_B_LY_22_R2;"Entraînement A Cappella";Rare;1
+ALT_COREKS_B_LY_23_C;"Meunier, Tu Dors";Commun;1
+ALT_COREKS_B_LY_23_R1;"Meunier, Tu Dors";Rare;1
+ALT_COREKS_B_LY_23_R2;"Meunier, Tu Dors";Rare;1
+ALT_COREKS_B_LY_24_C;"Cocon d'Étoffe";Commun;2
+ALT_COREKS_B_LY_24_R1;"Cocon d'Étoffe";Rare;1
+ALT_COREKS_B_LY_24_R2;"Cocon d'Étoffe";Rare;1
+ALT_COREKS_B_LY_25_C;Tapis !;Commun;2
+ALT_COREKS_B_LY_25_R1;Tapis !;Rare;1
+ALT_COREKS_B_LY_25_R2;Tapis !;Rare;1
+ALT_COREKS_B_LY_26_C;"Prison de Peinture";Commun;2
+ALT_COREKS_B_LY_26_R1;"Prison de Peinture";Rare;1
+ALT_COREKS_B_LY_26_R2;"Prison de Peinture";Rare;1
+ALT_COREKS_B_LY_27_C;"Apothéose de l'Esprit";Commun;2
+ALT_COREKS_B_LY_27_R1;"Apothéose de l'Esprit";Rare;1
+ALT_COREKS_B_LY_27_R2;"Apothéose de l'Esprit";Rare;1
+ALT_COREKS_B_LY_28_C;"Franchir le Bifröst";Commun;2
+ALT_COREKS_B_LY_28_R2;"Franchir le Bifröst";Rare;2
+ALT_COREKS_B_LY_29_C;"Festival Lyra";Commun;1
+ALT_COREKS_B_LY_29_R1;"Festival Lyra";Rare;1
+ALT_COREKS_B_LY_29_R2;"Festival Lyra";Rare;1
+ALT_COREKS_B_LY_30_C;"L'Ouroboros, Bastion Lyra";Commun;3
+ALT_COREKS_B_LY_30_R1;"L'Ouroboros, Bastion Lyra";Rare;1
+ALT_COREKS_B_LY_30_R2;"L'Ouroboros, Bastion Lyra";Rare;1
+ALT_COREKS_B_MU_01_C;"Teija & Nauraa";Commun;2
+ALT_COREKS_B_MU_02_C;"Arjun & Spike";Commun;3
+ALT_COREKS_B_MU_03_C;"Rin & Orchid";Commun;4
+ALT_COREKS_B_MU_04_C;"Soigneuse Muna";Commun;2
+ALT_COREKS_B_MU_04_R1;"Soigneuse Muna";Rare;1
+ALT_COREKS_B_MU_04_R2;"Soigneuse Muna";Rare;1
+ALT_COREKS_B_MU_04_U_1042;"Soigneuse Muna";Unique;1
+ALT_COREKS_B_MU_05_C;Kitsune;Commun;2
+ALT_COREKS_B_MU_05_R1;Kitsune;Rare;1
+ALT_COREKS_B_MU_05_R2;Kitsune;Rare;1
+ALT_COREKS_B_MU_05_U_2830;Kitsune;Unique;1
+ALT_COREKS_B_MU_06_C;"Vendangeurs du Fuseau";Commun;2
+ALT_COREKS_B_MU_06_R1;"Vendangeurs du Fuseau";Rare;1
+ALT_COREKS_B_MU_06_R2;"Vendangeurs du Fuseau";Rare;1
+ALT_COREKS_B_MU_06_U_1815;"Vendangeurs du Fuseau";Unique;1
+ALT_COREKS_B_MU_07_C;Mowgli;Commun;2
+ALT_COREKS_B_MU_07_R1;Mowgli;Rare;1
+ALT_COREKS_B_MU_07_R2;Mowgli;Rare;1
+ALT_COREKS_B_MU_08_C;"Champignon Éternueur";Commun;3
+ALT_COREKS_B_MU_08_R1;"Champignon Éternueur";Rare;1
+ALT_COREKS_B_MU_08_R2;"Champignon Éternueur";Rare;1
+ALT_COREKS_B_MU_08_U_738;"Champignon Éternueur";Unique;1
+ALT_COREKS_B_MU_09_C;Kodama;Commun;2
+ALT_COREKS_B_MU_09_R1;Kodama;Rare;1
+ALT_COREKS_B_MU_09_R2;Kodama;Rare;1
+ALT_COREKS_B_MU_10_C;"Yong-Su, Tisserand Verdoyant";Commun;3
+ALT_COREKS_B_MU_10_R1;"Yong-Su, Tisserand Verdoyant";Rare;1
+ALT_COREKS_B_MU_10_R2;"Yong-Su, Tisserand Verdoyant";Rare;1
+ALT_COREKS_B_MU_11_C;Inari;Commun;3
+ALT_COREKS_B_MU_11_R1;Inari;Rare;1
+ALT_COREKS_B_MU_11_R2;Inari;Rare;2
+ALT_COREKS_B_MU_11_U_3301;Inari;Unique;1
+ALT_COREKS_B_MU_12_C;"Fille d'Yggdrasil";Commun;2
+ALT_COREKS_B_MU_12_R1;"Fille d'Yggdrasil";Rare;1
+ALT_COREKS_B_MU_12_R2;"Fille d'Yggdrasil";Rare;1
+ALT_COREKS_B_MU_12_U_1396;"Fille d'Yggdrasil";Unique;1
+ALT_COREKS_B_MU_13_C;"Druide Muna";Commun;2
+ALT_COREKS_B_MU_13_R1;"Druide Muna";Rare;1
+ALT_COREKS_B_MU_14_C;Cernunnos;Commun;2
+ALT_COREKS_B_MU_14_R1;Cernunnos;Rare;1
+ALT_COREKS_B_MU_14_R2;Cernunnos;Rare;1
+ALT_COREKS_B_MU_15_C;Dracaena;Commun;2
+ALT_COREKS_B_MU_15_R1;Dracaena;Rare;1
+ALT_COREKS_B_MU_15_R2;Dracaena;Rare;1
+ALT_COREKS_B_MU_16_C;"Aloe Vera";Commun;2
+ALT_COREKS_B_MU_16_R1;"Aloe Vera";Rare;1
+ALT_COREKS_B_MU_16_R2;"Aloe Vera";Rare;1
+ALT_COREKS_B_MU_16_U_3393;"Aloe Vera";Unique;1
+ALT_COREKS_B_MU_17_C;Aja;Commun;4
+ALT_COREKS_B_MU_17_R1;Aja;Rare;1
+ALT_COREKS_B_MU_17_R2;Aja;Rare;1
+ALT_COREKS_B_MU_18_C;Parvati;Commun;1
+ALT_COREKS_B_MU_18_R1;Parvati;Rare;1
+ALT_COREKS_B_MU_18_U_2189;Parvati;Unique;1
+ALT_COREKS_B_MU_19_C;Vertéchine;Commun;3
+ALT_COREKS_B_MU_19_R1;Vertéchine;Rare;1
+ALT_COREKS_B_MU_20_C;"Pignon Pugnace";Commun;3
+ALT_COREKS_B_MU_20_R1;"Pignon Pugnace";Rare;1
+ALT_COREKS_B_MU_20_R2;"Pignon Pugnace";Rare;1
+ALT_COREKS_B_MU_21_C;"Fils d'Yggdrasil";Commun;1
+ALT_COREKS_B_MU_21_R1;"Fils d'Yggdrasil";Rare;1
+ALT_COREKS_B_MU_21_R2;"Fils d'Yggdrasil";Rare;1
+ALT_COREKS_B_MU_22_C;Hydracaena;Commun;1
+ALT_COREKS_B_MU_22_R1;Hydracaena;Rare;1
+ALT_COREKS_B_MU_22_R2;Hydracaena;Rare;1
+ALT_COREKS_B_MU_23_C;"Marchand Muna";Commun;2
+ALT_COREKS_B_MU_23_R1;"Marchand Muna";Rare;1
+ALT_COREKS_B_MU_23_R2;"Marchand Muna";Rare;1
+ALT_COREKS_B_MU_23_U_849;"Marchand Muna";Unique;1
+ALT_COREKS_B_MU_24_R1;"Prairie Prolifique";Rare;1
+ALT_COREKS_B_MU_25_C;"Entraînement à la Méditation";Commun;3
+ALT_COREKS_B_MU_25_R1;"Entraînement à la Méditation";Rare;1
+ALT_COREKS_B_MU_25_R2;"Entraînement à la Méditation";Rare;1
+ALT_COREKS_B_MU_26_C;"Moisson de Mana";Commun;1
+ALT_COREKS_B_MU_26_R2;"Moisson de Mana";Rare;1
+ALT_COREKS_B_MU_27_C;Abreuver;Commun;2
+ALT_COREKS_B_MU_27_R1;Abreuver;Rare;1
+ALT_COREKS_B_MU_27_R2;Abreuver;Rare;1
+ALT_COREKS_B_MU_28_C;"Sommeil Réparateur";Commun;3
+ALT_COREKS_B_MU_28_R1;"Sommeil Réparateur";Rare;1
+ALT_COREKS_B_MU_28_R2;"Sommeil Réparateur";Rare;1
+ALT_COREKS_B_MU_29_C;Récolter;Commun;3
+ALT_COREKS_B_MU_29_R1;Récolter;Rare;1
+ALT_COREKS_B_MU_29_R2;Récolter;Rare;1
+ALT_COREKS_B_MU_30_R1;"Le Fuseau, Bastion Muna";Rare;1
+ALT_COREKS_B_MU_30_R2;"Le Fuseau, Bastion Muna";Rare;1
+ALT_COREKS_B_NE_FOILER_C;Foiler;Commun;45
+ALT_COREKS_B_NE_FOILER_R;Foiler;Rare;15
+ALT_COREKS_B_NE_FOILER_U;Foiler;Unique;6
+ALT_COREKS_B_OR_01_C;"Sigismar & Wingspan";Commun;2
+ALT_COREKS_B_OR_02_C;"Waru & Mack";Commun;2
+ALT_COREKS_B_OR_03_C;"Gulrang & Tocsin";Commun;2
+ALT_COREKS_B_OR_04_C;"Héraut de Papier";Commun;2
+ALT_COREKS_B_OR_04_R1;"Héraut de Papier";Rare;1
+ALT_COREKS_B_OR_04_R2;"Héraut de Papier";Rare;1
+ALT_COREKS_B_OR_05_C;"Troupière Ordis";Commun;2
+ALT_COREKS_B_OR_05_R1;"Troupière Ordis";Rare;2
+ALT_COREKS_B_OR_05_R2;"Troupière Ordis";Rare;1
+ALT_COREKS_B_OR_06_C;"Cadets Ordis";Commun;3
+ALT_COREKS_B_OR_06_R1;"Cadets Ordis";Rare;1
+ALT_COREKS_B_OR_06_R2;"Cadets Ordis";Rare;1
+ALT_COREKS_B_OR_07_C;"Scribe Runique du Monolithe";Commun;2
+ALT_COREKS_B_OR_07_R1;"Scribe Runique du Monolithe";Rare;1
+ALT_COREKS_B_OR_07_R2;"Scribe Runique du Monolithe";Rare;1
+ALT_COREKS_B_OR_08_C;"Légat du Monolithe";Commun;2
+ALT_COREKS_B_OR_08_R1;"Légat du Monolithe";Rare;1
+ALT_COREKS_B_OR_08_R2;"Légat du Monolithe";Rare;2
+ALT_COREKS_B_OR_09_C;"Le Roi-Grenouille";Commun;1
+ALT_COREKS_B_OR_09_R1;"Le Roi-Grenouille";Rare;1
+ALT_COREKS_B_OR_09_R2;"Le Roi-Grenouille";Rare;1
+ALT_COREKS_B_OR_10_C;"Archiviste du Monolithe";Commun;3
+ALT_COREKS_B_OR_10_R1;"Archiviste du Monolithe";Rare;1
+ALT_COREKS_B_OR_10_R2;"Archiviste du Monolithe";Rare;1
+ALT_COREKS_B_OR_11_C;Ozma;Commun;4
+ALT_COREKS_B_OR_11_R2;Ozma;Rare;1
+ALT_COREKS_B_OR_12_C;"Le Conseil";Commun;1
+ALT_COREKS_B_OR_12_R1;"Le Conseil";Rare;1
+ALT_COREKS_B_OR_13_C;"Gardienne Ordis";Commun;2
+ALT_COREKS_B_OR_13_R1;"Gardienne Ordis";Rare;1
+ALT_COREKS_B_OR_13_R2;"Gardienne Ordis";Rare;1
+ALT_COREKS_B_OR_14_C;"Espionne Ordis";Commun;3
+ALT_COREKS_B_OR_14_R2;"Espionne Ordis";Rare;1
+ALT_COREKS_B_OR_15_C;"Kakoba, Commandant de Légion";Commun;2
+ALT_COREKS_B_OR_15_R1;"Kakoba, Commandant de Légion";Rare;1
+ALT_COREKS_B_OR_15_R2;"Kakoba, Commandant de Légion";Rare;1
+ALT_COREKS_B_OR_16_C;"Procuratrice Ordis";Commun;1
+ALT_COREKS_B_OR_17_C;"Jeanne d'Arc";Commun;1
+ALT_COREKS_B_OR_17_R1;"Jeanne d'Arc";Rare;1
+ALT_COREKS_B_OR_17_R2;"Jeanne d'Arc";Rare;1
+ALT_COREKS_B_OR_18_C;Quetzalcóatl;Commun;2
+ALT_COREKS_B_OR_18_R1;Quetzalcóatl;Rare;1
+ALT_COREKS_B_OR_18_R2;Quetzalcóatl;Rare;1
+ALT_COREKS_B_OR_19_C;Issitoq;Commun;2
+ALT_COREKS_B_OR_19_R1;Issitoq;Rare;1
+ALT_COREKS_B_OR_19_R2;Issitoq;Rare;1
+ALT_COREKS_B_OR_20_C;Anubis;Commun;3
+ALT_COREKS_B_OR_20_R1;Anubis;Rare;2
+ALT_COREKS_B_OR_20_R2;Anubis;Rare;1
+ALT_COREKS_B_OR_21_C;"Robin des Bois";Commun;3
+ALT_COREKS_B_OR_21_R1;"Robin des Bois";Rare;1
+ALT_COREKS_B_OR_21_R2;"Robin des Bois";Rare;1
+ALT_COREKS_B_OR_22_C;Thot;Commun;3
+ALT_COREKS_B_OR_22_R1;Thot;Rare;1
+ALT_COREKS_B_OR_22_R2;Thot;Rare;1
+ALT_COREKS_B_OR_23_C;Chargez !;Commun;1
+ALT_COREKS_B_OR_23_R1;Chargez !;Rare;1
+ALT_COREKS_B_OR_23_R2;Chargez !;Rare;1
+ALT_COREKS_B_OR_24_C;"Entraînement à l'Esprit d'Équipe";Commun;2
+ALT_COREKS_B_OR_24_R1;"Entraînement à l'Esprit d'Équipe";Rare;1
+ALT_COREKS_B_OR_24_R2;"Entraînement à l'Esprit d'Équipe";Rare;1
+ALT_COREKS_B_OR_25_C;"Sceaux Adhésifs";Commun;2
+ALT_COREKS_B_OR_25_R1;"Sceaux Adhésifs";Rare;1
+ALT_COREKS_B_OR_26_C;"Ouvrez les Portes";Commun;2
+ALT_COREKS_B_OR_26_R1;"Ouvrez les Portes";Rare;1
+ALT_COREKS_B_OR_26_R2;"Ouvrez les Portes";Rare;1
+ALT_COREKS_B_OR_27_C;"Jour de Célébration";Commun;3
+ALT_COREKS_B_OR_27_R1;"Jour de Célébration";Rare;1
+ALT_COREKS_B_OR_27_R2;"Jour de Célébration";Rare;1
+ALT_COREKS_B_OR_28_C;"Le Monolithe, Bastion Ordis";Commun;2
+ALT_COREKS_B_OR_28_R1;"Le Monolithe, Bastion Ordis";Rare;1
+ALT_COREKS_B_OR_28_R2;"Le Monolithe, Bastion Ordis";Rare;1
+ALT_COREKS_B_OR_29_C;"Grand Projet";Commun;3
+ALT_COREKS_B_OR_29_R1;"Grand Projet";Rare;1
+ALT_COREKS_B_OR_29_R2;"Grand Projet";Rare;1
+ALT_COREKS_B_OR_30_C;"Transporteur Ordis";Commun;2
+ALT_COREKS_B_OR_30_R1;"Transporteur Ordis";Rare;1
+ALT_COREKS_B_OR_30_R2;"Transporteur Ordis";Rare;1
+ALT_COREKS_B_YZ_01_C;"Akesha & Taru";Commun;2
+ALT_COREKS_B_YZ_02_C;"Lindiwe & Maw";Commun;2
+ALT_COREKS_B_YZ_03_C;"Afanas & Senka";Commun;2
+ALT_COREKS_B_YZ_04_C;"Disciple Studieux";Commun;3
+ALT_COREKS_B_YZ_04_R2;"Disciple Studieux";Rare;1
+ALT_COREKS_B_YZ_05_C;"Méduse Lunaire";Commun;2
+ALT_COREKS_B_YZ_05_R1;"Méduse Lunaire";Rare;1
+ALT_COREKS_B_YZ_06_C;"Fée des Dents";Commun;2
+ALT_COREKS_B_YZ_06_R1;"Fée des Dents";Rare;1
+ALT_COREKS_B_YZ_06_R2;"Fée des Dents";Rare;1
+ALT_COREKS_B_YZ_07_C;"Mage-Danseur du Kadigir";Commun;3
+ALT_COREKS_B_YZ_07_R2;"Mage-Danseur du Kadigir";Rare;1
+ALT_COREKS_B_YZ_08_C;"Augure Yzmir";Commun;2
+ALT_COREKS_B_YZ_08_R1;"Augure Yzmir";Rare;1
+ALT_COREKS_B_YZ_09_C;"Dame du Lac";Commun;2
+ALT_COREKS_B_YZ_09_R1;"Dame du Lac";Rare;1
+ALT_COREKS_B_YZ_09_R2;"Dame du Lac";Rare;1
+ALT_COREKS_B_YZ_10_C;Baku;Commun;2
+ALT_COREKS_B_YZ_10_R1;Baku;Rare;1
+ALT_COREKS_B_YZ_10_R2;Baku;Rare;1
+ALT_COREKS_B_YZ_11_C;"Baba Yaga";Commun;3
+ALT_COREKS_B_YZ_11_R1;"Baba Yaga";Rare;1
+ALT_COREKS_B_YZ_11_R2;"Baba Yaga";Rare;2
+ALT_COREKS_B_YZ_12_C;"Alchimiste du Kadigir";Commun;3
+ALT_COREKS_B_YZ_12_R1;"Alchimiste du Kadigir";Rare;1
+ALT_COREKS_B_YZ_12_R2;"Alchimiste du Kadigir";Rare;1
+ALT_COREKS_B_YZ_13_C;Alice;Commun;2
+ALT_COREKS_B_YZ_13_R2;Alice;Rare;2
+ALT_COREKS_B_YZ_14_C;Flamel;Commun;2
+ALT_COREKS_B_YZ_14_R1;Flamel;Rare;1
+ALT_COREKS_B_YZ_14_R2;Flamel;Rare;1
+ALT_COREKS_B_YZ_15_C;"Kuwat, le Dissident";Commun;3
+ALT_COREKS_B_YZ_15_R1;"Kuwat, le Dissident";Rare;1
+ALT_COREKS_B_YZ_15_R2;"Kuwat, le Dissident";Rare;1
+ALT_COREKS_B_YZ_16_C;"Dorothy Gale";Commun;2
+ALT_COREKS_B_YZ_16_R1;"Dorothy Gale";Rare;1
+ALT_COREKS_B_YZ_16_R2;"Dorothy Gale";Rare;1
+ALT_COREKS_B_YZ_17_C;"Le Kraken";Commun;1
+ALT_COREKS_B_YZ_17_R1;"Le Kraken";Rare;1
+ALT_COREKS_B_YZ_17_R2;"Le Kraken";Rare;1
+ALT_COREKS_B_YZ_18_C;Sakarabru;Commun;1
+ALT_COREKS_B_YZ_18_R1;Sakarabru;Rare;1
+ALT_COREKS_B_YZ_18_R2;Sakarabru;Rare;1
+ALT_COREKS_B_YZ_19_C;"Entraînement Magique";Commun;2
+ALT_COREKS_B_YZ_19_R1;"Entraînement Magique";Rare;1
+ALT_COREKS_B_YZ_19_R2;"Entraînement Magique";Rare;1
+ALT_COREKS_B_YZ_20_C;"Don de Soi";Commun;1
+ALT_COREKS_B_YZ_20_R1;"Don de Soi";Rare;1
+ALT_COREKS_B_YZ_21_C;Zou !;Commun;2
+ALT_COREKS_B_YZ_21_R1;Zou !;Rare;1
+ALT_COREKS_B_YZ_21_R2;Zou !;Rare;2
+ALT_COREKS_B_YZ_22_C;Espionnage;Commun;2
+ALT_COREKS_B_YZ_22_R1;Espionnage;Rare;1
+ALT_COREKS_B_YZ_22_R2;Espionnage;Rare;1
+ALT_COREKS_B_YZ_23_C;"Sceau de Conjuration";Commun;3
+ALT_COREKS_B_YZ_23_R1;"Sceau de Conjuration";Rare;1
+ALT_COREKS_B_YZ_23_R2;"Sceau de Conjuration";Rare;1
+ALT_COREKS_B_YZ_24_C;"Portail de Bannissement";Commun;2
+ALT_COREKS_B_YZ_24_R1;"Portail de Bannissement";Rare;1
+ALT_COREKS_B_YZ_24_R2;"Portail de Bannissement";Rare;1
+ALT_COREKS_B_YZ_25_C;"Petit Pas, Bond de Géant";Commun;2
+ALT_COREKS_B_YZ_25_R1;"Petit Pas, Bond de Géant";Rare;1
+ALT_COREKS_B_YZ_26_C;"Furie du Kraken";Commun;1
+ALT_COREKS_B_YZ_26_R1;"Furie du Kraken";Rare;1
+ALT_COREKS_B_YZ_26_R2;"Furie du Kraken";Rare;1
+ALT_COREKS_B_YZ_27_C;"Explosion Céleste";Commun;1
+ALT_COREKS_B_YZ_27_R1;"Explosion Céleste";Rare;1
+ALT_COREKS_B_YZ_27_R2;"Explosion Céleste";Rare;1
+ALT_COREKS_B_YZ_28_C;"L'Isba de Baba";Commun;2
+ALT_COREKS_B_YZ_28_R1;"L'Isba de Baba";Rare;1
+ALT_COREKS_B_YZ_29_C;"Fragment d'Éther";Commun;2
+ALT_COREKS_B_YZ_29_R1;"Fragment d'Éther";Rare;1
+ALT_COREKS_B_YZ_29_R2;"Fragment d'Éther";Rare;1
+ALT_COREKS_B_YZ_30_C;"Le Kadigir, Bastion Yzmir";Commun;2
+ALT_COREKS_B_YZ_30_R2;"Le Kadigir, Bastion Yzmir";Rare;1
