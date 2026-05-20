@@ -7,7 +7,7 @@ import { useAuth } from '@/lib/hooks/useAuth';
 import { getCollection, deleteCollectionEntry, updateCollectionEntry } from '@/lib/api/collectionApi';
 import type { ApiCollectionEntry } from '@/lib/types/collection';
 import { getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
-import { FACTIONS, FACTION_BADGE_COLORS, SET_NAMES, CARD_TYPES } from '@/lib/types/constants';
+import { FACTIONS, SET_NAMES, CARD_TYPES } from '@/lib/types/constants';
 import SiteLayout from '@/components/layout/SiteLayout';
 import LoginButton from '@/components/auth/LoginButton';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';

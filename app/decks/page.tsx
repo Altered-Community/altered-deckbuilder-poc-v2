@@ -100,8 +100,6 @@ export default function DecksPage() {
     return () => { active = false; };
   }, [isAuthenticated, locale, myPage, t]);
 
-  /* Reset page quand les filtres serveur changent */
-  useEffect(() => { setPublicPage(1); }, [filterCardName, sortBy]);
 
   /* Reset filtres au changement de tab */
   const handleTabChange = (tab: Tab) => {
@@ -271,7 +269,7 @@ export default function DecksPage() {
                   <input
                     type="text"
                     value={filterCardName}
-                    onChange={(e) => setFilterCardName(e.target.value)}
+                    onChange={(e) => { setFilterCardName(e.target.value); setPublicPage(1); }}
                     placeholder="Contient la carte…"
                     className="pl-6 pr-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-40"
                   />
@@ -296,7 +294,7 @@ export default function DecksPage() {
                 <span className="filter-label" style={{ marginLeft: '0.5rem' }}>Tri</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  onChange={(e) => { setSortBy(e.target.value as typeof sortBy); setPublicPage(1); }}
                   className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400"
                 >
                   <option value="recent">Récents</option>

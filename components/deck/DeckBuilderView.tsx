@@ -28,13 +28,14 @@ export default function DeckBuilderView({ initialFaction }: Props) {
     if (mounted && !hero) router.replace('/');
   }, [mounted, hero, router]);
 
+  const format = useDeckStore((s) => s.deck.format);
+
   if (!mounted) return null;
   if (!hero) return null;
 
   const factionCode = getCardGroupFaction(hero);
   const factionName = factionCode ? FACTIONS[factionCode] : '';
   const factionBadge = factionCode ? (FACTION_BADGE_COLORS[factionCode] ?? 'bg-gray-600') : 'bg-gray-700';
-  const format = useDeckStore((s) => s.deck.format);
   const isSandbox = format?.code === 'sandbox';
   const browserFaction = isSandbox ? undefined : (factionCode ?? initialFaction);
 

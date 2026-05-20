@@ -43,9 +43,6 @@ export default function CardBrowser({ initialFaction }: Props) {
   const format = useDeckStore((s) => s.deck.format);
   const isSandbox = format?.code === 'sandbox';
 
-  useEffect(() => {
-    setFilters((f) => ({ ...f, faction: undefined, page: 1 }));
-  }, [isSandbox]);
 
   const { data: normalData, isLoading: normalLoading, isFetching: normalFetching, isError: normalError } = useQuery({
     queryKey: ['cards', filters, isSandbox ? 'sandbox' : factionCode, locale],
@@ -100,7 +97,7 @@ export default function CardBrowser({ initialFaction }: Props) {
       if (filters['set.reference'] && !g.cards.some((v) => v.set.reference === filters['set.reference'])) return false;
       return true;
     });
-  }, [ownedGroups, factionCode, filters]);
+  }, [ownedGroups, factionCode, isSandbox, filters]);
 
   const isLoading  = showOnlyOwned ? ownedLoading  : normalLoading;
   const isFetching = showOnlyOwned ? ownedFetching  : normalFetching;

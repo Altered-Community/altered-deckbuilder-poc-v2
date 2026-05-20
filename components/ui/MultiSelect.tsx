@@ -20,7 +20,8 @@ export default function MultiSelect({ options, value, onChange, placeholder = ''
   const selectRef = useRef<HTMLSelectElement>(null);
   const tsRef = useRef<TomSelect | null>(null);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+
+  useEffect(() => { onChangeRef.current = onChange; });
 
   const toTsOptions = (opts: Option[]) => opts.map((o) => ({ value: o.value, text: o.label }));
 
