@@ -548,8 +548,8 @@ body {
   border-radius: 0.75rem;
 }
 .dark .card-altered {
-  background: #FDFBF6;
-  border-color: var(--sand-200);
+  background: var(--c-surface);
+  border-color: var(--c-border);
 }
 
 /* ── Filter rows ── */
