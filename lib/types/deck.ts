@@ -24,6 +24,8 @@ export interface ApiFormat {
   maxCards: number;
   limits: ApiFormatLimits;
   uniqueLimitsByHero?: Record<string, string[]> | null;
+  allowBanned?: boolean;
+  allowSuspended?: boolean;
 }
 
 export interface SaveDeckPayload {
