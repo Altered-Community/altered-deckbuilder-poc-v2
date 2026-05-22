@@ -169,8 +169,8 @@ export const useDeckStore = create<DeckState>()(
           if (playableCount >= format.maxCards) return 'DECK_FULL';
         }
 
-        // Faction
-        if (deck.hero) {
+        // Faction (désactivée en sandbox)
+        if (deck.hero && format?.code !== 'sandbox') {
           const heroFaction = getCardGroupFaction(deck.hero);
           if (heroFaction && getCardGroupFaction(group) !== heroFaction) return 'FACTION_MISMATCH';
         }
@@ -204,11 +204,15 @@ export const useDeckStore = create<DeckState>()(
               if (countSameName >= format.limits.maxCopiesPerName) return 'MAX_COPIES';
             }
           } else {
-            const maxCopies = format?.limits.maxCopiesPerName ?? group.deckLimit ?? 3;
-            const countSameName = deck.cards
-              .filter((dc) => dc.cardGroup.name === group.name)
-              .reduce((sum, dc) => sum + dc.quantity, 0);
-            if (countSameName >= maxCopies) return 'MAX_COPIES';
+            const maxCopies = format
+              ? format.limits.maxCopiesPerName
+              : (group.deckLimit ?? 3);
+            if (maxCopies != null) {
+              const countSameName = deck.cards
+                .filter((dc) => dc.cardGroup.name === group.name)
+                .reduce((sum, dc) => sum + dc.quantity, 0);
+              if (countSameName >= maxCopies) return 'MAX_COPIES';
+            }
           }
         }
 
@@ -274,12 +278,11 @@ export const useDeckStore = create<DeckState>()(
                   .reduce((sum, c) => sum + c.quantity, 0);
                 if (countSameName > format.limits.maxCopiesPerName) return true;
               }
-            } else {
-              const maxCopies = format.limits.maxCopiesPerName ?? dc.cardGroup.deckLimit ?? 3;
+            } else if (format.limits.maxCopiesPerName != null) {
               const countSameName = deck.cards
                 .filter((c) => c.cardGroup.name === dc.cardGroup.name)
                 .reduce((sum, c) => sum + c.quantity, 0);
-              if (countSameName > maxCopies) return true;
+              if (countSameName > format.limits.maxCopiesPerName) return true;
             }
           }
         }

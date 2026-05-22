@@ -52,7 +52,7 @@ export default function MultiSelect({ options, value, onChange, placeholder = ''
     ts.clearOptions();
     toTsOptions(options).forEach((o) => ts.addOption(o));
     ts.refreshOptions(false);
-  }, [options]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [options]);
 
   /* Sync value externe → TomSelect */
   useEffect(() => {

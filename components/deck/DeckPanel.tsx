@@ -59,6 +59,12 @@ export default function DeckPanel() {
     staleTime: Infinity,
   });
 
+  useEffect(() => {
+    if (!formats.length || !deck.format) return;
+    const fresh = formats.find((f) => f.code === deck.format!.code);
+    if (fresh && JSON.stringify(fresh) !== JSON.stringify(deck.format)) setFormat(fresh);
+  }, [formats]);
+
   const { rareCount, uniqueCount, exaltedCount, playableCount } = deckStats();
   const format = deck.format;
   const minCards = format?.minCards ?? MIN_DECK_SIZE;
