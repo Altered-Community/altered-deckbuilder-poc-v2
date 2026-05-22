@@ -93,7 +93,8 @@
     "loginPrompt": "Connectez-vous",
     "save": "Sauvegarder",
     "update": "Mettre à jour",
-    "invalidTooltip": "Deck invalide (héros + {min} cartes min)"
+    "invalidTooltip": "Deck invalide (héros + {min} cartes min)",
+    "renameTooltip": "Cliquer pour renommer"
   },
   "decks": {
     "title": "Decks",
@@ -109,7 +110,11 @@
     "view": "Voir",
     "allFormats": "Tous formats",
     "reset": "Réinitialiser",
-    "deleteConfirm": "Supprimer \"{name}\" ?"
+    "deleteConfirm": "Supprimer \"{name}\" ?",
+    "searchPlaceholder": "Nom du deck…",
+    "filterCardPlaceholder": "Contient la carte…",
+    "filterCardLabel": "Carte",
+    "filterSearchLabel": "Recherche"
   },
   "deckEdit": {
     "editing": "Édition",

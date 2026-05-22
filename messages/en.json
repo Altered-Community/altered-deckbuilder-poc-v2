@@ -93,7 +93,8 @@
     "loginPrompt": "Log in",
     "save": "Save",
     "update": "Update",
-    "invalidTooltip": "Invalid deck (hero + {min} cards min)"
+    "invalidTooltip": "Invalid deck (hero + {min} cards min)",
+    "renameTooltip": "Click to rename"
   },
   "decks": {
     "title": "Decks",
@@ -109,7 +110,11 @@
     "view": "View",
     "allFormats": "All formats",
     "reset": "Reset",
-    "deleteConfirm": "Delete \"{name}\"?"
+    "deleteConfirm": "Delete \"{name}\"?",
+    "searchPlaceholder": "Deck name…",
+    "filterCardPlaceholder": "Contains card…",
+    "filterCardLabel": "Card",
+    "filterSearchLabel": "Search"
   },
   "deckEdit": {
     "editing": "Edit",

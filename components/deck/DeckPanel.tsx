@@ -110,7 +110,7 @@ export default function DeckPanel() {
             <button
               onClick={() => { setNameInput(deck.name); setEditingName(true); }}
               className="flex-1 text-left text-c-text font-bold hover:text-blue-500 truncate text-sm"
-              title="Cliquer pour renommer"
+              title={t('renameTooltip')}
             >
               {deck.name}
             </button>

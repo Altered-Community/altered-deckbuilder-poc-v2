@@ -214,7 +214,7 @@ export default function DecksPage() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             <Link href="/" className="btn-primary-altered btn-sm">
               <i className="fa-solid fa-plus" />
               {t('decks.newDeck')}
@@ -251,18 +251,18 @@ export default function DecksPage() {
         {/* ── Barre de filtres ── */}
         <div className="card-altered p-3 flex flex-col gap-2">
           <div className="filter-row">
-            <span className="filter-label">Recherche</span>
+            <span className="filter-label">{t('decks.filterSearchLabel')}</span>
             <input
               type="text"
               value={filterSearch}
               onChange={(e) => setFilterSearch(e.target.value)}
-              placeholder="Nom du deck…"
+              placeholder={t('decks.searchPlaceholder')}
               className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-36"
             />
             {activeTab === 'public' && (
               <>
                 <span className="filter-label" style={{ marginLeft: '0.5rem' }}>
-                  <i className="fa-solid fa-layer-group mr-1 opacity-60" />Carte
+                  <i className="fa-solid fa-layer-group mr-1 opacity-60" />{t('decks.filterCardLabel')}
                 </span>
                 <div className="relative">
                   <i className="fa-solid fa-magnifying-glass absolute left-2 top-1/2 -translate-y-1/2 text-c-text-muted text-[10px] pointer-events-none" />
@@ -270,7 +270,7 @@ export default function DecksPage() {
                     type="text"
                     value={filterCardName}
                     onChange={(e) => { setFilterCardName(e.target.value); setPublicPage(1); }}
-                    placeholder="Contient la carte…"
+                    placeholder={t('decks.filterCardPlaceholder')}
                     className="pl-6 pr-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-40"
                   />
                 </div>
