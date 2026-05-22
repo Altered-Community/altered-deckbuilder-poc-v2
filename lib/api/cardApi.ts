@@ -1,4 +1,4 @@
-import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, PaginatedResponse } from '@/lib/types/card';
+import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, PaginatedResponse } from '@/lib/types/card';
 
 const API_BASE =
   typeof window === 'undefined'
@@ -24,7 +24,7 @@ function normalizeList<T>(data: any): T[] {
 }
 
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
-  const { excludeCardTypes, excludeCardSubTypes, ...rest } = filters;
+  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
   Object.entries(rest).forEach(([key, value]) => {
@@ -37,6 +37,10 @@ export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = '
   });
   excludeCardTypes?.forEach((type) => searchParams.append('cardType[ne][]', type));
   excludeCardSubTypes?.forEach((sub) => searchParams.append('cardSubTypes[ne][]', sub));
+  if (effectKeyword) {
+    const kws = Array.isArray(effectKeyword) ? effectKeyword : [effectKeyword];
+    kws.forEach((k) => searchParams.append('effectKeyword', k));
+  }
   const res = await fetch(`${API_BASE}/card_groups?${searchParams}`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des cartes');
   return normalizeCollection<CardGroup>(await res.json());
@@ -63,6 +67,12 @@ export async function fetchCardGroupByReference(reference: string, locale = 'fr'
   return data.data[0] ?? null;
 }
 
+
+export async function fetchKeywords(locale = 'fr'): Promise<ApiKeyword[]> {
+  const res = await fetch(`${API_BASE}/keywords?locale=${locale}`);
+  if (!res.ok) throw new Error('Erreur lors de la récupération des keywords');
+  return normalizeList<ApiKeyword>(await res.json());
+}
 
 export async function fetchFactions(): Promise<ApiFaction[]> {
   const res = await fetch(`${API_BASE}/factions`);

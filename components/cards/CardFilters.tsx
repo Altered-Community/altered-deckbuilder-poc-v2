@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useTranslations } from 'next-intl';
-import { fetchSets, fetchFactions } from '@/lib/api/cardApi';
+import { useTranslations, useLocale } from 'next-intl';
+import { fetchSets, fetchFactions, fetchKeywords } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
 import type { CardGroupFilters } from '@/lib/types/card';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -23,6 +23,7 @@ const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
 
 export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity, excludeTypes = [], showOnlyOwned = false, onToggleOwned, isAuthenticated = false }: CardFiltersProps) {
   const t = useTranslations('cards');
+  const locale = useLocale();
 
   const { data: sets = [] } = useQuery({
     queryKey: ['sets'],
@@ -33,6 +34,12 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
   const { data: apiFactions = [] } = useQuery({
     queryKey: ['factions'],
     queryFn: fetchFactions,
+    staleTime: Infinity,
+  });
+
+  const { data: keywords = [] } = useQuery({
+    queryKey: ['keywords', locale],
+    queryFn: () => fetchKeywords(locale),
     staleTime: Infinity,
   });
 
@@ -67,8 +74,8 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
         className={inputClass}
       />
 
-      {/* Ligne 1 : Type · Faction · Set */}
-      <div className="grid grid-cols-3 gap-2">
+      {/* Ligne 1 : Type · Faction · Set · Keyword */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <MultiSelect
           options={CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => ({ value: type.value, label: type.label }))}
           value={Array.isArray(filters.cardType) ? filters.cardType : (filters.cardType ? [filters.cardType] : [])}
@@ -86,6 +93,12 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
           value={Array.isArray(filters['set.reference']) ? filters['set.reference'] : (filters['set.reference'] ? [filters['set.reference']] : [])}
           onChange={(vals) => updateMulti('set.reference', vals)}
           placeholder={t('allSets')}
+        />
+        <MultiSelect
+          options={keywords.map((k) => ({ value: k.code, label: k.translations[locale] ?? k.translations['en'] ?? k.code }))}
+          value={Array.isArray(filters.effectKeyword) ? filters.effectKeyword : (filters.effectKeyword ? [filters.effectKeyword] : [])}
+          onChange={(vals) => updateMulti('effectKeyword', vals)}
+          placeholder={t('allKeywords')}
         />
       </div>
 

@@ -57,9 +57,15 @@ export interface CardGroupFilters {
   forestPower?: string;
   'order[set.date]'?: 'asc' | 'desc';
   'set.reference'?: string | string[];
+  effectKeyword?: string | string[];
   promo?: string;
   page?: number;
   itemsPerPage?: number;
+}
+
+export interface ApiKeyword {
+  code: string;
+  translations: Record<string, string>;
 }
 
 export interface ApiSet {
