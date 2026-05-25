@@ -4,7 +4,10 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
+import { signIn } from 'next-auth/react';
 import { getCollection, deleteCollectionEntry, updateCollectionEntry } from '@/lib/api/collectionApi';
+
+const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 import type { ApiCollectionEntry } from '@/lib/types/collection';
 import { getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import { FACTIONS, SET_NAMES, CARD_TYPES } from '@/lib/types/constants';
@@ -50,6 +53,11 @@ export default function CollectionPage() {
   const [filterRarities, setFilterRarities] = useState<string[]>([]);
   const [filterSets, setFilterSets] = useState<string[]>([]);
   const [filterTypes, setFilterTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated && USE_KEYCLOAK) signIn('keycloak');
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -212,7 +220,14 @@ export default function CollectionPage() {
           </div>
         </div>
 
-        {!authLoading && !isAuthenticated && (
+        {(authLoading || (!isAuthenticated && USE_KEYCLOAK)) && (
+          <div className="flex items-center justify-center h-64 gap-3 text-c-text-muted">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-400" />
+            <span className="text-sm">{authLoading ? tc('loading') : 'Redirection...'}</span>
+          </div>
+        )}
+
+        {!authLoading && !isAuthenticated && !USE_KEYCLOAK && (
           <div className="text-center mt-20 flex flex-col items-center gap-4">
             <p className="text-c-text-muted">{t('loginRequired')}</p>
             <LoginButton />

@@ -1,23 +1,33 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useQuery, useQueries } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTranslations, useLocale } from 'next-intl';
+import { signIn } from 'next-auth/react';
 import { fetchCardGroups } from '@/lib/api/cardApi';
 import { getCardGroupName, getCardGroupFaction, getCdnImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import { useDeckStore } from '@/store/deckStore';
+import { useAuth } from '@/lib/hooks/useAuth';
 import { FACTIONS, FACTION_BADGE_COLORS } from '@/lib/types/constants';
 import type { CardGroup } from '@/lib/types/card';
 import SiteFooter from '@/components/layout/SiteFooter';
+
+const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 
 export default function HeroSelector() {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
   const { setHero, clearDeck, deck } = useDeckStore();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [factionFilter, setFactionFilter] = useState('');
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated && USE_KEYCLOAK) signIn('keycloak');
+  }, [authLoading, isAuthenticated]);
 
   const baseFilters = {
     cardType: 'HERO',
@@ -26,10 +36,12 @@ export default function HeroSelector() {
   };
 
   const heroCache = { staleTime: 1000 * 60 * 60, gcTime: 1000 * 60 * 60 * 24 };
+  const queryEnabled = !USE_KEYCLOAK || (!authLoading && isAuthenticated);
 
   const { data: firstPage } = useQuery({
     queryKey: ['heroes', baseFilters, 1, locale],
     queryFn: () => fetchCardGroups({ ...baseFilters, page: 1 }, locale),
+    enabled: queryEnabled,
     ...heroCache,
   });
 
@@ -39,9 +51,19 @@ export default function HeroSelector() {
     queries: Array.from({ length: lastPage }, (_, i) => i + 1).map((page) => ({
       queryKey: ['heroes', baseFilters, page, locale],
       queryFn: () => fetchCardGroups({ ...baseFilters, page }, locale),
+      enabled: queryEnabled,
       ...heroCache,
     })),
   });
+
+  if (USE_KEYCLOAK && (authLoading || !isAuthenticated)) {
+    return (
+      <div className="flex items-center justify-center h-64 gap-3 text-c-text-muted">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-400" />
+        <span className="text-sm">{authLoading ? t('common.loading') : 'Redirection...'}</span>
+      </div>
+    );
+  }
 
   const isLoading = results.some((r) => r.isLoading);
   const allHeroes = results.flatMap((r) => r.data?.data ?? []);

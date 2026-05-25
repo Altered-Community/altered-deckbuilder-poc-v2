@@ -63,7 +63,7 @@ export default function DeckPanel() {
     if (!formats.length || !deck.format) return;
     const fresh = formats.find((f) => f.code === deck.format!.code);
     if (fresh && JSON.stringify(fresh) !== JSON.stringify(deck.format)) setFormat(fresh);
-  }, [formats]);
+  }, [formats, deck.format, setFormat]);
 
   const { rareCount, uniqueCount, exaltedCount, playableCount } = deckStats();
   const format = deck.format;

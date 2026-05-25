@@ -174,8 +174,6 @@ export default function SealedCardBrowser() {
               ? Math.floor((packsContainerW - GAP * (numPacks - 1)) / numPacks)
               : 0;
             const cardH = Math.round(colW * CARD_RATIO);
-            const peek = Math.max(10, Math.round(cardH * 0.14));
-
             const PAD = 8; // padding inside each pack column
             const fanW = colW - PAD * 2;
             const fanCardH = Math.round(fanW * CARD_RATIO);
