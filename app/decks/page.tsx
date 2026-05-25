@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { signIn } from 'next-auth/react';
-import { getDecks, getPublicDecks, deleteDeck, upvoteDeck } from '@/lib/api/deckApi';
+import { getDecks, getPublicDecks, deleteDeck, upvoteDeck, duplicateDeck } from '@/lib/api/deckApi';
 
 const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 import type { ApiDeck } from '@/lib/types/deck';
@@ -46,6 +46,7 @@ export default function DecksPage() {
   const [myLoading, setMyLoading] = useState(true);
   const [myError, setMyError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [duplicating, setDuplicating] = useState<string | null>(null);
 
   /* Filtres */
   const [filterFaction, setFilterFaction] = useState<string | null>(null);
@@ -530,6 +531,18 @@ export default function DecksPage() {
                                 {t('decks.edit')}
                               </Link>
                               <button
+                                onClick={() => handleDuplicate(deck)}
+                                disabled={duplicating === deck.id}
+                                className="ac-btn self-stretch px-2.5"
+                                style={{ opacity: duplicating === deck.id ? 0.5 : 1 }}
+                                title={t('decks.duplicate')}
+                              >
+                                {duplicating === deck.id
+                                  ? <i className="fa-solid fa-spinner fa-spin" />
+                                  : <i className="fa-solid fa-copy" />
+                                }
+                              </button>
+                              <button
                                 onClick={() => handleDelete(deck)}
                                 disabled={deleting === deck.id}
                                 className="ac-btn ac-btn-danger self-stretch px-2.5"
@@ -598,5 +611,17 @@ export default function DecksPage() {
       .then(() => setMyDecks((prev) => prev.filter((d) => d.id !== deck.id)))
       .catch((e) => setMyError(e instanceof Error ? e.message : t('common.unknownError')))
       .finally(() => setDeleting(null));
+  }
+
+  function handleDuplicate(deck: ApiDeck) {
+    if (!isAuthenticated) return;
+    setDuplicating(deck.id);
+    duplicateDeck(deck.id, locale)
+      .then(() => {
+        setMyPage(1);
+        setMyDecks([]);
+      })
+      .catch((e) => setMyError(e instanceof Error ? e.message : t('common.unknownError')))
+      .finally(() => setDuplicating(null));
   }
 }

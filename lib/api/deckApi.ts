@@ -150,3 +150,14 @@ export async function deleteDeck(id: string): Promise<void> {
   const res = await deckFetch(`/decks/${id}`, { method: 'DELETE' });
   if (!res.ok && res.status !== 204) throw new Error(`Suppression échouée : ${res.status}`);
 }
+
+export async function duplicateDeck(id: string, locale = 'fr'): Promise<SaveDeckResponse> {
+  const detail = await getDeckDetail(id, locale);
+  return saveDeck({
+    name: `Copie de ${detail.name}`,
+    description: detail.description,
+    format: detail.format,
+    isPublic: false,
+    deckCards: detail.cards.map((c) => ({ cardReference: c.cardReference, quantity: c.quantity })),
+  });
+}
