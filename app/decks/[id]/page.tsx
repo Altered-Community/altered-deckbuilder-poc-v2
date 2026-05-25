@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
-import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, deleteDeck, fetchFormats } from '@/lib/api/deckApi';
+import { getDeckDetail, getDeckDetailPublic, getDecks, patchDeck, deleteDeck, duplicateDeck, fetchFormats } from '@/lib/api/deckApi';
 import type { ApiDeckDetail, ApiDeckCard, ApiLegalityDetail } from '@/lib/types/deck';
 import { cardGroupFromDeckCard, getCardGroupFaction, getCdnImageUrl, getHeroImageUrl, getRarityFromSlug } from '@/lib/utils/card';
 import UniqueCardRenderer from '@/components/cards/UniqueCardRenderer';
@@ -220,6 +220,7 @@ export default function DeckEditPage() {
 
   const [deleting, setDeleting] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [renameInput, setRenameInput] = useState('');
   const [renaming, setRenaming] = useState(false);
@@ -297,6 +298,17 @@ export default function DeckEditPage() {
     } catch {
       setDeleting(false);
       setDeleteConfirm(false);
+    }
+  };
+
+  const handleDuplicate = async () => {
+    if (!deck) return;
+    setDuplicating(true);
+    try {
+      await duplicateDeck(id, locale);
+      router.push('/decks');
+    } finally {
+      setDuplicating(false);
     }
   };
 
@@ -725,6 +737,13 @@ export default function DeckEditPage() {
                   {t('delete')}
                 </button>
               )
+            )}
+
+            {deck && token && (
+              <button onClick={handleDuplicate} disabled={duplicating} className="ac-btn disabled:opacity-40">
+                <i className={`fa-solid ${duplicating ? 'fa-spinner fa-spin' : 'fa-clone'}`} />
+                {duplicating ? '…' : t('duplicate')}
+              </button>
             )}
 
             {deck && (

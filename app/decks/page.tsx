@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { signIn } from 'next-auth/react';
-import { getDecks, getPublicDecks, deleteDeck, upvoteDeck, duplicateDeck } from '@/lib/api/deckApi';
+import { getDecks, getPublicDecks, getPublicHeroes, deleteDeck, upvoteDeck, duplicateDeck } from '@/lib/api/deckApi';
 
 const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 import type { ApiDeck } from '@/lib/types/deck';
@@ -28,25 +28,26 @@ export default function DecksPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('myDecks');
 
-  /* Pagination */
+  /* Pagination publique */
   const [publicPage, setPublicPage] = useState(1);
-  const [myPage, setMyPage] = useState(1);
   const [publicLastPage, setPublicLastPage] = useState(1);
-  const [myLastPage, setMyLastPage] = useState(1);
   const [publicTotal, setPublicTotal] = useState(0);
-  const [myTotal, setMyTotal] = useState(0);
 
   /* Decks publics */
   const [publicDecks, setPublicDecks] = useState<ApiDeck[]>([]);
   const [publicLoading, setPublicLoading] = useState(true);
   const [publicError, setPublicError] = useState<string | null>(null);
 
-  /* Mes decks */
-  const [myDecks, setMyDecks] = useState<ApiDeck[]>([]);
+  /* Mes decks — chargés entièrement côté client */
+  const [allMyDecks, setAllMyDecks] = useState<ApiDeck[] | null>(null);
   const [myLoading, setMyLoading] = useState(true);
   const [myError, setMyError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [duplicating, setDuplicating] = useState<string | null>(null);
+  const [myDecksVersion, setMyDecksVersion] = useState(0);
+
+  /* Héros publics (pour le filtre sur l'onglet public) */
+  const [publicHeroes, setPublicHeroes] = useState<{ reference: string; name: string }[]>([]);
 
   /* Filtres */
   const [filterFaction, setFilterFaction] = useState<string | null>(null);
@@ -67,6 +68,13 @@ export default function DecksPage() {
     }
   }, [authLoading, isAuthenticated]);
 
+  /* Héros publics — chargés une seule fois */
+  useEffect(() => {
+    let active = true;
+    getPublicHeroes(locale).then((heroes) => { if (active) setPublicHeroes(heroes.toSorted((a, b) => a.name.localeCompare(b.name))); }).catch(() => {});
+    return () => { active = false; };
+  }, [locale]);
+
   /* Fetch decks publics */
   useEffect(() => {
     let active = true;
@@ -74,7 +82,7 @@ export default function DecksPage() {
       setPublicLoading(true);
       setPublicError(null);
       try {
-        const res = await getPublicDecks(locale, publicPage, { cardName: filterCardName || undefined, sortBy });
+        const res = await getPublicDecks(locale, publicPage, { cardName: filterCardName || undefined, sortBy, hero: activeTab === 'public' ? (filterHero ?? undefined) : undefined });
         if (!active) return;
         setPublicDecks(res.items);
         setPublicLastPage(res.lastPage);
@@ -86,31 +94,23 @@ export default function DecksPage() {
       }
     }, filterCardName ? 400 : 0);
     return () => { active = false; clearTimeout(timer); };
-  }, [locale, publicPage, filterCardName, sortBy, t]);
+  }, [locale, publicPage, filterCardName, sortBy, filterHero, activeTab, t]);
 
-  /* Fetch mes decks */
+  /* Charge tous mes decks (toutes pages) dès l'auth */
   useEffect(() => {
     if (!isAuthenticated) return;
     let active = true;
-    async function load() {
-      setMyLoading(true);
-      setMyError(null);
-      try {
-        const res = await getDecks(locale, myPage);
-        if (!active) return;
-        setMyDecks(res.items);
-        setMyLastPage(res.lastPage);
-        setMyTotal(res.totalItems);
-      } catch (e) {
-        if (active) setMyError(e instanceof Error ? e.message : t('common.unknownError'));
-      } finally {
-        if (active) setMyLoading(false);
-      }
-    }
-    load();
+    getDecks(locale, 1).then(async (first) => {
+      const all = [...first.items];
+      const remaining = Array.from({ length: first.lastPage - 1 }, (_, i) => i + 2);
+      const pages = await Promise.all(remaining.map((p) => getDecks(locale, p)));
+      for (const p of pages) all.push(...p.items);
+      if (active) { setAllMyDecks(all); setMyLoading(false); }
+    }).catch((e) => {
+      if (active) { setMyError(e instanceof Error ? e.message : t('common.unknownError')); setMyLoading(false); }
+    });
     return () => { active = false; };
-  }, [isAuthenticated, locale, myPage, t]);
-
+  }, [isAuthenticated, locale, myDecksVersion, t]);
 
   /* Reset filtres au changement de tab */
   const handleTabChange = (tab: Tab) => {
@@ -150,35 +150,35 @@ export default function DecksPage() {
     }
   };
 
-  const currentPage = activeTab === 'public' ? publicPage : myPage;
-  const lastPage = activeTab === 'public' ? publicLastPage : myLastPage;
-  const totalItems = activeTab === 'public' ? publicTotal : myTotal;
-  const setPage = activeTab === 'public' ? setPublicPage : setMyPage;
-
   const handleFactionClick = (code: string) => {
     const next = filterFaction === code ? null : code;
     setFilterFaction(next);
-    setFilterHero(null);
+    // clear hero if it doesn't belong to the new faction
+    if (filterHero) {
+      const hero = allHeroes.find((h) => h.reference === filterHero);
+      if (next && hero?.factionCode !== next) setFilterHero(null);
+    }
   };
 
-  const activeDecks = activeTab === 'public' ? publicDecks : myDecks;
+  const activeDecks = useMemo(
+    () => activeTab === 'public' ? publicDecks : (allMyDecks ?? []),
+    [activeTab, publicDecks, allMyDecks],
+  );
 
-  const heroesForFaction = useMemo(() => {
-    if (!filterFaction) return [];
-    const seen = new Set<string>();
-    const result: { name: string; imagePath: string | null }[] = [];
-    for (const d of activeDecks) {
-      const fc = getFactionCode(d.stats?.hero?.reference);
-      if (fc !== filterFaction) continue;
-      const name = d.stats?.hero?.name;
-      if (!name || seen.has(name)) continue;
-      seen.add(name);
-      const hRef = d.stats?.hero?.reference ?? null;
-      const hImg = hRef && getRarityFromSlug(hRef) !== 'UNIQUE' ? getCdnImageUrl(hRef, locale) : (d.stats?.hero?.imagePath ?? null);
-      result.push({ name, imagePath: hImg });
-    }
-    return result;
-  }, [activeDecks, filterFaction, locale]);
+  const allHeroSeen = new Set<string>();
+  const allHeroes: { name: string; reference: string; factionCode: string | null; imagePath: string | null }[] = [];
+  for (const d of activeDecks) {
+    const name = d.stats?.hero?.name;
+    const reference = d.stats?.hero?.reference;
+    if (!name || !reference || allHeroSeen.has(reference)) continue;
+    allHeroSeen.add(reference);
+    const fc = getFactionCode(reference);
+    const hImg = getRarityFromSlug(reference) !== 'UNIQUE' ? getCdnImageUrl(reference, locale) : (d.stats?.hero?.imagePath ?? null);
+    allHeroes.push({ name, reference, factionCode: fc, imagePath: hImg });
+  }
+  allHeroes.sort((a, b) => a.name.localeCompare(b.name));
+
+  const heroesForFaction = allHeroes.filter((h) => !filterFaction || h.factionCode === filterFaction);
 
   const formats = useMemo(() => {
     const seen = new Set<string>();
@@ -191,7 +191,7 @@ export default function DecksPage() {
     const result = activeDecks.filter((d) => {
       const fc = getFactionCode(d.stats?.hero?.reference);
       if (filterFaction && fc !== filterFaction) return false;
-      if (filterHero && d.stats?.hero?.name !== filterHero) return false;
+      if (filterHero && d.stats?.hero?.reference !== filterHero) return false;
       if (filterFormat && d.format !== filterFormat) return false;
       if (filterSearch && !d.name.toLowerCase().includes(filterSearch.toLowerCase())) return false;
       return true;
@@ -208,7 +208,12 @@ export default function DecksPage() {
 
   const hasFilter = !!(filterFaction || filterHero || filterFormat || filterSearch || filterCardName);
 
-  const isLoading = activeTab === 'public' ? publicLoading : (isAuthenticated ? myLoading : false);
+  const currentPage = publicPage;
+  const lastPage = activeTab === 'public' ? publicLastPage : 1;
+  const totalItems = activeTab === 'public' ? publicTotal : filtered.length;
+  const setPage = setPublicPage;
+
+  const isLoading = activeTab === 'public' ? publicLoading : myLoading;
   const error = activeTab === 'public' ? publicError : myError;
 
   /* Pendant la vérification ou la redirection Keycloak */
@@ -354,27 +359,27 @@ export default function DecksPage() {
             })}
           </div>
 
-          {filterFaction && heroesForFaction.length > 0 && (
-            <div className="filter-row" style={{ borderTop: '1px solid var(--c-border-subtle)', paddingTop: '0.4rem' }}>
-              <span className="filter-label">Héros</span>
-              {heroesForFaction.map(({ name, imagePath }) => {
-                const active = filterHero === name;
-                return (
-                  <button
-                    key={name}
-                    onClick={() => setFilterHero(active ? null : name)}
-                    className={`filter-toggle${active ? ' active' : ''}`}
-                  >
-                    {imagePath && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={imagePath} alt={name} style={{ width: 14, height: 18, objectFit: 'cover', borderRadius: 2 }} />
-                    )}
-                    {name}
-                  </button>
-                );
-              })}
-            </div>
-          )}
+          {(() => {
+            const heroOptions = activeTab === 'public'
+              ? (filterFaction ? publicHeroes.filter((h) => getFactionCode(h.reference) === filterFaction) : publicHeroes)
+              : heroesForFaction;
+            if (heroOptions.length === 0) return null;
+            return (
+              <div className="filter-row" style={{ borderTop: '1px solid var(--c-border-subtle)', paddingTop: '0.4rem' }}>
+                <span className="filter-label">Héros</span>
+                <select
+                  value={filterHero ?? ''}
+                  onChange={(e) => { setFilterHero(e.target.value || null); setPublicPage(1); }}
+                  className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-48"
+                >
+                  <option value="">Tous les héros</option>
+                  {heroOptions.map(({ name, reference }) => (
+                    <option key={reference} value={reference}>{name}</option>
+                  ))}
+                </select>
+              </div>
+            );
+          })()}
         </div>
 
         {/* ── Contenu ── */}
@@ -400,7 +405,7 @@ export default function DecksPage() {
             <p className="text-center mt-20 text-sm" style={{ color: 'var(--neutral-600)' }}>{t('decks.noPublicDecks')}</p>
           )}
 
-          {activeTab === 'myDecks' && isAuthenticated && !isLoading && !error && myDecks.length === 0 && (
+          {activeTab === 'myDecks' && isAuthenticated && !isLoading && !error && (allMyDecks ?? []).length === 0 && (
             <div className="text-center mt-20">
               <p className="mb-4" style={{ color: 'var(--neutral-600)' }}>{t('decks.noDecks')}</p>
               <Link href="/" className="btn-primary-altered">{t('decks.createFirst')}</Link>
@@ -608,7 +613,7 @@ export default function DecksPage() {
     if (!confirm(t('decks.deleteConfirm', { name: deck.name }))) return;
     setDeleting(deck.id);
     deleteDeck(deck.id)
-      .then(() => setMyDecks((prev) => prev.filter((d) => d.id !== deck.id)))
+      .then(() => setAllMyDecks((prev) => prev ? prev.filter((d) => d.id !== deck.id) : prev))
       .catch((e) => setMyError(e instanceof Error ? e.message : t('common.unknownError')))
       .finally(() => setDeleting(null));
   }
@@ -617,10 +622,7 @@ export default function DecksPage() {
     if (!isAuthenticated) return;
     setDuplicating(deck.id);
     duplicateDeck(deck.id, locale)
-      .then(() => {
-        setMyPage(1);
-        setMyDecks([]);
-      })
+      .then(() => setMyDecksVersion((v) => v + 1))
       .catch((e) => setMyError(e instanceof Error ? e.message : t('common.unknownError')))
       .finally(() => setDuplicating(null));
   }

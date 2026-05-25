@@ -49,6 +49,20 @@ function normalizePaginated<T>(data: Record<string, unknown>): ApiPaginatedRespo
   };
 }
 
+export interface PublicHero {
+  reference: string;
+  name: string;
+  imagePath: string | null;
+}
+
+export async function getPublicHeroes(locale = 'fr'): Promise<PublicHero[]> {
+  const res = await fetch(`${DECK_API_BASE}/decks/public/heroes?locale=${locale}`, {
+    headers: { Accept: 'application/json' },
+  });
+  if (!res.ok) throw new Error(`Erreur héros publics : ${res.status}`);
+  return res.json();
+}
+
 export async function getDeckByAlteredId(alteredId: string): Promise<ApiDeck | null> {
   const res = await deckFetch(`/decks?alteredId=${encodeURIComponent(alteredId)}&itemsPerPage=1`);
   if (!res.ok) return null;
@@ -66,11 +80,12 @@ export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedRes
 export async function getPublicDecks(
   locale = 'fr',
   page = 1,
-  filters: { cardName?: string; sortBy?: 'recent' | 'upvotes' | 'views' } = {},
+  filters: { cardName?: string; sortBy?: 'recent' | 'upvotes' | 'views'; hero?: string } = {},
 ): Promise<ApiPaginatedResponse<ApiDeck>> {
   const params = new URLSearchParams({ locale, page: String(page) });
   if (filters.cardName) params.set('cardName', filters.cardName);
   if (filters.sortBy) params.set('sortBy', filters.sortBy);
+  if (filters.hero) params.set('hero', filters.hero);
   const token = await tryGetToken();
   const headers: HeadersInit = { Accept: 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;

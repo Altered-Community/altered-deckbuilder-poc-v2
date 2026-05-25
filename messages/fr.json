@@ -145,6 +145,7 @@
     "legalityUniqueQuantity": "Quantité unique",
     "legalityRareQuantity": "Quantité rare",
     "legalityExaltedQuantity": "Quantité exaltée",
+    "duplicate": "Dupliquer",
     "delete": "Supprimer",
     "deleteConfirm": "Confirmer ?",
     "cancel": "Annuler",
