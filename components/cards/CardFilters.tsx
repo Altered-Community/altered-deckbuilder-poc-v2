@@ -95,7 +95,7 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
           placeholder={t('allSets')}
         />
         <MultiSelect
-          options={keywords.map((k) => ({ value: k.code, label: k.translations[locale] ?? k.translations['en'] ?? k.code }))}
+          options={keywords.map((k) => ({ value: k.code, label: k.translations[locale] ?? k.translations['en'] ?? k.code })).sort((a, b) => a.label.localeCompare(b.label, locale))}
           value={Array.isArray(filters.effectKeyword) ? filters.effectKeyword : (filters.effectKeyword ? [filters.effectKeyword] : [])}
           onChange={(vals) => updateMulti('effectKeyword', vals)}
           placeholder={t('allKeywords')}

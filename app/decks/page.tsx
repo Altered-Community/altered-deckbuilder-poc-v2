@@ -6,6 +6,8 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useAuth } from '@/lib/hooks/useAuth';
 import { signIn } from 'next-auth/react';
 import { getDecks, getPublicDecks, deleteDeck, upvoteDeck } from '@/lib/api/deckApi';
+
+const USE_KEYCLOAK = process.env.NEXT_PUBLIC_USE_KEYCLOAK === 'true';
 import type { ApiDeck } from '@/lib/types/deck';
 import LoginButton from '@/components/auth/LoginButton';
 import SiteLayout from '@/components/layout/SiteLayout';
@@ -24,7 +26,7 @@ export default function DecksPage() {
   const t = useTranslations();
   const locale = useLocale();
   const { isAuthenticated, isLoading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('public');
+  const [activeTab, setActiveTab] = useState<Tab>('myDecks');
 
   /* Pagination */
   const [publicPage, setPublicPage] = useState(1);
@@ -55,6 +57,14 @@ export default function DecksPage() {
 
   /* Upvotes (optimistic) */
   const [upvoting, setUpvoting] = useState<string | null>(null);
+
+  /* Redirection Keycloak si non authentifié */
+  useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated && USE_KEYCLOAK) {
+      signIn('keycloak');
+    }
+  }, [authLoading, isAuthenticated]);
 
   /* Fetch decks publics */
   useEffect(() => {
@@ -199,6 +209,18 @@ export default function DecksPage() {
 
   const isLoading = activeTab === 'public' ? publicLoading : (isAuthenticated ? myLoading : false);
   const error = activeTab === 'public' ? publicError : myError;
+
+  /* Pendant la vérification ou la redirection Keycloak */
+  if (USE_KEYCLOAK && (authLoading || !isAuthenticated)) {
+    return (
+      <SiteLayout>
+        <div className="flex items-center justify-center h-64 gap-3 text-c-text-muted">
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-amber-400" />
+          <span className="text-sm">{authLoading ? t('common.loading') : 'Redirection...'}</span>
+        </div>
+      </SiteLayout>
+    );
+  }
 
   return (
     <SiteLayout>
