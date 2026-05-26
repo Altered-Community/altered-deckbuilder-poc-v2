@@ -44,7 +44,10 @@ export function getCardReference(group: CardGroup): string {
 }
 
 export function getHeroImageUrl(reference: string): string {
-  const ref = reference.replace(/^ALT_WCS25_/, 'ALT_CORE_').replace(/_P_/, '_B_');
+  const ref = reference
+    .replace(/^ALT_WCS25_/, 'ALT_CORE_')
+    .replace(/^ALT_BISE_/, 'ALT_CORE_')
+    .replace(/_P_/, '_B_');
   return `https://cdn.alteredcore.org/cards/hero/${ref}_1.webp`;
 }
 

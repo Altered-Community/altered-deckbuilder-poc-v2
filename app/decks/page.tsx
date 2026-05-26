@@ -304,19 +304,6 @@ export default function DecksPage() {
                 </div>
               </>
             )}
-            {formats.length > 0 && (
-              <>
-                <span className="filter-label" style={{ marginLeft: '0.5rem' }}>Format</span>
-                <select
-                  value={filterFormat}
-                  onChange={(e) => setFilterFormat(e.target.value)}
-                  className="px-2 py-1 bg-c-input border border-c-border rounded text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-amber-400 w-32"
-                >
-                  <option value="">{t('decks.allFormats')}</option>
-                  {formats.map((f) => <option key={f} value={f}>{f}</option>)}
-                </select>
-              </>
-            )}
             {activeTab === 'public' && (
               <>
                 <span className="filter-label" style={{ marginLeft: '0.5rem' }}>Tri</span>
@@ -358,6 +345,21 @@ export default function DecksPage() {
               );
             })}
           </div>
+
+          {formats.length > 0 && (
+            <div className="filter-row">
+              <span className="filter-label">Format</span>
+              {formats.map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilterFormat(filterFormat === f ? '' : f)}
+                  className={`filter-toggle${filterFormat === f ? ' active' : ''}`}
+                >
+                  {f}
+                </button>
+              ))}
+            </div>
+          )}
 
           {(() => {
             const heroOptions = activeTab === 'public'
