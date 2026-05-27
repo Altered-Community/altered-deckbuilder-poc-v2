@@ -24,9 +24,10 @@ function normalizeList<T>(data: any): T[] {
 }
 
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
-  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, ...rest } = filters;
+  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
+  if (reference) searchParams.append('cards.reference[]', reference);
   Object.entries(rest).forEach(([key, value]) => {
     if (value === undefined || value === '') return;
     if (Array.isArray(value)) {

@@ -66,13 +66,22 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
   return (
     <div className="flex flex-col gap-2 p-3 bg-c-elevated rounded-lg">
       {/* Recherche */}
-      <input
-        type="text"
-        value={filters.name ?? ''}
-        onChange={(e) => update('name', e.target.value)}
-        placeholder={t('search')}
-        className={inputClass}
-      />
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={filters.reference ?? ''}
+          onChange={(e) => update('reference', e.target.value)}
+          placeholder={t('searchReference')}
+          className="px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-36 shrink-0"
+        />
+        <input
+          type="text"
+          value={filters.name ?? ''}
+          onChange={(e) => update('name', e.target.value)}
+          placeholder={t('search')}
+          className={inputClass}
+        />
+      </div>
 
       {/* Ligne 1 : Type · Faction · Set · Keyword */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

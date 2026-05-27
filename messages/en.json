@@ -45,6 +45,7 @@
   },
   "cards": {
     "search": "Search a card...",
+    "searchReference": "Reference...",
     "allTypes": "All types",
     "allFactions": "All factions",
     "allSets": "All sets",

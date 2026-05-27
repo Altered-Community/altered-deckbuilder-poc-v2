@@ -144,7 +144,8 @@ export default function CardBrowser({ initialFaction }: Props) {
   };
 
   const handleFiltersChange = (newFilters: CardGroupFilters) => {
-    setFilters({ ...newFilters, 'rarity': selectedRarities });
+    const rarity = newFilters.reference ? undefined : selectedRarities;
+    setFilters({ ...newFilters, 'rarity': rarity });
   };
 
   return (

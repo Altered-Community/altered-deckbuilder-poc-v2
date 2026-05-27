@@ -45,6 +45,7 @@ export interface CardGroup {
 
 export interface CardGroupFilters {
   name?: string;
+  reference?: string;
   faction?: string | string[];
   cardType?: string | string[];
   excludeCardTypes?: string[];
