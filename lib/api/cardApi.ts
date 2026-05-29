@@ -1,4 +1,4 @@
-import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, PaginatedResponse } from '@/lib/types/card';
+import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, ApiCondition, PaginatedResponse } from '@/lib/types/card';
 
 const API_BASE =
   typeof window === 'undefined'
@@ -24,7 +24,7 @@ function normalizeList<T>(data: any): T[] {
 }
 
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
-  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectText, effectTriggerType, effectEffect, effectCondition, ...rest } = filters;
+  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectSlots, effectSlotsOperator, effectSupport, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
   if (reference) searchParams.append('cards.reference[]', reference);
@@ -43,18 +43,14 @@ export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = '
     const kws = Array.isArray(effectKeyword) ? effectKeyword : [effectKeyword];
     kws.forEach((k) => searchParams.append('effectKeyword', k));
   }
-  if (effectTriggerType) {
-    const values = Array.isArray(effectTriggerType) ? effectTriggerType : [effectTriggerType];
-    values.forEach((v) => searchParams.append('effectTriggerType', v));
-  }
-  if (effectEffect) {
-    const values = Array.isArray(effectEffect) ? effectEffect : [effectEffect];
-    values.forEach((v) => searchParams.append('effectSlot[1][effect]', v));
-  }
-  if (effectCondition) {
-    const values = Array.isArray(effectCondition) ? effectCondition : [effectCondition];
-    values.forEach((v) => searchParams.append('effectSlot[1][effect]', v));
-  }
+  if (effectSupport !== undefined) searchParams.set('effectSupport', String(effectSupport));
+  if (effectSlots?.length) searchParams.set('effectSlotMode', (effectSlotsOperator ?? 'AND').toLowerCase());
+  effectSlots?.forEach((slot, i) => {
+    const idx = i + 1;
+    slot.trigger?.split(',').map(v => v.trim()).filter(Boolean).forEach(v => searchParams.append(`effectSlot[${idx}][trigger]`, v));
+    slot.condition?.split(',').map(v => v.trim()).filter(Boolean).forEach(v => searchParams.append(`effectSlot[${idx}][condition]`, v));
+    slot.output?.split(',').map(v => v.trim()).filter(Boolean).forEach(v => searchParams.append(`effectSlot[${idx}][effect]`, v));
+  });
   const res = await fetch(`${API_BASE}/card_groups?${searchParams}`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des cartes');
   return normalizeCollection<CardGroup>(await res.json());
@@ -104,6 +100,12 @@ export async function fetchEffects(): Promise<ApiEffect[]> {
   const res = await fetch(`${API_BASE}/effects`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des effets');
   return normalizeList<ApiEffect>(await res.json());
+}
+
+export async function fetchConditions(): Promise<ApiCondition[]> {
+  const res = await fetch(`${API_BASE}/conditions`);
+  if (!res.ok) throw new Error('Erreur lors de la récupération des conditions');
+  return normalizeList<ApiCondition>(await res.json());
 }
 
 const REF_BATCH_SIZE = 50;

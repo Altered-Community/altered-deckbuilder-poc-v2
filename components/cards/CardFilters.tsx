@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
-import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects } from '@/lib/api/cardApi';
+import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
-import type { CardGroupFilters } from '@/lib/types/card';
+import type { CardGroupFilters, EffectSlot } from '@/lib/types/card';
 import MultiSelect from '@/components/ui/MultiSelect';
+import SingleSelect from '@/components/ui/SingleSelect';
 
 interface CardFiltersProps {
   filters: CardGroupFilters;
@@ -27,35 +28,12 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
   const locale = useLocale();
   const [effectsOpen, setEffectsOpen] = useState(false);
 
-  const { data: sets = [] } = useQuery({
-    queryKey: ['sets'],
-    queryFn: fetchSets,
-    staleTime: Infinity,
-  });
-
-  const { data: apiFactions = [] } = useQuery({
-    queryKey: ['factions'],
-    queryFn: fetchFactions,
-    staleTime: Infinity,
-  });
-
-  const { data: keywords = [] } = useQuery({
-    queryKey: ['keywords', locale],
-    queryFn: () => fetchKeywords(locale),
-    staleTime: Infinity,
-  });
-
-  const { data: triggers = [] } = useQuery({
-    queryKey: ['triggers'],
-    queryFn: fetchTriggers,
-    staleTime: Infinity,
-  });
-
-  const { data: effects = [] } = useQuery({
-    queryKey: ['effects'],
-    queryFn: fetchEffects,
-    staleTime: Infinity,
-  });
+  const { data: sets = [] } = useQuery({ queryKey: ['sets'], queryFn: fetchSets, staleTime: Infinity });
+  const { data: apiFactions = [] } = useQuery({ queryKey: ['factions'], queryFn: fetchFactions, staleTime: Infinity });
+  const { data: keywords = [] } = useQuery({ queryKey: ['keywords', locale], queryFn: () => fetchKeywords(locale), staleTime: Infinity });
+  const { data: triggers = [] } = useQuery({ queryKey: ['triggers'], queryFn: fetchTriggers, staleTime: Infinity });
+  const { data: conditions = [] } = useQuery({ queryKey: ['conditions'], queryFn: fetchConditions, staleTime: Infinity });
+  const { data: effects = [] } = useQuery({ queryKey: ['effects'], queryFn: fetchEffects, staleTime: Infinity });
 
   const factions =
     apiFactions.length > 0
@@ -73,16 +51,35 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
   const selectedFactions = Array.isArray(filters.faction) ? filters.faction : (filters.faction ? [filters.faction] : []);
   const matchesFaction = (itemFactions: string[]) =>
     selectedFactions.length === 0 || itemFactions.length === 0 || itemFactions.some((f) => selectedFactions.includes(f));
-  const toEffectOption = (item: { alteredId: number; translations: Record<string, string> }) => ({
+  const toOption = (item: { alteredId: number; factions: string[]; translations: Record<string, string> }) => ({
     value: String(item.alteredId),
     label: item.translations[locale] ?? item.translations['en'] ?? String(item.alteredId),
   });
-  const sortedByLabel = (options: { value: string; label: string }[]) =>
-    options.sort((a, b) => a.label.localeCompare(b.label, locale));
 
-  const hasActiveFilters = Object.entries(filters).some(
-    ([k, v]) => k !== 'page' && v !== undefined && v !== ''
-  );
+  const triggerOptions    = triggers.filter((tr) => matchesFaction(tr.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
+  const conditionOptions  = conditions.filter((c) => matchesFaction(c.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
+  const effectOptions     = effects.filter((ef) => matchesFaction(ef.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
+
+  const slots = filters.effectSlots ?? [];
+
+  const addSlot = () =>
+    onChange({ ...filters, effectSlots: [...slots, {}], page: 1 });
+
+  const removeSlot = (i: number) => {
+    const next = slots.filter((_, idx) => idx !== i);
+    onChange({ ...filters, effectSlots: next.length ? next : undefined, effectSlotsOperator: next.length > 1 ? filters.effectSlotsOperator : undefined, page: 1 });
+  };
+
+  const updateSlot = (i: number, field: keyof EffectSlot, value: string) => {
+    const next = slots.map((s, idx) => idx === i ? { ...s, [field]: value || undefined } : s);
+    onChange({ ...filters, effectSlots: next, page: 1 });
+  };
+
+  const hasActiveEffects = slots.some(s => s.trigger || s.condition || s.output) || filters.effectSupport !== undefined;
+
+  const hasActiveFilters =
+    Object.entries(filters).some(([k, v]) => k !== 'page' && k !== 'effectSlots' && k !== 'effectSlotsOperator' && k !== 'effectSupport' && v !== undefined && v !== '') ||
+    hasActiveEffects;
 
   const selectClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500';
   const inputClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-full';
@@ -147,29 +144,25 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
           <option value="">{t('mainCost')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-
         <select value={filters.recallCost ?? ''} onChange={(e) => update('recallCost', e.target.value)} className={selectClass}>
           <option value="">{t('recallCost')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-
         <select value={filters.oceanPower ?? ''} onChange={(e) => update('oceanPower', e.target.value)} className={selectClass}>
           <option value="">{t('oceanPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-
         <select value={filters.mountainPower ?? ''} onChange={(e) => update('mountainPower', e.target.value)} className={selectClass}>
           <option value="">{t('mountainPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
-
         <select value={filters.forestPower ?? ''} onChange={(e) => update('forestPower', e.target.value)} className={selectClass}>
           <option value="">{t('forestPower')}</option>
           {COSTS.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </div>
 
-      {/* Ligne 3 : Rareté (multi-select) + filtre collection */}
+      {/* Ligne 3 : Rareté + collection */}
       <div className="flex items-center gap-3 flex-wrap">
         {RARITIES.map((r) => (
           <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -186,59 +179,110 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
           <>
             <span className="text-c-border-subtle">|</span>
             <label className="flex items-center gap-1.5 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={showOnlyOwned}
-                onChange={onToggleOwned}
-                className="w-3.5 h-3.5 accent-amber-500"
-              />
+              <input type="checkbox" checked={showOnlyOwned} onChange={onToggleOwned} className="w-3.5 h-3.5 accent-amber-500" />
               <span className="text-xs text-amber-400 font-medium">{t('ownedOnly')}</span>
             </label>
           </>
         )}
       </div>
 
-      {/* Accordéon : Effets */}
+      {/* Accordéon : Effects */}
       <div>
         <button
           type="button"
           onClick={() => setEffectsOpen((v) => !v)}
           className="flex items-center gap-2 w-full text-xs font-semibold text-c-text-muted uppercase tracking-wider py-0.5 hover:text-c-text transition"
         >
-          <i className={`fa-solid fa-chevron-${effectsOpen ? 'up' : 'down'} text-[10px] transition-transform`} />
+          <i className={`fa-solid fa-chevron-${effectsOpen ? 'up' : 'down'} text-[10px]`} />
           {t('effectsFilter')}
+          {hasActiveEffects && <span className="ml-1 w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />}
         </button>
+
         {effectsOpen && (
           <div className="flex flex-col gap-2 mt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              <MultiSelect
-                options={sortedByLabel(triggers.filter((tr) => matchesFaction(tr.factions)).map(toEffectOption))}
-                value={Array.isArray(filters.effectTriggerType) ? filters.effectTriggerType : (filters.effectTriggerType ? [filters.effectTriggerType] : [])}
-                onChange={(vals) => updateMulti('effectTriggerType', vals)}
-                placeholder={t('allTriggers')}
-              />
-              <MultiSelect
-                options={sortedByLabel(effects.filter((ef) => matchesFaction(ef.factions)).map(toEffectOption))}
-                value={Array.isArray(filters.effectEffect) ? filters.effectEffect : (filters.effectEffect ? [filters.effectEffect] : [])}
-                onChange={(vals) => updateMulti('effectEffect', vals)}
-                placeholder={t('allConditions')}
-              />
-              <MultiSelect
-                options={sortedByLabel(effects.filter((ef) => matchesFaction(ef.factions)).map(toEffectOption))}
-                value={Array.isArray(filters.effectCondition) ? filters.effectCondition : (filters.effectCondition ? [filters.effectCondition] : [])}
-                onChange={(vals) => updateMulti('effectCondition', vals)}
-                placeholder={t('allEffects')}
-              />
+
+            {/* AND/OR */}
+            <div className="flex items-center gap-3 flex-wrap">
+              {slots.length > 1 && (
+                <div className="flex items-center gap-1 ml-auto">
+                  <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
+                  {(['AND', 'OR'] as const).map((op) => (
+                    <button
+                      key={op}
+                      type="button"
+                      onClick={() => onChange({ ...filters, effectSlotsOperator: op, page: 1 })}
+                      className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
+                        (filters.effectSlotsOperator ?? 'AND') === op
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-c-input text-c-text-muted hover:text-c-text'
+                      }`}
+                    >
+                      {op}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
+
+            {/* Slots */}
+            {slots.map((slot, i) => (
+              <div key={i} className="border border-c-border rounded-md p-2 flex flex-col gap-2 bg-c-surface">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-c-text-secondary">Effect [{i}]</span>
+                  <button
+                    type="button"
+                    onClick={() => removeSlot(i)}
+                    className="text-xs text-c-text-subtle hover:text-red-400 transition"
+                  >
+                    {t('effectRemove')}
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-c-text-muted">{t('effectTriggerLabel')}</span>
+                    <SingleSelect
+                      options={triggerOptions}
+                      value={slot.trigger ?? ''}
+                      onChange={(v) => updateSlot(i, 'trigger', v)}
+                      placeholder={t('effectTriggerLabel')}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-c-text-muted">{t('effectConditionLabel')}</span>
+                    <SingleSelect
+                      options={conditionOptions}
+                      value={slot.condition ?? ''}
+                      onChange={(v) => updateSlot(i, 'condition', v)}
+                      placeholder={t('effectConditionLabel')}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] text-c-text-muted">{t('effectOutputLabel')}</span>
+                    <SingleSelect
+                      options={effectOptions}
+                      value={slot.output ?? ''}
+                      onChange={(v) => updateSlot(i, 'output', v)}
+                      placeholder={t('effectOutputLabel')}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* Add slot */}
+            <button
+              type="button"
+              onClick={addSlot}
+              className="border border-dashed border-c-border rounded-md py-2 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
+            >
+              + {t('effectAddSlot')}
+            </button>
           </div>
         )}
       </div>
 
       {hasActiveFilters && (
-        <button
-          onClick={onReset}
-          className="text-xs text-c-text-subtle hover:text-c-text underline text-left"
-        >
+        <button onClick={onReset} className="text-xs text-c-text-subtle hover:text-c-text underline text-left">
           {t('resetFilters')}
         </button>
       )}

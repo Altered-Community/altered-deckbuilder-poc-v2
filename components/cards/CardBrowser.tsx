@@ -87,12 +87,6 @@ export default function CardBrowser({ initialFaction }: Props) {
       if (filters.costComparison === 'mainHigher' && m <= r) return false;
       if (filters.costComparison === 'recallHigher' && r <= m) return false;
     }
-    if (filters.effectText) {
-      const q = filters.effectText.toLowerCase();
-      const main = g.mainEffect?.toLowerCase() ?? '';
-      const echo = Array.isArray(g.echoEffect) ? g.echoEffect.join(' ').toLowerCase() : (g.echoEffect?.toLowerCase() ?? '');
-      if (!main.includes(q) && !echo.includes(q)) return false;
-    }
     return true;
   };
 
@@ -129,12 +123,11 @@ export default function CardBrowser({ initialFaction }: Props) {
   const cards: CardGroup[] = useMemo(() => {
     if (!showOnlyOwned) {
       const base = normalData?.data ?? [];
-      const needsClientFilter = !!filters.costComparison || !!filters.effectText;
-      return needsClientFilter ? base.filter(applyCostAndEffectFilters) : base;
+      return filters.costComparison ? base.filter(applyCostAndEffectFilters) : base;
     }
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredOwnedGroups.slice(start, start + ITEMS_PER_PAGE);
-  }, [showOnlyOwned, normalData, filteredOwnedGroups, currentPage, filters.costComparison, filters.effectText]);
+  }, [showOnlyOwned, normalData, filteredOwnedGroups, currentPage, filters.costComparison]);
 
   useEffect(() => {
     if (lightboxIdx === null) return;
@@ -167,9 +160,21 @@ export default function CardBrowser({ initialFaction }: Props) {
     setFilters((f) => ({ ...f, 'rarity': next, page: 1 }));
   };
 
+  const INITIAL_FILTERS: CardGroupFilters = {
+    page: 1,
+    'order[set.date]': 'desc',
+    'rarity': DEFAULT_RARITIES,
+    ...(initialFaction ? { 'faction': initialFaction } : {}),
+  };
+
   const handleFiltersChange = (newFilters: CardGroupFilters) => {
     const rarity = newFilters.reference ? undefined : selectedRarities;
     setFilters({ ...newFilters, 'rarity': rarity });
+  };
+
+  const handleReset = () => {
+    setFilters(INITIAL_FILTERS);
+    setShowOnlyOwned(false);
   };
 
   return (
@@ -177,6 +182,7 @@ export default function CardBrowser({ initialFaction }: Props) {
       <CardFiltersPanel
         filters={filters}
         onChange={handleFiltersChange}
+        onReset={handleReset}
         selectedRarities={selectedRarities}
         onToggleRarity={toggleRarity}
         excludeTypes={['HERO']}

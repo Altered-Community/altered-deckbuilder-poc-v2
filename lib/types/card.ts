@@ -43,6 +43,12 @@ export interface CardGroup {
   loreEntries: { type: string; elements: { type: string; text: string }[] }[];
 }
 
+export interface EffectSlot {
+  trigger?: string;
+  condition?: string;
+  output?: string;
+}
+
 export interface CardGroupFilters {
   name?: string;
   reference?: string;
@@ -59,11 +65,10 @@ export interface CardGroupFilters {
   'order[set.date]'?: 'asc' | 'desc';
   'set.reference'?: string | string[];
   effectKeyword?: string | string[];
-  effectText?: string;
   costComparison?: 'equal' | 'mainHigher' | 'recallHigher';
-  effectTriggerType?: string | string[];
-  effectEffect?: string | string[];
-  effectCondition?: string | string[];
+  effectSlots?: EffectSlot[];
+  effectSlotsOperator?: 'AND' | 'OR';
+  effectSupport?: boolean;
   promo?: string;
   page?: number;
   itemsPerPage?: number;
@@ -78,6 +83,7 @@ export interface ApiTrigger {
 }
 
 export type ApiEffect = ApiTrigger;
+export type ApiCondition = ApiTrigger;
 
 export interface ApiKeyword {
   code: string;

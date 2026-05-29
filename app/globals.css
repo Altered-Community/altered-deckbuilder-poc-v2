@@ -722,25 +722,24 @@ body {
 }
 
 /* ── Tom Select theme override ── */
-.ts-wrapper.multi .ts-control {
-  background: var(--c-input);
-  border-color: var(--c-border);
+/* ── TomSelect — base (shared light + dark) ── */
+.ts-wrapper .ts-control {
   border-radius: 6px;
-  padding: 3px 6px;
   min-height: 30px;
+  font-size: .75rem;
+}
+.ts-wrapper.multi .ts-control {
+  padding: 3px 6px;
   gap: 3px;
   flex-wrap: wrap;
   cursor: text;
 }
-.ts-wrapper.multi .ts-control input {
-  color: var(--c-text);
-  font-size: .75rem;
+.ts-wrapper:not(.multi) .ts-control {
+  padding: 4px 8px;
+  cursor: pointer;
 }
-.ts-wrapper.multi .ts-control input::placeholder {
-  color: var(--c-text-muted);
-}
-.ts-wrapper.multi .ts-control .item {
-  background: var(--primary-400, #f59e0b);
+.ts-wrapper .ts-control .item {
+  background: #f59e0b;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -752,30 +751,65 @@ body {
   border-left: none;
   padding: 0 2px;
 }
-.ts-wrapper .ts-dropdown {
-  background: var(--c-surface);
-  border-color: var(--c-border);
-  border-radius: 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  font-size: .75rem;
-}
-.ts-wrapper .ts-dropdown .option {
-  color: var(--c-text);
-  padding: 5px 10px;
-}
-.ts-wrapper .ts-dropdown .option:hover,
-.ts-wrapper .ts-dropdown .option.active {
-  background: var(--c-elevated);
-  color: var(--c-text);
-}
-.ts-wrapper .ts-dropdown .option.selected {
-  background: color-mix(in srgb, var(--primary-400, #f59e0b) 20%, transparent);
-}
 .ts-wrapper.focus .ts-control {
-  border-color: #f59e0b;
+  border-color: #f59e0b !important;
   box-shadow: 0 0 0 1px #f59e0b;
   outline: none;
 }
+.ts-dropdown {
+  border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  font-size: .75rem;
+}
+.ts-dropdown .option {
+  padding: 5px 10px;
+}
+
+/* ── TomSelect — light mode ── */
+.ts-wrapper .ts-control,
+.ts-wrapper .ts-control.full,
+.full .ts-control {
+  background: #dde3ec !important;
+  border-color: #b8c4d4 !important;
+  color: #0f172a !important;
+}
+.ts-wrapper .ts-control input {
+  color: #0f172a !important;
+  background: transparent !important;
+}
+.ts-wrapper .ts-control input::placeholder { color: #475569; }
+.ts-dropdown {
+  background: #ffffff !important;
+  border-color: #b8c4d4 !important;
+  color: #0f172a;
+}
+.ts-dropdown .option { color: #0f172a; background: transparent; }
+.ts-dropdown .option:hover,
+.ts-dropdown .option.active { background: #f1f5f9 !important; }
+.ts-dropdown .option.selected { background: rgba(245,158,11,0.15) !important; }
+
+/* ── TomSelect — dark mode ── */
+.dark .ts-wrapper .ts-control,
+.dark .ts-wrapper .ts-control.full,
+.dark .full .ts-control {
+  background: #1f2937 !important;
+  border-color: #374151 !important;
+  color: #ffffff !important;
+}
+.dark .ts-wrapper .ts-control input {
+  color: #ffffff !important;
+  background: transparent !important;
+}
+.dark .ts-wrapper .ts-control input::placeholder { color: #9ca3af; }
+.dark .ts-dropdown {
+  background: #111827 !important;
+  border-color: #374151 !important;
+  color: #ffffff;
+}
+.dark .ts-dropdown .option { color: #ffffff; background: transparent; }
+.dark .ts-dropdown .option:hover,
+.dark .ts-dropdown .option.active { background: #1f2937 !important; }
+.dark .ts-dropdown .option.selected { background: rgba(245,158,11,0.2) !important; }
 
 .ts-altered-id {
   font-size: 0.6rem;
