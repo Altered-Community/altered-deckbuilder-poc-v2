@@ -80,12 +80,13 @@ export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedRes
 export async function getPublicDecks(
   locale = 'fr',
   page = 1,
-  filters: { cardName?: string; sortBy?: 'recent' | 'upvotes' | 'views'; hero?: string } = {},
+  filters: { cardName?: string; sortBy?: 'recent' | 'upvotes' | 'views'; hero?: string; faction?: string } = {},
 ): Promise<ApiPaginatedResponse<ApiDeck>> {
   const params = new URLSearchParams({ locale, page: String(page) });
   if (filters.cardName) params.set('cardName', filters.cardName);
   if (filters.sortBy) params.set('sortBy', filters.sortBy);
   if (filters.hero) params.set('hero', filters.hero);
+  if (filters.faction) params.set('faction', filters.faction);
   const token = await tryGetToken();
   const headers: HeadersInit = { Accept: 'application/json' };
   if (token) headers['Authorization'] = `Bearer ${token}`;

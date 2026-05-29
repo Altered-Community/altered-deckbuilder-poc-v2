@@ -77,6 +77,24 @@ export default function CardBrowser({ initialFaction }: Props) {
     placeholderData: (prev) => prev,
   });
 
+  const applyCostAndEffectFilters = (g: CardGroup) => {
+    if (filters.costComparison) {
+      const m = g.mainCost;
+      const r = g.recallCost;
+      if (m === null || r === null) return false;
+      if (filters.costComparison === 'equal' && m !== r) return false;
+      if (filters.costComparison === 'mainHigher' && m <= r) return false;
+      if (filters.costComparison === 'recallHigher' && r <= m) return false;
+    }
+    if (filters.effectText) {
+      const q = filters.effectText.toLowerCase();
+      const main = g.mainEffect?.toLowerCase() ?? '';
+      const echo = Array.isArray(g.echoEffect) ? g.echoEffect.join(' ').toLowerCase() : (g.echoEffect?.toLowerCase() ?? '');
+      if (!main.includes(q) && !echo.includes(q)) return false;
+    }
+    return true;
+  };
+
   const filteredOwnedGroups = useMemo(() => {
     if (!ownedGroups) return [];
     return ownedGroups.filter((g) => {
@@ -95,6 +113,7 @@ export default function CardBrowser({ initialFaction }: Props) {
       if (filters.mainCost !== undefined && filters.mainCost !== '' && g.mainCost !== Number(filters.mainCost)) return false;
       if (filters.recallCost !== undefined && filters.recallCost !== '' && g.recallCost !== Number(filters.recallCost)) return false;
       if (filters['set.reference'] && !g.cards.some((v) => v.set.reference === filters['set.reference'])) return false;
+      if (!applyCostAndEffectFilters(g)) return false;
       return true;
     });
   }, [ownedGroups, factionCode, isSandbox, filters]);
@@ -107,10 +126,14 @@ export default function CardBrowser({ initialFaction }: Props) {
   const currentPage = filters.page ?? 1;
 
   const cards: CardGroup[] = useMemo(() => {
-    if (!showOnlyOwned) return normalData?.data ?? [];
+    if (!showOnlyOwned) {
+      const base = normalData?.data ?? [];
+      const needsClientFilter = !!filters.costComparison || !!filters.effectText;
+      return needsClientFilter ? base.filter(applyCostAndEffectFilters) : base;
+    }
     const start = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredOwnedGroups.slice(start, start + ITEMS_PER_PAGE);
-  }, [showOnlyOwned, normalData, filteredOwnedGroups, currentPage]);
+  }, [showOnlyOwned, normalData, filteredOwnedGroups, currentPage, filters.costComparison, filters.effectText]);
 
   useEffect(() => {
     if (lightboxIdx === null) return;

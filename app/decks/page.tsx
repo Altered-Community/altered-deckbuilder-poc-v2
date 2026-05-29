@@ -82,7 +82,7 @@ export default function DecksPage() {
       setPublicLoading(true);
       setPublicError(null);
       try {
-        const res = await getPublicDecks(locale, publicPage, { cardName: filterCardName || undefined, sortBy, hero: activeTab === 'public' ? (filterHero ?? undefined) : undefined });
+        const res = await getPublicDecks(locale, publicPage, { cardName: filterCardName || undefined, sortBy, hero: activeTab === 'public' ? (filterHero ?? undefined) : undefined, faction: activeTab === 'public' ? (filterFaction ?? undefined) : undefined });
         if (!active) return;
         setPublicDecks(res.items);
         setPublicLastPage(res.lastPage);
@@ -94,7 +94,7 @@ export default function DecksPage() {
       }
     }, filterCardName ? 400 : 0);
     return () => { active = false; clearTimeout(timer); };
-  }, [locale, publicPage, filterCardName, sortBy, filterHero, activeTab, t]);
+  }, [locale, publicPage, filterCardName, sortBy, filterHero, filterFaction, activeTab, t]);
 
   /* Charge tous mes decks (toutes pages) dès l'auth */
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function DecksPage() {
   const handleFactionClick = (code: string) => {
     const next = filterFaction === code ? null : code;
     setFilterFaction(next);
-    // clear hero if it doesn't belong to the new faction
+    setPublicPage(1);
     if (filterHero) {
       const hero = allHeroes.find((h) => h.reference === filterHero);
       if (next && hero?.factionCode !== next) setFilterHero(null);
@@ -339,7 +339,7 @@ export default function DecksPage() {
                   className={`filter-toggle${active ? ' active' : ''}`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`https://alteredcore.org/assets/faction/${code}.png`} alt={code} style={{ width: 16, height: 16, objectFit: 'contain' }} />
+                  <img src={`/faction/${code}.png`} alt={code} style={{ width: 16, height: 16, objectFit: 'contain' }} />
                   {FACTIONS[code]}
                 </button>
               );
@@ -463,7 +463,7 @@ export default function DecksPage() {
                         {factionCode && (
                           <span className="ac-badge" style={{ background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(0,0,0,0.12)', color: '#444' }}>
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={`https://alteredcore.org/assets/faction/${factionCode}.png`} alt={factionCode} style={{ width: 14, height: 14, objectFit: 'contain' }} />
+                            <img src={`/faction/${factionCode}.png`} alt={factionCode} style={{ width: 14, height: 14, objectFit: 'contain' }} />
                             {FACTIONS[factionCode] ?? factionCode}
                           </span>
                         )}

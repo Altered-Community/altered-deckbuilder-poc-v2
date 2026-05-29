@@ -59,10 +59,25 @@ export interface CardGroupFilters {
   'order[set.date]'?: 'asc' | 'desc';
   'set.reference'?: string | string[];
   effectKeyword?: string | string[];
+  effectText?: string;
+  costComparison?: 'equal' | 'mainHigher' | 'recallHigher';
+  effectTriggerType?: string | string[];
+  effectEffect?: string | string[];
+  effectCondition?: string | string[];
   promo?: string;
   page?: number;
   itemsPerPage?: number;
 }
+
+export interface ApiTrigger {
+  alteredId: number;
+  filterExample: string;
+  isSupport: boolean;
+  factions: string[];
+  translations: Record<string, string>;
+}
+
+export type ApiEffect = ApiTrigger;
 
 export interface ApiKeyword {
   code: string;
