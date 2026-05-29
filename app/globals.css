@@ -776,3 +776,10 @@ body {
   box-shadow: 0 0 0 1px #f59e0b;
   outline: none;
 }
+
+.ts-altered-id {
+  font-size: 0.6rem;
+  opacity: 0.35;
+  flex-shrink: 0;
+  font-family: monospace;
+}

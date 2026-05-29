@@ -39,7 +39,7 @@ export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
       className={`relative rounded-md overflow-hidden bg-c-elevated border border-c-border group cursor-pointer select-none ${ring ? `ring-1 ${ring}` : ''} ${rarity !== 'UNIQUE' ? 'aspect-[744/1039]' : ''}`}
     >
       {rarity === 'UNIQUE' ? (
-        <UniqueCardRenderer reference={getCardReference(cardGroup)} className="w-full" />
+        <UniqueCardRenderer reference={getCardReference(cardGroup)} locale={locale} className="w-full" />
       ) : image ? (
         <>
           <Image src={image} alt={name} fill className="object-cover brightness-[1.01] saturate-[0.98] contrast-[1.04]" sizes="100px" unoptimized />

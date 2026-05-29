@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { fetchCardGroups, fetchCardGroupsByRefs } from '@/lib/api/cardApi';
@@ -273,19 +274,29 @@ export default function CardBrowser({ initialFaction }: Props) {
           onClick={() => setLightboxIdx(null)}
         >
           {/* Card image */}
-          <div onClick={(e) => e.stopPropagation()} className="relative flex items-center justify-center">
+          <div onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-3">
             {lbRarity === 'UNIQUE' && lbReference ? (
               <div style={{ width: 'min(52vh, 88vw)' }}>
                 <UniqueCardRenderer reference={lbReference} locale={locale} className="w-full" />
               </div>
             ) : lbImage ? (
-              <div className="relative" style={{ height: '85vh', aspectRatio: '744/1039' }}>
+              <div className="relative" style={{ height: '82vh', aspectRatio: '744/1039' }}>
                 <Image src={lbImage} alt={lbName} fill className="object-contain" unoptimized sizes="600px" />
               </div>
             ) : (
               <div className="flex items-center justify-center bg-c-surface rounded-xl p-8" style={{ height: '60vh', aspectRatio: '744/1039' }}>
                 <span className="text-white text-sm text-center">{lbName}</span>
               </div>
+            )}
+            {lbReference && (
+              <Link
+                href={`/cards/${lbReference}`}
+                onClick={() => setLightboxIdx(null)}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-sm font-medium transition backdrop-blur-sm"
+              >
+                <i className="fa-solid fa-circle-info text-xs" />
+                {lbName}
+              </Link>
             )}
           </div>
 
@@ -315,10 +326,9 @@ export default function CardBrowser({ initialFaction }: Props) {
             <i className="fa-solid fa-xmark" />
           </button>
 
-          {/* Name + counter */}
+          {/* Counter */}
           <div className="absolute bottom-5 left-0 right-0 text-center pointer-events-none">
-            <span className="text-white text-sm font-semibold drop-shadow">{lbName}</span>
-            <span className="text-white/40 text-xs ml-3">{lightboxIdx + 1} / {cards.length}</span>
+            <span className="text-white/40 text-xs">{lightboxIdx + 1} / {cards.length}</span>
           </div>
         </div>
       )}

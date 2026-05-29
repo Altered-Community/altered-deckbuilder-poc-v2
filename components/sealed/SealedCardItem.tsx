@@ -50,7 +50,7 @@ export default function SealedCardItem({ card, poolQty, onZoom }: Props) {
     >
       <div className={`relative bg-c-elevated overflow-hidden ${rarity !== 'UNIQUE' ? 'aspect-[744/1039]' : ''}`}>
         {rarity === 'UNIQUE' ? (
-          <UniqueCardRenderer reference={getCardReference(card)} className="w-full" />
+          <UniqueCardRenderer reference={getCardReference(card)} locale={locale} className="w-full" />
         ) : image ? (
           <Image src={image} alt={name} fill className="object-cover" sizes="200px" unoptimized />
         ) : (

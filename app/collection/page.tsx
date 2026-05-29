@@ -331,7 +331,7 @@ export default function CollectionPage() {
                       className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-sm font-medium transition-all ${active ? 'border-amber-400 bg-amber-400/15 text-amber-400' : 'border-c-border text-c-text-muted hover:text-c-text hover:border-c-text/50'}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={`https://alteredcore.org/assets/faction/${code}.png`} alt={code} style={{ width: 15, height: 15, objectFit: 'contain' }} />
+                      <img src={`/faction/${code}.png`} alt={code} style={{ width: 15, height: 15, objectFit: 'contain' }} />
                       {name}
                     </button>
                   );

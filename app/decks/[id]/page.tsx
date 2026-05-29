@@ -112,7 +112,7 @@ function CardRow({ dc, onClick }: { dc: ApiDeckCard; onClick: () => void }) {
       className={`relative rounded-lg overflow-hidden border border-c-border bg-c-surface cursor-pointer hover:brightness-110 hover:scale-[1.02] transition-all duration-100 select-none ${isUnique ? '' : 'aspect-[744/1039]'}`}
     >
       {isUnique ? (
-        <UniqueCardRenderer reference={dc.cardReference} className="w-full" />
+        <UniqueCardRenderer reference={dc.cardReference} locale={locale} className="w-full" />
       ) : image ? (
         <Image src={image} alt={name} className="absolute inset-0 w-full h-full object-cover" fill sizes="(max-width: 768px) 50vw, 33vw" />
       ) : null}
@@ -809,7 +809,7 @@ export default function DeckEditPage() {
                   {factionCode && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
-                      src={`https://alteredcore.org/assets/faction/${factionCode}.png`}
+                      src={`/faction/${factionCode}.png`}
                       alt={factionCode}
                       style={{ width: 24, height: 24, objectFit: 'contain', flexShrink: 0 }}
                     />

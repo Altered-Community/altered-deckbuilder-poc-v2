@@ -223,7 +223,7 @@ function SealedDeckCardItem({ deckCard, onZoom, onDecrement, onRemove }: {
       <div className="relative aspect-[744/1039] bg-c-elevated">
         {rarity === 'UNIQUE' ? (
           <div className="w-full h-full">
-            <UniqueCardRenderer reference={getCardReference(card)} className="w-full h-full" />
+            <UniqueCardRenderer reference={getCardReference(card)} locale={locale} className="w-full h-full" />
           </div>
         ) : image ? (
           <Image src={image} alt={name} fill className="object-cover" sizes="100px" unoptimized />

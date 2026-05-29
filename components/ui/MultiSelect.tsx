@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react';
 import TomSelect from 'tom-select';
+import { renderAlteredText } from '@/lib/utils/alteredText';
 
 interface Option {
   value: string;
@@ -32,10 +33,17 @@ export default function MultiSelect({ options, value, onChange, placeholder = ''
       placeholder,
       options: toTsOptions(options),
       items: value,
+      dropdownParent: 'body',
       onItemAdd() { tsRef.current?.blur(); },
       onChange(vals: string | string[]) {
         const arr = Array.isArray(vals) ? vals : (vals ? [vals] : []);
         onChangeRef.current(arr);
+      },
+      render: {
+        option: (data: { value: string; text: string }) =>
+          `<div class="option">${renderAlteredText(data.text)} <span class="ts-altered-id">${data.value}</span></div>`,
+        item: (data: { value: string; text: string }) =>
+          `<div class="item">${renderAlteredText(data.text)} <span class="ts-altered-id">${data.value}</span></div>`,
       },
     });
     return () => {

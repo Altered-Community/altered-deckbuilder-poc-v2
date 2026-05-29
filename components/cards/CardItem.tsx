@@ -59,7 +59,7 @@ export default function CardItem({ card, onZoom, ownedCount }: CardItemProps) {
     >
       <div className={`relative bg-c-elevated overflow-hidden ${rarity !== 'UNIQUE' ? 'aspect-[744/1039]' : ''}`}>
         {rarity === 'UNIQUE' ? (
-          <UniqueCardRenderer reference={getCardReference(card)} className="w-full" />
+          <UniqueCardRenderer reference={getCardReference(card)} locale={locale} className="w-full" />
         ) : image ? (
           <>
             <Image
