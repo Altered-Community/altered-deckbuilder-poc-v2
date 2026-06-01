@@ -34,6 +34,7 @@ export default function SingleSelect({ options, value, onChange, placeholder = '
       items: value ? [value] : [],
       dropdownParent: 'body',
       allowEmptyOption: true,
+      plugins: ['clear_button'],
       onChange(val: string) {
         onChangeRef.current(val ?? '');
       },
