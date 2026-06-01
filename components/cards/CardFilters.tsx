@@ -206,11 +206,33 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
     label: item.translations[locale] ?? item.translations['en'] ?? String(item.alteredId),
   });
 
-  const triggerOptions    = triggers.filter((tr) => matchesFaction(tr.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
-  const conditionOptions  = conditions.filter((c) => matchesFaction(c.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
-  const effectOptions     = effects.filter((ef) => matchesFaction(ef.factions)).map(toOption).sort((a, b) => a.label.localeCompare(b.label, locale));
+  const sortOpts = (opts: { value: string; label: string }[]) => opts.sort((a, b) => a.label.localeCompare(b.label, locale));
+  const byFaction = (item: { factions: string[] }) => matchesFaction(item.factions);
+
+  const mainTriggerOptions   = sortOpts(triggers.filter((t) => t.isMain && byFaction(t)).map(toOption));
+  const mainConditionOptions = sortOpts(conditions.filter((c) => c.isMain && byFaction(c)).map(toOption));
+  const mainEffectOptions    = sortOpts(effects.filter((e) => e.isMain && byFaction(e)).map(toOption));
+
+  const supportTriggerOptions   = sortOpts(triggers.filter((t) => t.isSupport && byFaction(t)).map(toOption));
+  const supportConditionOptions = sortOpts(conditions.filter((c) => c.isSupport && byFaction(c)).map(toOption));
+  const supportEffectOptions    = sortOpts(effects.filter((e) => e.isSupport && byFaction(e)).map(toOption));
 
   const slots = filters.effectSlots ?? [];
+  const supportSlots = filters.supportEffectSlots ?? [];
+
+  const makeSlotUpdater = (key: 'effectSlots' | 'supportEffectSlots', current: EffectSlot[]) =>
+    (i: number, partial: Partial<EffectSlot>) => {
+      const next = current.map((s, idx) => {
+        if (idx !== i) return s;
+        const updated = { ...s };
+        for (const [k, v] of Object.entries(partial)) {
+          if (v) updated[k as keyof EffectSlot] = v;
+          else delete updated[k as keyof EffectSlot];
+        }
+        return updated;
+      });
+      onChange({ ...filters, [key]: next, page: 1 });
+    };
 
   const addSlot = () =>
     onChange({ ...filters, effectSlots: [...slots, {}], page: 1 });
@@ -220,23 +242,27 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
     onChange({ ...filters, effectSlots: next.length ? next : undefined, effectSlotsOperator: next.length > 1 ? filters.effectSlotsOperator : undefined, page: 1 });
   };
 
-  const updateSlot = (i: number, partial: Partial<EffectSlot>) => {
-    const next = slots.map((s, idx) => {
-      if (idx !== i) return s;
-      const updated = { ...s };
-      for (const [k, v] of Object.entries(partial)) {
-        if (v) updated[k as keyof EffectSlot] = v;
-        else delete updated[k as keyof EffectSlot];
-      }
-      return updated;
-    });
-    onChange({ ...filters, effectSlots: next, page: 1 });
+  const updateSlot = makeSlotUpdater('effectSlots', slots);
+
+  const addSupportSlot = () =>
+    onChange({ ...filters, supportEffectSlots: [...supportSlots, {}], page: 1 });
+
+  const removeSupportSlot = (i: number) => {
+    const next = supportSlots.filter((_, idx) => idx !== i);
+    onChange({ ...filters, supportEffectSlots: next.length ? next : undefined, page: 1 });
   };
 
-  const hasActiveEffects = slots.some(s => s.trigger || s.condition || s.output) || filters.effectSupport !== undefined;
+  const updateSupportSlot = makeSlotUpdater('supportEffectSlots', supportSlots);
+
+  const hasActiveEffects =
+    slots.some(s => s.trigger || s.condition || s.output) ||
+    supportSlots.some(s => s.trigger || s.condition || s.output) ||
+    filters.effectSupport !== undefined;
+
+  const totalSlots = slots.length + supportSlots.length;
 
   const hasActiveFilters =
-    Object.entries(filters).some(([k, v]) => k !== 'page' && k !== 'effectSlots' && k !== 'effectSlotsOperator' && k !== 'effectSupport' && v !== undefined && v !== '') ||
+    Object.entries(filters).some(([k, v]) => !['page', 'effectSlots', 'effectSlotsOperator', 'supportEffectSlots', 'effectSupport'].includes(k) && v !== undefined && v !== '') ||
     hasActiveEffects;
 
   const selectClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500';
@@ -357,55 +383,85 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
         </button>
 
         {effectsOpen && (
-          <div className="flex flex-col gap-2 mt-2">
+          <div className="flex flex-col gap-3 mt-2">
 
-            {/* AND/OR */}
-            <div className="flex items-center gap-3 flex-wrap">
-              {slots.length > 1 && (
-                <div className="flex items-center gap-1 ml-auto">
-                  <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
-                  {(['AND', 'OR'] as const).map((op) => (
-                    <button
-                      key={op}
-                      type="button"
-                      onClick={() => onChange({ ...filters, effectSlotsOperator: op, page: 1 })}
-                      className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
-                        (filters.effectSlotsOperator ?? 'AND') === op
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-c-input text-c-text-muted hover:text-c-text'
-                      }`}
-                    >
-                      {op}
-                    </button>
-                  ))}
-                </div>
-              )}
+            {/* Opérateur global AND/OR */}
+            {totalSlots > 1 && (
+              <div className="flex items-center gap-1 ml-auto">
+                <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
+                {(['AND', 'OR'] as const).map((op) => (
+                  <button
+                    key={op}
+                    type="button"
+                    onClick={() => onChange({ ...filters, effectSlotsOperator: op, page: 1 })}
+                    className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
+                      (filters.effectSlotsOperator ?? 'AND') === op
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-c-input text-c-text-muted hover:text-c-text'
+                    }`}
+                  >
+                    {op}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* ── Effet Principal ── */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">
+                {t('effectMainHeader')}
+              </span>
+              {slots.map((slot, i) => (
+                <EffectSlotRow
+                  key={i}
+                  slot={slot}
+                  index={i}
+                  allTriggers={mainTriggerOptions}
+                  allConditions={mainConditionOptions}
+                  allEffects={mainEffectOptions}
+                  locale={locale}
+                  onUpdate={(partial) => updateSlot(i, partial)}
+                  onRemove={() => removeSlot(i)}
+                  t={t}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={addSlot}
+                className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
+              >
+                + {t('effectAddSlot')}
+              </button>
             </div>
 
-            {/* Slots */}
-            {slots.map((slot, i) => (
-              <EffectSlotRow
-                key={i}
-                slot={slot}
-                index={i}
-                allTriggers={triggerOptions}
-                allConditions={conditionOptions}
-                allEffects={effectOptions}
-                locale={locale}
-                onUpdate={(partial) => updateSlot(i, partial)}
-                onRemove={() => removeSlot(i)}
-                t={t}
-              />
-            ))}
+            {/* ── Support ── */}
+            <div className="flex flex-col gap-2">
+              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">
+                {t('effectSupportHeader')}
+              </span>
+              {supportSlots.map((slot, i) => (
+                <EffectSlotRow
+                  key={i}
+                  slot={slot}
+                  index={i}
+                  allTriggers={supportTriggerOptions}
+                  allConditions={supportConditionOptions}
+                  allEffects={supportEffectOptions}
+                  locale={locale}
+                  onUpdate={(partial) => updateSupportSlot(i, partial)}
+                  onRemove={() => removeSupportSlot(i)}
+                  t={t}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={addSupportSlot}
+                className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
+              >
+                + {t('effectAddSlot')}
+              </button>
+            </div>
 
-            {/* Add slot */}
-            <button
-              type="button"
-              onClick={addSlot}
-              className="border border-dashed border-c-border rounded-md py-2 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
-            >
-              + {t('effectAddSlot')}
-            </button>
           </div>
         )}
       </div>

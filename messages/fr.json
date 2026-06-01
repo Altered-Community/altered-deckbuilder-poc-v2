@@ -61,6 +61,8 @@
     "costMainHigher": "Coût Main plus élevé",
     "costRecallHigher": "Coût Réserve plus élevé",
     "effectsFilter": "Effets",
+    "effectMainHeader": "Effet Principal",
+    "effectSupportHeader": "Support",
     "effectSupport": "Support",
     "effectOperator": "Opérateur",
     "effectAddSlot": "Ajouter un slot effet",

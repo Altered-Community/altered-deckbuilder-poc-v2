@@ -68,6 +68,7 @@ export interface CardGroupFilters {
   costComparison?: 'equal' | 'mainHigher' | 'recallHigher';
   effectSlots?: EffectSlot[];
   effectSlotsOperator?: 'AND' | 'OR';
+  supportEffectSlots?: EffectSlot[];
   effectSupport?: boolean;
   promo?: string;
   page?: number;
@@ -77,6 +78,7 @@ export interface CardGroupFilters {
 export interface ApiTrigger {
   alteredId: number;
   filterExample: string;
+  isMain: boolean;
   isSupport: boolean;
   factions: string[];
   translations: Record<string, string>;

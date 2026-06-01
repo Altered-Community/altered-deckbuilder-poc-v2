@@ -24,7 +24,7 @@ function normalizeList<T>(data: any): T[] {
 }
 
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
-  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectSlots, effectSlotsOperator, effectSupport, ...rest } = filters;
+  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectSlots, effectSlotsOperator, supportEffectSlots, effectSupport, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
   if (reference) searchParams.append('cards.reference[]', reference);
@@ -44,8 +44,9 @@ export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = '
     kws.forEach((k) => searchParams.append('effectKeyword', k));
   }
   if (effectSupport !== undefined) searchParams.set('effectSupport', String(effectSupport));
-  if (effectSlots?.length) searchParams.set('effectSlotMode', (effectSlotsOperator ?? 'AND').toLowerCase());
-  effectSlots?.forEach((slot, i) => {
+  const allSlots = [...(effectSlots ?? []), ...(supportEffectSlots ?? [])];
+  if (allSlots.length) searchParams.set('effectSlotMode', (effectSlotsOperator ?? 'AND').toLowerCase());
+  allSlots.forEach((slot, i) => {
     const idx = i + 1;
     slot.trigger?.split(',').map(v => v.trim()).filter(Boolean).forEach(v => searchParams.append(`effectSlot[${idx}][trigger]`, v));
     slot.condition?.split(',').map(v => v.trim()).filter(Boolean).forEach(v => searchParams.append(`effectSlot[${idx}][condition]`, v));
