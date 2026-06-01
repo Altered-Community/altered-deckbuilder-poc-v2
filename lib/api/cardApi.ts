@@ -1,4 +1,4 @@
-import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, ApiCondition, PaginatedResponse } from '@/lib/types/card';
+import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, ApiCondition, EffectChainItem, PaginatedResponse } from '@/lib/types/card';
 
 const API_BASE =
   typeof window === 'undefined'
@@ -106,6 +106,33 @@ export async function fetchConditions(): Promise<ApiCondition[]> {
   const res = await fetch(`${API_BASE}/conditions`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des conditions');
   return normalizeList<ApiCondition>(await res.json());
+}
+
+export async function fetchEffectChainConditions(triggerId?: string, effectId?: string): Promise<EffectChainItem[]> {
+  const params = new URLSearchParams();
+  if (triggerId) params.set('trigger', triggerId);
+  if (effectId) params.set('effect', effectId);
+  const res = await fetch(`${API_BASE}/effect-chain/conditions?${params}`);
+  if (!res.ok) return [];
+  return normalizeList<EffectChainItem>(await res.json());
+}
+
+export async function fetchEffectChainEffects(triggerId?: string, conditionId?: string): Promise<EffectChainItem[]> {
+  const params = new URLSearchParams();
+  if (triggerId) params.set('trigger', triggerId);
+  if (conditionId) params.set('condition', conditionId);
+  const res = await fetch(`${API_BASE}/effect-chain/effects?${params}`);
+  if (!res.ok) return [];
+  return normalizeList<EffectChainItem>(await res.json());
+}
+
+export async function fetchEffectChainTriggers(effectId?: string, conditionId?: string): Promise<EffectChainItem[]> {
+  const params = new URLSearchParams();
+  if (effectId) params.set('effect', effectId);
+  if (conditionId) params.set('condition', conditionId);
+  const res = await fetch(`${API_BASE}/effect-chain/triggers?${params}`);
+  if (!res.ok) return [];
+  return normalizeList<EffectChainItem>(await res.json());
 }
 
 const REF_BATCH_SIZE = 50;

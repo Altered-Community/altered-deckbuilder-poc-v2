@@ -85,6 +85,12 @@ export interface ApiTrigger {
 export type ApiEffect = ApiTrigger;
 export type ApiCondition = ApiTrigger;
 
+export interface EffectChainItem {
+  id: number;
+  fr: string;
+  en: string;
+}
+
 export interface ApiKeyword {
   code: string;
   translations: Record<string, string>;

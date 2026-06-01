@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
-import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions } from '@/lib/api/cardApi';
+import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions, fetchEffectChainConditions, fetchEffectChainEffects, fetchEffectChainTriggers } from '@/lib/api/cardApi';
+import type { EffectChainItem } from '@/lib/types/card';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
 import type { CardGroupFilters, EffectSlot } from '@/lib/types/card';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -22,6 +23,155 @@ interface CardFiltersProps {
 }
 
 const COSTS = ['0', '1', '2', '3', '4', '5', '6', '7', '8'];
+
+interface EffectSlotRowProps {
+  slot: EffectSlot;
+  index: number;
+  allTriggers: { value: string; label: string }[];
+  allConditions: { value: string; label: string }[];
+  allEffects: { value: string; label: string }[];
+  locale: string;
+  onUpdate: (partial: Partial<EffectSlot>) => void;
+  onRemove: () => void;
+  t: (key: string) => string;
+}
+
+function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, locale, onUpdate, onRemove, t }: EffectSlotRowProps) {
+  const triggerId = slot.trigger ?? '';
+  const conditionId = slot.condition ?? '';
+  const effectId = slot.output ?? '';
+
+  const chainToOption = (item: EffectChainItem) => ({
+    value: String(item.id),
+    label: (locale === 'fr' ? item.fr : item.en) ?? item.fr ?? item.en ?? String(item.id),
+  });
+  const sortOpts = (opts: { value: string; label: string }[]) =>
+    opts.sort((a, b) => a.label.localeCompare(b.label, locale));
+
+  // Filtering queries: narrow options based on what's already selected
+  const { data: chainTriggers } = useQuery({
+    queryKey: ['effect-chain-triggers', effectId, conditionId],
+    queryFn: () => fetchEffectChainTriggers(effectId || undefined, conditionId || undefined),
+    enabled: (!!effectId || !!conditionId) && !triggerId,
+    staleTime: Infinity,
+  });
+
+  const { data: chainConditions } = useQuery({
+    queryKey: ['effect-chain-conditions', triggerId, effectId],
+    queryFn: () => fetchEffectChainConditions(triggerId || undefined, effectId || undefined),
+    enabled: !!triggerId || !!effectId,
+    staleTime: Infinity,
+  });
+
+  const { data: chainEffects } = useQuery({
+    queryKey: ['effect-chain-effects', triggerId, conditionId],
+    queryFn: () => fetchEffectChainEffects(triggerId || undefined, conditionId || undefined),
+    enabled: (!!triggerId || !!conditionId) && !effectId,
+    staleTime: Infinity,
+  });
+
+  const triggerOptions   = chainTriggers   ? sortOpts(chainTriggers.map(chainToOption))   : allTriggers;
+  const conditionOptions = chainConditions ? sortOpts(chainConditions.map(chainToOption)) : allConditions;
+  const effectOptions    = chainEffects    ? sortOpts(chainEffects.map(chainToOption))    : allEffects;
+
+  const autoId = (items: EffectChainItem[]) =>
+    items.length === 1 ? String(items[0].id) : undefined;
+
+  const handleChange = async (field: keyof EffectSlot, value: string) => {
+    const partial: Partial<EffectSlot> = { [field]: value || undefined };
+
+    if (value) {
+      if (field === 'trigger') {
+        if (!slot.output) {
+          const effects = await fetchEffectChainEffects(value, conditionId || undefined);
+          const prefillOutput = autoId(effects);
+          if (prefillOutput) partial.output = prefillOutput;
+          if (!slot.condition) {
+            const conds = await fetchEffectChainConditions(value, prefillOutput ?? undefined);
+            const prefillCond = autoId(conds);
+            if (prefillCond) partial.condition = prefillCond;
+          }
+        } else if (!slot.condition) {
+          const conds = await fetchEffectChainConditions(value, slot.output);
+          const prefillCond = autoId(conds);
+          if (prefillCond) partial.condition = prefillCond;
+        }
+      }
+
+      if (field === 'output') {
+        if (!slot.trigger) {
+          const trigs = await fetchEffectChainTriggers(value, conditionId || undefined);
+          const prefillTrigger = autoId(trigs);
+          if (prefillTrigger) partial.trigger = prefillTrigger;
+          if (!slot.condition) {
+            const conds = await fetchEffectChainConditions(prefillTrigger ?? undefined, value);
+            const prefillCond = autoId(conds);
+            if (prefillCond) partial.condition = prefillCond;
+          }
+        } else if (!slot.condition) {
+          const conds = await fetchEffectChainConditions(slot.trigger, value);
+          const prefillCond = autoId(conds);
+          if (prefillCond) partial.condition = prefillCond;
+        }
+      }
+
+      if (field === 'condition') {
+        if (!slot.trigger) {
+          const trigs = await fetchEffectChainTriggers(effectId || undefined, value);
+          const prefillTrigger = autoId(trigs);
+          if (prefillTrigger) partial.trigger = prefillTrigger;
+        }
+        if (!slot.output) {
+          const effects = await fetchEffectChainEffects(triggerId || partial.trigger, value);
+          const prefillOutput = autoId(effects);
+          if (prefillOutput) partial.output = prefillOutput;
+        }
+      }
+    }
+
+    onUpdate(partial);
+  };
+
+  return (
+    <div className="border border-c-border rounded-md p-2 flex flex-col gap-2 bg-c-surface">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold text-c-text-secondary">Effect [{index}]</span>
+        <button type="button" onClick={onRemove} className="text-xs text-c-text-subtle hover:text-red-400 transition">
+          {t('effectRemove')}
+        </button>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] text-c-text-muted">{t('effectTriggerLabel')}</span>
+          <SingleSelect
+            options={triggerOptions}
+            value={triggerId}
+            onChange={(v) => handleChange('trigger', v)}
+            placeholder={t('effectTriggerLabel')}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] text-c-text-muted">{t('effectConditionLabel')}</span>
+          <SingleSelect
+            options={conditionOptions}
+            value={conditionId}
+            onChange={(v) => handleChange('condition', v)}
+            placeholder={t('effectConditionLabel')}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <span className="text-[10px] text-c-text-muted">{t('effectOutputLabel')}</span>
+          <SingleSelect
+            options={effectOptions}
+            value={effectId}
+            onChange={(v) => handleChange('output', v)}
+            placeholder={t('effectOutputLabel')}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CardFiltersPanel({ filters, onChange, onReset, selectedRarities = [], onToggleRarity, excludeTypes = [], showOnlyOwned = false, onToggleOwned, isAuthenticated = false }: CardFiltersProps) {
   const t = useTranslations('cards');
@@ -70,8 +220,16 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
     onChange({ ...filters, effectSlots: next.length ? next : undefined, effectSlotsOperator: next.length > 1 ? filters.effectSlotsOperator : undefined, page: 1 });
   };
 
-  const updateSlot = (i: number, field: keyof EffectSlot, value: string) => {
-    const next = slots.map((s, idx) => idx === i ? { ...s, [field]: value || undefined } : s);
+  const updateSlot = (i: number, partial: Partial<EffectSlot>) => {
+    const next = slots.map((s, idx) => {
+      if (idx !== i) return s;
+      const updated = { ...s };
+      for (const [k, v] of Object.entries(partial)) {
+        if (v) updated[k as keyof EffectSlot] = v;
+        else delete updated[k as keyof EffectSlot];
+      }
+      return updated;
+    });
     onChange({ ...filters, effectSlots: next, page: 1 });
   };
 
@@ -226,47 +384,18 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
 
             {/* Slots */}
             {slots.map((slot, i) => (
-              <div key={i} className="border border-c-border rounded-md p-2 flex flex-col gap-2 bg-c-surface">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-semibold text-c-text-secondary">Effect [{i}]</span>
-                  <button
-                    type="button"
-                    onClick={() => removeSlot(i)}
-                    className="text-xs text-c-text-subtle hover:text-red-400 transition"
-                  >
-                    {t('effectRemove')}
-                  </button>
-                </div>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] text-c-text-muted">{t('effectTriggerLabel')}</span>
-                    <SingleSelect
-                      options={triggerOptions}
-                      value={slot.trigger ?? ''}
-                      onChange={(v) => updateSlot(i, 'trigger', v)}
-                      placeholder={t('effectTriggerLabel')}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] text-c-text-muted">{t('effectConditionLabel')}</span>
-                    <SingleSelect
-                      options={conditionOptions}
-                      value={slot.condition ?? ''}
-                      onChange={(v) => updateSlot(i, 'condition', v)}
-                      placeholder={t('effectConditionLabel')}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] text-c-text-muted">{t('effectOutputLabel')}</span>
-                    <SingleSelect
-                      options={effectOptions}
-                      value={slot.output ?? ''}
-                      onChange={(v) => updateSlot(i, 'output', v)}
-                      placeholder={t('effectOutputLabel')}
-                    />
-                  </div>
-                </div>
-              </div>
+              <EffectSlotRow
+                key={i}
+                slot={slot}
+                index={i}
+                allTriggers={triggerOptions}
+                allConditions={conditionOptions}
+                allEffects={effectOptions}
+                locale={locale}
+                onUpdate={(partial) => updateSlot(i, partial)}
+                onRemove={() => removeSlot(i)}
+                t={t}
+              />
             ))}
 
             {/* Add slot */}
