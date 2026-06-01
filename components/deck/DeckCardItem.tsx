@@ -1,6 +1,7 @@
 'use client';
 
 import Image from 'next/image';
+import { useState } from 'react';
 import { useLocale } from 'next-intl';
 import type { DeckCard } from '@/lib/types/deck';
 import { FACTION_BADGE_COLORS } from '@/lib/types/constants';
