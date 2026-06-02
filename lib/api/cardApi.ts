@@ -23,8 +23,24 @@ function normalizeList<T>(data: any): T[] {
   return Array.isArray(data) ? data : (data?.member ?? []);
 }
 
+function appendCostParam(params: URLSearchParams, key: string, raw: string): void {
+  const v = raw.trim();
+  if (!v) return;
+  const range = v.match(/^(\d+)-(\d+)$/);
+  if (range) {
+    params.set(`${key}[gte]`, range[1]);
+    params.set(`${key}[lte]`, range[2]);
+    return;
+  }
+  if (v.includes(',')) {
+    v.split(',').map(s => s.trim()).filter(Boolean).forEach(n => params.append(`${key}[]`, n));
+    return;
+  }
+  params.set(key, v);
+}
+
 export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = 'fr'): Promise<PaginatedResponse<CardGroup>> {
-  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectSlots, effectSlotsOperator, supportEffectSlots, effectSupport, ...rest } = filters;
+  const { excludeCardTypes, excludeCardSubTypes, effectKeyword, reference, costComparison, effectSlots, effectSlotsOperator, supportEffectSlots, effectSupport, mainCost, recallCost, oceanPower, mountainPower, forestPower, ...rest } = filters;
   const searchParams = new URLSearchParams();
   searchParams.set('locale', locale);
   if (reference) searchParams.append('cards.reference[]', reference);
@@ -44,6 +60,11 @@ export async function fetchCardGroups(filters: CardGroupFilters = {}, locale = '
     kws.forEach((k) => searchParams.append('effectKeyword', k));
   }
   if (effectSupport !== undefined) searchParams.set('effectSupport', String(effectSupport));
+  if (mainCost)      appendCostParam(searchParams, 'mainCost',      mainCost);
+  if (recallCost)    appendCostParam(searchParams, 'recallCost',    recallCost);
+  if (oceanPower)    appendCostParam(searchParams, 'oceanPower',    oceanPower);
+  if (mountainPower) appendCostParam(searchParams, 'mountainPower', mountainPower);
+  if (forestPower)   appendCostParam(searchParams, 'forestPower',   forestPower);
   const allSlots = [...(effectSlots ?? []), ...(supportEffectSlots ?? [])];
   if (allSlots.length) searchParams.set('effectSlotMode', (effectSlotsOperator ?? 'AND').toLowerCase());
   allSlots.forEach((slot, i) => {

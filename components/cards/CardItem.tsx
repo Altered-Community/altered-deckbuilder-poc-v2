@@ -19,9 +19,10 @@ interface CardItemProps {
   card: CardGroup;
   onZoom?: () => void;
   ownedCount?: number;
+  viewMode?: 'grid' | 'list';
 }
 
-export default function CardItem({ card, onZoom, ownedCount }: CardItemProps) {
+export default function CardItem({ card, onZoom, ownedCount, viewMode = 'grid' }: CardItemProps) {
   const locale = useLocale();
   const { addCard, setHero, deck, canAddCard } = useDeckStore();
 
@@ -44,6 +45,49 @@ export default function CardItem({ card, onZoom, ownedCount }: CardItemProps) {
       addCard(card);
     }
   };
+
+  if (viewMode === 'list') {
+    return (
+      <div
+        onClick={handleClick}
+        className={`flex items-center gap-2 px-2 py-1 rounded-md border cursor-pointer select-none transition-all bg-c-surface ${rarityBorder} ${greyed ? 'opacity-35 cursor-not-allowed' : 'hover:brightness-105'} ${isHeroSelected ? 'ring-1 ring-yellow-400' : ''}`}
+        title={name}
+      >
+        <div className="relative w-7 h-10 flex-shrink-0 rounded overflow-hidden bg-c-elevated">
+          {rarity === 'UNIQUE' ? (
+            <UniqueCardRenderer reference={getCardReference(card)} locale={locale} className="w-full" />
+          ) : image ? (
+            <Image src={image} alt={name} fill className="object-cover" sizes="28px" unoptimized />
+          ) : null}
+        </div>
+        <span className="flex-1 text-xs text-c-text truncate min-w-0">{name}</span>
+        {factionCode && (
+          <span className={`text-[9px] font-bold px-1 rounded text-white shrink-0 ${factionBadge}`}>{factionCode}</span>
+        )}
+        {(card.mainCost != null || card.recallCost != null) && (
+          <span className="text-[10px] font-mono text-c-text-muted shrink-0">
+            {card.mainCost ?? '—'}{card.recallCost != null ? `/${card.recallCost}` : ''}
+          </span>
+        )}
+        {(deckEntry || isHeroSelected) && (
+          <div className="bg-amber-500 text-black text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center shrink-0">
+            {isHero ? '★' : deckEntry?.quantity}
+          </div>
+        )}
+        {ownedCount != null && ownedCount > 0 && (
+          <span className="text-[9px] text-amber-400 font-bold shrink-0">×{ownedCount}</span>
+        )}
+        {onZoom && (
+          <button
+            onClick={(e) => { e.stopPropagation(); onZoom(); }}
+            className="w-5 h-5 flex items-center justify-center text-c-text-muted hover:text-c-text transition shrink-0"
+          >
+            <i className="fa-solid fa-magnifying-glass text-[9px]" />
+          </button>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div

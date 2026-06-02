@@ -747,9 +747,16 @@ body {
   padding: 1px 5px;
 }
 .ts-wrapper.multi .ts-control .item .remove {
-  color: rgba(255,255,255,0.7);
+  color: rgba(255,255,255,0.85);
   border-left: none;
-  padding: 0 2px;
+  padding: 0 3px;
+  font-size: .85rem;
+  line-height: 1;
+}
+.ts-wrapper.multi .ts-control .item .remove:hover {
+  color: #fff;
+  background: rgba(0,0,0,0.25);
+  border-radius: 0 3px 3px 0;
 }
 .ts-wrapper.focus .ts-control {
   border-color: #f59e0b !important;
@@ -816,4 +823,23 @@ body {
   opacity: 0.35;
   flex-shrink: 0;
   font-family: monospace;
+}
+
+/* ── TomSelect clear button — toujours visible quand une valeur est sélectionnée ── */
+.ts-wrapper.plugin-clear_button.has-items .clear-button {
+  opacity: 1 !important;
+  font-size: .85rem;
+  line-height: 1;
+  padding: 0 4px;
+  color: #64748b;
+  transition: color 0.15s;
+}
+.ts-wrapper.plugin-clear_button.has-items .clear-button:hover {
+  color: #ef4444;
+}
+.dark .ts-wrapper.plugin-clear_button.has-items .clear-button {
+  color: #9ca3af;
+}
+.dark .ts-wrapper.plugin-clear_button.has-items .clear-button:hover {
+  color: #f87171;
 }

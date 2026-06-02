@@ -62,7 +62,7 @@ export interface CardGroupFilters {
   oceanPower?: string;
   mountainPower?: string;
   forestPower?: string;
-  'order[set.date]'?: 'asc' | 'desc';
+  'order[collectorNumberFormatedId]'?: 'asc' | 'desc';
   'set.reference'?: string | string[];
   effectKeyword?: string | string[];
   costComparison?: 'equal' | 'mainHigher' | 'recallHigher';

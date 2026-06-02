@@ -32,10 +32,12 @@ export default function CardBrowser({ initialFaction }: Props) {
 
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null);
   const [showOnlyOwned, setShowOnlyOwned] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   const [filters, setFilters] = useState<CardGroupFilters>({
     page: 1,
-    'order[set.date]': 'desc',
+    'order[collectorNumberFormatedId]': 'asc',
     'rarity': DEFAULT_RARITIES,
     ...(initialFaction ? { 'faction': initialFaction } : {}),
   });
@@ -162,13 +164,20 @@ export default function CardBrowser({ initialFaction }: Props) {
 
   const INITIAL_FILTERS: CardGroupFilters = {
     page: 1,
-    'order[set.date]': 'desc',
+    'order[collectorNumberFormatedId]': 'asc',
     'rarity': DEFAULT_RARITIES,
     ...(initialFaction ? { 'faction': initialFaction } : {}),
   };
 
   const handleFiltersChange = (newFilters: CardGroupFilters) => {
-    const rarity = newFilters.reference ? undefined : selectedRarities;
+    const hasActiveEffects =
+      newFilters.effectSlots?.some(s => s.trigger || s.condition || s.output) ||
+      newFilters.supportEffectSlots?.some(s => s.trigger || s.condition || s.output);
+
+    let rarity = newFilters.reference ? undefined : selectedRarities;
+    if (hasActiveEffects && rarity && !rarity.includes('UNIQUE')) {
+      rarity = [...rarity, 'UNIQUE'];
+    }
     setFilters({ ...newFilters, 'rarity': rarity });
   };
 
@@ -177,9 +186,56 @@ export default function CardBrowser({ initialFaction }: Props) {
     setShowOnlyOwned(false);
   };
 
+  const hasActiveFilters = Object.entries(filters).some(([k, v]) => {
+    if (['page', 'order[collectorNumberFormatedId]'].includes(k)) return false;
+    if (k === 'faction' && !isSandbox && initialFaction) return false;
+    if (k === 'rarity') {
+      const arr = (Array.isArray(v) ? [...v] : v ? [v] : []).sort();
+      return arr.join(',') !== [...DEFAULT_RARITIES].sort().join(',');
+    }
+    return Array.isArray(v) ? v.length > 0 : v !== undefined && v !== '';
+  }) || showOnlyOwned;
+
   return (
     <div className="flex flex-col h-full gap-2">
-      <CardFiltersPanel
+
+      {/* Toolbar */}
+      <div className="shrink-0 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border text-xs font-medium transition select-none
+            ${filtersOpen ? 'bg-c-input border-c-border text-c-text' : 'bg-transparent border-c-border text-c-text-muted hover:text-c-text'}`}
+        >
+          <i className="fa-solid fa-gear text-[10px]" />
+          {t('filters')}
+          <i className={`fa-solid fa-chevron-${filtersOpen ? 'up' : 'down'} text-[10px]`} />
+          {hasActiveFilters && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />}
+        </button>
+
+        <div className="flex-1" />
+
+        <span className="text-xs text-c-text-muted">{t('count', { count: totalItems })}</span>
+
+        <div className="flex items-center gap-0.5 border border-c-border rounded-md overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className={`w-7 h-7 flex items-center justify-center transition ${viewMode === 'grid' ? 'bg-c-input text-c-text' : 'text-c-text-muted hover:text-c-text'}`}
+          >
+            <i className="fa-solid fa-grip text-xs" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('list')}
+            className={`w-7 h-7 flex items-center justify-center transition ${viewMode === 'list' ? 'bg-c-input text-c-text' : 'text-c-text-muted hover:text-c-text'}`}
+          >
+            <i className="fa-solid fa-list text-xs" />
+          </button>
+        </div>
+      </div>
+
+      {filtersOpen && <CardFiltersPanel
         filters={filters}
         onChange={handleFiltersChange}
         onReset={handleReset}
@@ -189,11 +245,10 @@ export default function CardBrowser({ initialFaction }: Props) {
         showOnlyOwned={showOnlyOwned}
         onToggleOwned={() => { setShowOnlyOwned((v) => !v); setFilters((f) => ({ ...f, page: 1 })); }}
         isAuthenticated={isAuthenticated}
-      />
+      />}
 
-      {/* Pagination — au-dessus des cartes */}
-      <div className="shrink-0 flex items-center justify-between gap-2 text-xs text-c-text-muted px-1 pb-1 border-b border-c-border-subtle">
-        <span className="text-c-text-subtle">{t('count', { count: totalItems })}</span>
+      {/* Pagination */}
+      <div className="shrink-0 flex items-center justify-end gap-2 text-xs text-c-text-muted px-1 pb-1 border-b border-c-border-subtle">
         <div className="flex items-center gap-2">
           <button
             disabled={currentPage <= 1}
@@ -229,10 +284,13 @@ export default function CardBrowser({ initialFaction }: Props) {
           </div>
         ) : (
           <div
-            className={`grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3 transition-opacity ${isFetching ? 'opacity-60' : ''}`}
+            className={`transition-opacity ${isFetching ? 'opacity-60' : ''} ${
+              viewMode === 'grid'
+                ? 'grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 gap-2 md:gap-3'
+                : 'flex flex-col gap-1'
+            }`}
           >
             {cards.map((card, idx) => {
-              // Essaie chaque variant jusqu'à trouver une correspondance dans la collection
               let ownedCount: number | undefined;
               for (const v of card.cards) {
                 const base = normalizeRef(v.reference).split('_').slice(0, 6).join('_');
@@ -245,6 +303,7 @@ export default function CardBrowser({ initialFaction }: Props) {
                   card={card}
                   onZoom={() => setLightboxIdx(idx)}
                   ownedCount={ownedCount}
+                  viewMode={viewMode}
                 />
               );
             })}
@@ -253,8 +312,7 @@ export default function CardBrowser({ initialFaction }: Props) {
       </div>
 
       {/* Pagination — sous les cartes */}
-      <div className="shrink-0 flex items-center justify-between gap-2 text-xs text-c-text-muted px-1 pt-1 border-t border-c-border-subtle">
-        <span className="text-c-text-subtle">{t('count', { count: totalItems })}</span>
+      <div className="shrink-0 flex items-center justify-end gap-2 text-xs text-c-text-muted px-1 pt-1 border-t border-c-border-subtle">
         <div className="flex items-center gap-2">
           <button
             disabled={currentPage <= 1}

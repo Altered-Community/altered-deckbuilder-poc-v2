@@ -39,11 +39,12 @@ export default function MultiSelect({ options, value, onChange, placeholder = ''
         const arr = Array.isArray(vals) ? vals : (vals ? [vals] : []);
         onChangeRef.current(arr);
       },
+      hidePlaceholder: false,
       render: {
         option: (data: { value: string; text: string }) =>
-          `<div class="option">${renderAlteredText(data.text)} <span class="ts-altered-id">${data.value}</span></div>`,
+          `<div class="option">${renderAlteredText(data.text)}</div>`,
         item: (data: { value: string; text: string }) =>
-          `<div class="item">${renderAlteredText(data.text)} <span class="ts-altered-id">${data.value}</span></div>`,
+          `<div class="item">${renderAlteredText(data.text)}</div>`,
       },
     });
     return () => {

@@ -22,6 +22,7 @@ interface DeckCardItemProps {
 
 export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
   const locale = useLocale();
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { addCard, decrementCard, removeCard, canAddCard } = useDeckStore();
   const { cardGroup, quantity } = deckCard;
 
@@ -43,7 +44,19 @@ export default function DeckCardItem({ deckCard, onZoom }: DeckCardItemProps) {
         <UniqueCardRenderer reference={getCardReference(cardGroup)} locale={locale} className="w-full" />
       ) : image ? (
         <>
-          <Image src={image} alt={name} fill className="object-cover brightness-[1.01] saturate-[0.98] contrast-[1.04]" sizes="100px" unoptimized />
+          {!imageLoaded && (
+            <div className="absolute inset-0 bg-c-elevated animate-pulse" />
+          )}
+          <Image
+            src={image}
+            alt={name}
+            fill
+            loading="lazy"
+            className={`object-cover brightness-[1.01] saturate-[0.98] contrast-[1.04] transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+            sizes="100px"
+            unoptimized
+            onLoad={() => setImageLoaded(true)}
+          />
           <div
             className="absolute inset-0 pointer-events-none mix-blend-screen"
             style={{ backgroundColor: 'rgba(255,245,235,0.025)' }}
