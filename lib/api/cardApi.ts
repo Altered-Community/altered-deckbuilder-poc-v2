@@ -1,4 +1,4 @@
-import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, ApiCondition, EffectChainItem, PaginatedResponse } from '@/lib/types/card';
+import type { CardGroup, CardGroupFilters, ApiSet, ApiFaction, ApiKeyword, ApiTrigger, ApiEffect, ApiCondition, EffectChainItem, SlotFacetsResponse, PaginatedResponse } from '@/lib/types/card';
 
 const API_BASE =
   typeof window === 'undefined'
@@ -128,6 +128,18 @@ export async function fetchConditions(): Promise<ApiCondition[]> {
   const res = await fetch(`${API_BASE}/conditions`);
   if (!res.ok) throw new Error('Erreur lors de la récupération des conditions');
   return normalizeList<ApiCondition>(await res.json());
+}
+
+export async function fetchSlotFacets(triggerId?: string, conditionId?: string, effectId?: string): Promise<SlotFacetsResponse> {
+  const empty: SlotFacetsResponse = { triggers: {}, conditions: {}, effects: {} };
+  if (!triggerId && !conditionId && !effectId) return empty;
+  const params = new URLSearchParams();
+  if (triggerId)   params.set('slot[trigger]',   triggerId);
+  if (conditionId) params.set('slot[condition]',  conditionId);
+  if (effectId)    params.set('slot[effect]',     effectId);
+  const res = await fetch(`${API_BASE}/cards/slot-facets?${params}`);
+  if (!res.ok) return empty;
+  return res.json();
 }
 
 export async function fetchEffectChainConditions(triggerId?: string, effectId?: string): Promise<EffectChainItem[]> {

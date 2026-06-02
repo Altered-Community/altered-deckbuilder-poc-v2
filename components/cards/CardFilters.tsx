@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
-import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions, fetchEffectChainConditions, fetchEffectChainEffects, fetchEffectChainTriggers } from '@/lib/api/cardApi';
-import type { EffectChainItem } from '@/lib/types/card';
+import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions, fetchSlotFacets } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
 import type { CardGroupFilters, EffectSlot } from '@/lib/types/card';
 import MultiSelect from '@/components/ui/MultiSelect';
@@ -22,7 +21,10 @@ interface CardFiltersProps {
   isAuthenticated?: boolean;
 }
 
-function CostTooltip({ text }: { text: string }) {
+const toArr = <T,>(v: T | T[] | undefined): T[] =>
+  Array.isArray(v) ? v : v ? [v] : [];
+
+function Tooltip({ text }: { text: string }) {
   return (
     <div className="relative group/tooltip flex-shrink-0">
       <button
@@ -45,101 +47,95 @@ interface EffectSlotRowProps {
   allTriggers: { value: string; label: string }[];
   allConditions: { value: string; label: string }[];
   allEffects: { value: string; label: string }[];
-  locale: string;
   onUpdate: (partial: Partial<EffectSlot>) => void;
   onRemove: () => void;
   t: (key: string) => string;
 }
 
-function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, locale, onUpdate, onRemove, t }: EffectSlotRowProps) {
-  const triggerId = slot.trigger ?? '';
+function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, onUpdate, onRemove, t }: EffectSlotRowProps) {
+  const triggerId   = slot.trigger   ?? '';
   const conditionId = slot.condition ?? '';
-  const effectId = slot.output ?? '';
+  const effectId    = slot.output    ?? '';
 
-  const chainToOption = (item: EffectChainItem) => ({
-    value: String(item.id),
-    label: (locale === 'fr' ? item.fr : item.en) ?? item.fr ?? item.en ?? String(item.id),
-  });
-  const sortOpts = (opts: { value: string; label: string }[]) =>
-    opts.sort((a, b) => a.label.localeCompare(b.label, locale));
-
-  // Filtering queries: narrow options based on what's already selected
-  const { data: chainTriggers } = useQuery({
-    queryKey: ['effect-chain-triggers', effectId, conditionId],
-    queryFn: () => fetchEffectChainTriggers(effectId || undefined, conditionId || undefined),
-    enabled: (!!effectId || !!conditionId) && !triggerId,
+  const { data: facets } = useQuery({
+    queryKey: ['slot-facets', triggerId, conditionId, effectId],
+    queryFn:  () => fetchSlotFacets(triggerId || undefined, conditionId || undefined, effectId || undefined),
+    enabled:  !!triggerId || !!conditionId || !!effectId,
     staleTime: Infinity,
   });
 
-  const { data: chainConditions } = useQuery({
-    queryKey: ['effect-chain-conditions', triggerId, effectId],
-    queryFn: () => fetchEffectChainConditions(triggerId || undefined, effectId || undefined),
-    enabled: !!triggerId || !!effectId,
-    staleTime: Infinity,
-  });
+  const filterByFacet = (all: { value: string; label: string }[], facet?: Record<string, number>) => {
+    if (!facet || !Object.keys(facet).length) return all;
+    return all.filter((o) => o.value in facet);
+  };
 
-  const { data: chainEffects } = useQuery({
-    queryKey: ['effect-chain-effects', triggerId, conditionId],
-    queryFn: () => fetchEffectChainEffects(triggerId || undefined, conditionId || undefined),
-    enabled: (!!triggerId || !!conditionId) && !effectId,
-    staleTime: Infinity,
-  });
+  const hasContext = !!triggerId || !!conditionId || !!effectId;
+  const triggerOptions   = hasContext && !triggerId   ? filterByFacet(allTriggers,   facets?.triggers)   : allTriggers;
+  const conditionOptions = hasContext && !conditionId ? filterByFacet(allConditions,  facets?.conditions) : allConditions;
+  const effectOptions    = hasContext && !effectId    ? filterByFacet(allEffects,     facets?.effects)    : allEffects;
 
-  const triggerOptions   = chainTriggers   ? sortOpts(chainTriggers.map(chainToOption))   : allTriggers;
-  const conditionOptions = chainConditions ? sortOpts(chainConditions.map(chainToOption)) : allConditions;
-  const effectOptions    = chainEffects    ? sortOpts(chainEffects.map(chainToOption))    : allEffects;
-
-  const autoId = (items: EffectChainItem[]) =>
-    items.length === 1 ? String(items[0].id) : undefined;
+  const singleId = (facet?: Record<string, number>) => {
+    const keys = Object.keys(facet ?? {});
+    return keys.length === 1 ? keys[0] : undefined;
+  };
 
   const handleChange = async (field: keyof EffectSlot, value: string) => {
     const partial: Partial<EffectSlot> = { [field]: value || undefined };
 
     if (value) {
       if (field === 'trigger') {
-        if (!slot.output) {
-          const effects = await fetchEffectChainEffects(value, conditionId || undefined);
-          const prefillOutput = autoId(effects);
-          if (prefillOutput) partial.output = prefillOutput;
-          if (!slot.condition) {
-            const conds = await fetchEffectChainConditions(value, prefillOutput ?? undefined);
-            const prefillCond = autoId(conds);
-            if (prefillCond) partial.condition = prefillCond;
+        const f = await fetchSlotFacets(value, conditionId || undefined);
+        if (!slot.condition) {
+          const prefillCond = singleId(f.conditions);
+          if (prefillCond) {
+            partial.condition = prefillCond;
+            if (!slot.output) {
+              const f2 = await fetchSlotFacets(value, prefillCond);
+              const p = singleId(f2.effects); if (p) partial.output = p;
+            }
+          } else if (!slot.output) {
+            const p = singleId(f.effects); if (p) partial.output = p;
           }
-        } else if (!slot.condition) {
-          const conds = await fetchEffectChainConditions(value, slot.output);
-          const prefillCond = autoId(conds);
-          if (prefillCond) partial.condition = prefillCond;
-        }
-      }
-
-      if (field === 'output') {
-        if (!slot.trigger) {
-          const trigs = await fetchEffectChainTriggers(value, conditionId || undefined);
-          const prefillTrigger = autoId(trigs);
-          if (prefillTrigger) partial.trigger = prefillTrigger;
-          if (!slot.condition) {
-            const conds = await fetchEffectChainConditions(prefillTrigger ?? undefined, value);
-            const prefillCond = autoId(conds);
-            if (prefillCond) partial.condition = prefillCond;
-          }
-        } else if (!slot.condition) {
-          const conds = await fetchEffectChainConditions(slot.trigger, value);
-          const prefillCond = autoId(conds);
-          if (prefillCond) partial.condition = prefillCond;
+        } else if (!slot.output) {
+          const f2 = await fetchSlotFacets(value, conditionId);
+          const p = singleId(f2.effects); if (p) partial.output = p;
         }
       }
 
       if (field === 'condition') {
         if (!slot.trigger) {
-          const trigs = await fetchEffectChainTriggers(effectId || undefined, value);
-          const prefillTrigger = autoId(trigs);
+          const f = await fetchSlotFacets(undefined, value);
+          const prefillTrigger = singleId(f.triggers);
           if (prefillTrigger) partial.trigger = prefillTrigger;
+          if (!slot.output) {
+            const f2 = await fetchSlotFacets(prefillTrigger ?? undefined, value);
+            const p = singleId(f2.effects); if (p) partial.output = p;
+          }
+        } else if (!slot.output) {
+          const f = await fetchSlotFacets(triggerId, value);
+          const p = singleId(f.effects); if (p) partial.output = p;
         }
-        if (!slot.output) {
-          const effects = await fetchEffectChainEffects(triggerId || partial.trigger, value);
-          const prefillOutput = autoId(effects);
-          if (prefillOutput) partial.output = prefillOutput;
+      }
+
+      if (field === 'output') {
+        if (!slot.trigger && !slot.condition) {
+          const f = await fetchSlotFacets(undefined, undefined, value);
+          const prefillTrigger = singleId(f.triggers);
+          if (prefillTrigger) {
+            partial.trigger = prefillTrigger;
+            const f2 = await fetchSlotFacets(prefillTrigger, undefined, value);
+            const prefillCond = singleId(f2.conditions);
+            if (prefillCond) partial.condition = prefillCond;
+          } else {
+            const prefillCond = singleId(f.conditions);
+            if (prefillCond) partial.condition = prefillCond;
+          }
+        } else if (!slot.trigger) {
+          const f = await fetchSlotFacets(undefined, conditionId, value);
+          const p = singleId(f.triggers); if (p) partial.trigger = p;
+        } else if (!slot.condition) {
+          const f = await fetchSlotFacets(triggerId, undefined, value);
+          const p = singleId(f.conditions); if (p) partial.condition = p;
         }
       }
     }
@@ -156,33 +152,21 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, lo
         </button>
       </div>
       <div className="grid grid-cols-3 gap-2">
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-c-text-muted">{t('effectTriggerLabel')}</span>
-          <SingleSelect
-            options={triggerOptions}
-            value={triggerId}
-            onChange={(v) => handleChange('trigger', v)}
-            placeholder={t('effectTriggerLabel')}
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-c-text-muted">{t('effectConditionLabel')}</span>
-          <SingleSelect
-            options={conditionOptions}
-            value={conditionId}
-            onChange={(v) => handleChange('condition', v)}
-            placeholder={t('effectConditionLabel')}
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <span className="text-[10px] text-c-text-muted">{t('effectOutputLabel')}</span>
-          <SingleSelect
-            options={effectOptions}
-            value={effectId}
-            onChange={(v) => handleChange('output', v)}
-            placeholder={t('effectOutputLabel')}
-          />
-        </div>
+        {([
+          { field: 'trigger'   as const, options: triggerOptions,   label: t('effectTriggerLabel'),   value: triggerId   },
+          { field: 'condition' as const, options: conditionOptions,  label: t('effectConditionLabel'), value: conditionId },
+          { field: 'output'    as const, options: effectOptions,     label: t('effectOutputLabel'),    value: effectId    },
+        ]).map(({ field, options, label, value }) => (
+          <div key={field} className="flex flex-col gap-1">
+            <span className="text-[10px] text-c-text-muted">{label}</span>
+            <SingleSelect
+              options={options}
+              value={value}
+              onChange={(v) => handleChange(field, v)}
+              placeholder={label}
+            />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -193,50 +177,51 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
   const locale = useLocale();
   const [activeTab, setActiveTab] = useState<'general' | 'effects'>('general');
 
-  const { data: sets = [] } = useQuery({ queryKey: ['sets'], queryFn: fetchSets, staleTime: Infinity });
-  const { data: apiFactions = [] } = useQuery({ queryKey: ['factions'], queryFn: fetchFactions, staleTime: Infinity });
-  const { data: keywords = [] } = useQuery({ queryKey: ['keywords', locale], queryFn: () => fetchKeywords(locale), staleTime: Infinity });
-  const { data: triggers = [] } = useQuery({ queryKey: ['triggers'], queryFn: fetchTriggers, staleTime: Infinity });
-  const { data: conditions = [] } = useQuery({ queryKey: ['conditions'], queryFn: fetchConditions, staleTime: Infinity });
-  const { data: effects = [] } = useQuery({ queryKey: ['effects'], queryFn: fetchEffects, staleTime: Infinity });
+  const { data: sets = [] }       = useQuery({ queryKey: ['sets'],              queryFn: fetchSets,                              staleTime: Infinity });
+  const { data: apiFactions = [] } = useQuery({ queryKey: ['factions'],          queryFn: fetchFactions,                          staleTime: Infinity });
+  const { data: keywords = [] }   = useQuery({ queryKey: ['keywords', locale],  queryFn: () => fetchKeywords(locale),            staleTime: Infinity });
+  const { data: triggers = [] }   = useQuery({ queryKey: ['triggers'],           queryFn: fetchTriggers,                          staleTime: Infinity });
+  const { data: conditions = [] } = useQuery({ queryKey: ['conditions'],         queryFn: fetchConditions,                        staleTime: Infinity });
+  const { data: effects = [] }    = useQuery({ queryKey: ['effects'],            queryFn: fetchEffects,                           staleTime: Infinity });
 
-  const factions =
-    apiFactions.length > 0
-      ? apiFactions.map((f) => ({ code: f.code, name: FACTIONS[f.code] ?? f.name }))
-      : Object.entries(FACTIONS).map(([code, name]) => ({ code, name }));
+  const factions = apiFactions.length > 0
+    ? apiFactions.map((f) => ({ code: f.code, name: FACTIONS[f.code] ?? f.name }))
+    : Object.entries(FACTIONS).map(([code, name]) => ({ code, name }));
 
-  const update = (key: keyof CardGroupFilters, value: string) => {
+  const update = (key: keyof CardGroupFilters, value: string) =>
     onChange({ ...filters, [key]: value || undefined, page: 1 });
-  };
 
-  const updateMulti = (key: keyof CardGroupFilters, values: string[]) => {
+  const updateMulti = (key: keyof CardGroupFilters, values: string[]) =>
     onChange({ ...filters, [key]: values.length ? values : undefined, page: 1 });
-  };
 
-  const selectedFactions = Array.isArray(filters.faction) ? filters.faction : (filters.faction ? [filters.faction] : []);
+  const selectedFactions = toArr(filters.faction);
   const matchesFaction = (itemFactions: string[]) =>
     selectedFactions.length === 0 || itemFactions.length === 0 || itemFactions.some((f) => selectedFactions.includes(f));
   const toOption = (item: { alteredId: number; factions: string[]; translations: Record<string, string> }) => ({
     value: String(item.alteredId),
     label: item.translations[locale] ?? item.translations['en'] ?? String(item.alteredId),
   });
-
   const sortOpts = (opts: { value: string; label: string }[]) => opts.sort((a, b) => a.label.localeCompare(b.label, locale));
   const byFaction = (item: { factions: string[] }) => matchesFaction(item.factions);
 
-  const mainTriggerOptions   = sortOpts(triggers.filter((t) => t.isMain && byFaction(t)).map(toOption));
-  const mainConditionOptions = sortOpts(conditions.filter((c) => c.isMain && byFaction(c)).map(toOption));
-  const mainEffectOptions    = sortOpts(effects.filter((e) => e.isMain && byFaction(e)).map(toOption));
-
-  const supportTriggerOptions   = sortOpts(triggers.filter((t) => t.isSupport && byFaction(t)).map(toOption));
+  const mainTriggerOptions   = sortOpts(triggers.filter((t) => t.isMain    && byFaction(t)).map(toOption));
+  const mainConditionOptions = sortOpts(conditions.filter((c) => c.isMain   && byFaction(c)).map(toOption));
+  const mainEffectOptions    = sortOpts(effects.filter((e) => e.isMain      && byFaction(e)).map(toOption));
+  const supportTriggerOptions   = sortOpts(triggers.filter((t) => t.isSupport  && byFaction(t)).map(toOption));
   const supportConditionOptions = sortOpts(conditions.filter((c) => c.isSupport && byFaction(c)).map(toOption));
-  const supportEffectOptions    = sortOpts(effects.filter((e) => e.isSupport && byFaction(e)).map(toOption));
+  const supportEffectOptions    = sortOpts(effects.filter((e) => e.isSupport   && byFaction(e)).map(toOption));
 
-  const slots = filters.effectSlots ?? [];
+  const slots        = filters.effectSlots        ?? [];
   const supportSlots = filters.supportEffectSlots ?? [];
 
-  const makeSlotUpdater = (key: 'effectSlots' | 'supportEffectSlots', current: EffectSlot[]) =>
-    (i: number, partial: Partial<EffectSlot>) => {
+  const makeSlotActions = (key: 'effectSlots' | 'supportEffectSlots', current: EffectSlot[]) => ({
+    add: () => onChange({ ...filters, [key]: [...current, {}], page: 1 }),
+    remove: (i: number) => {
+      const next = current.filter((_, idx) => idx !== i);
+      const extra = key === 'effectSlots' && next.length <= 1 ? { effectSlotsOperator: undefined } : {};
+      onChange({ ...filters, [key]: next.length ? next : undefined, ...extra, page: 1 });
+    },
+    update: (i: number, partial: Partial<EffectSlot>) => {
       const next = current.map((s, idx) => {
         if (idx !== i) return s;
         const updated = { ...s };
@@ -247,68 +232,53 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
         return updated;
       });
       onChange({ ...filters, [key]: next, page: 1 });
-    };
+    },
+  });
 
-  const addSlot = () =>
-    onChange({ ...filters, effectSlots: [...slots, {}], page: 1 });
-
-  const removeSlot = (i: number) => {
-    const next = slots.filter((_, idx) => idx !== i);
-    onChange({ ...filters, effectSlots: next.length ? next : undefined, effectSlotsOperator: next.length > 1 ? filters.effectSlotsOperator : undefined, page: 1 });
-  };
-
-  const updateSlot = makeSlotUpdater('effectSlots', slots);
-
-  const addSupportSlot = () =>
-    onChange({ ...filters, supportEffectSlots: [...supportSlots, {}], page: 1 });
-
-  const removeSupportSlot = (i: number) => {
-    const next = supportSlots.filter((_, idx) => idx !== i);
-    onChange({ ...filters, supportEffectSlots: next.length ? next : undefined, page: 1 });
-  };
-
-  const updateSupportSlot = makeSlotUpdater('supportEffectSlots', supportSlots);
+  const mainSlot    = makeSlotActions('effectSlots',        slots);
+  const supportSlot = makeSlotActions('supportEffectSlots', supportSlots);
 
   const hasActiveEffects =
     slots.some(s => s.trigger || s.condition || s.output) ||
     supportSlots.some(s => s.trigger || s.condition || s.output) ||
     filters.effectSupport !== undefined;
 
-  const totalSlots = slots.length + supportSlots.length;
-
+  const IGNORED_KEYS = new Set(['page', 'effectSlots', 'effectSlotsOperator', 'supportEffectSlots', 'effectSupport', 'order[collectorNumberFormatedId]']);
   const hasActiveGeneral =
-    Object.entries(filters).some(([k, v]) => !['page', 'effectSlots', 'effectSlotsOperator', 'supportEffectSlots', 'effectSupport', 'order[set.date]'].includes(k) && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)) ||
+    Object.entries(filters).some(([k, v]) => !IGNORED_KEYS.has(k) && v !== undefined && v !== '' && !(Array.isArray(v) && v.length === 0)) ||
     showOnlyOwned;
 
   const hasActiveFilters = hasActiveGeneral || hasActiveEffects;
+  const totalSlots = slots.length + supportSlots.length;
 
   const selectClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500';
-  const inputClass = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-full';
+  const inputClass  = 'px-2 py-1.5 bg-c-input border border-c-border rounded-md text-c-text text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 w-full';
 
   return (
     <div className="flex flex-col gap-2 p-3 bg-c-elevated rounded-lg">
 
       {/* Onglets */}
       <div className="flex gap-0.5 border-b border-c-border pb-2">
-        {(['general', 'effects'] as const).map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            onClick={() => setActiveTab(tab)}
-            className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition select-none
-              ${activeTab === tab ? 'bg-c-input text-c-text' : 'text-c-text-muted hover:text-c-text'}`}
-          >
-            {t(tab === 'general' ? 'tabGeneral' : 'tabEffects')}
-            {tab === 'general' && hasActiveGeneral && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />}
-            {tab === 'effects' && hasActiveEffects && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />}
-          </button>
-        ))}
+        {(['general', 'effects'] as const).map((tab) => {
+          const active = tab === 'general' ? hasActiveGeneral : hasActiveEffects;
+          return (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setActiveTab(tab)}
+              className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition select-none
+                ${activeTab === tab ? 'bg-c-input text-c-text' : 'text-c-text-muted hover:text-c-text'}`}
+            >
+              {t(tab === 'general' ? 'tabGeneral' : 'tabEffects')}
+              {active && <span className="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block" />}
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Onglet Général ── */}
       {activeTab === 'general' && (
         <div className="flex flex-col gap-2">
-          {/* Recherche */}
           <div className="flex gap-2">
             <input
               type="text"
@@ -326,35 +296,33 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
             />
           </div>
 
-          {/* Type · Faction · Set · Keyword */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <MultiSelect
               options={CARD_TYPES.filter((type) => !excludeTypes.includes(type.value)).map((type) => ({ value: type.value, label: type.label }))}
-              value={Array.isArray(filters.cardType) ? filters.cardType : (filters.cardType ? [filters.cardType] : [])}
+              value={toArr(filters.cardType)}
               onChange={(vals) => updateMulti('cardType', vals)}
               placeholder={t('allTypes')}
             />
             <MultiSelect
               options={factions.map(({ code, name }) => ({ value: code, label: name }))}
-              value={Array.isArray(filters.faction) ? filters.faction : (filters.faction ? [filters.faction] : [])}
+              value={toArr(filters.faction)}
               onChange={(vals) => updateMulti('faction', vals)}
               placeholder={t('allFactions')}
             />
             <MultiSelect
               options={sets.map((s) => ({ value: s.reference, label: s.name }))}
-              value={Array.isArray(filters['set.reference']) ? filters['set.reference'] : (filters['set.reference'] ? [filters['set.reference']] : [])}
+              value={toArr(filters['set.reference'])}
               onChange={(vals) => updateMulti('set.reference', vals)}
               placeholder={t('allSets')}
             />
             <MultiSelect
               options={keywords.map((k) => ({ value: k.code, label: k.translations[locale] ?? k.translations['en'] ?? k.code })).sort((a, b) => a.label.localeCompare(b.label, locale))}
-              value={Array.isArray(filters.effectKeyword) ? filters.effectKeyword : (filters.effectKeyword ? [filters.effectKeyword] : [])}
+              value={toArr(filters.effectKeyword)}
               onChange={(vals) => updateMulti('effectKeyword', vals)}
               placeholder={t('allKeywords')}
             />
           </div>
 
-          {/* Coûts */}
           <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
             <select value={filters.costComparison ?? ''} onChange={(e) => update('costComparison', e.target.value)} className={selectClass}>
               <option value="">{t('costComparison')}</option>
@@ -371,12 +339,11 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
                   placeholder={t(field)}
                   className={inputClass}
                 />
-                <CostTooltip text={t('costInputTooltip')} />
+                <Tooltip text={t('costInputTooltip')} />
               </div>
             ))}
           </div>
 
-          {/* Rareté + collection */}
           <div className="flex items-center gap-3 flex-wrap">
             {RARITIES.map((r) => (
               <label key={r.value} className="flex items-center gap-1.5 cursor-pointer select-none">
@@ -406,9 +373,9 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
       {activeTab === 'effects' && (
         <div className="flex flex-col gap-3">
 
-          {/* Opérateur global AND/OR */}
           {totalSlots > 1 && (
             <div className="flex items-center gap-1 ml-auto">
+              <Tooltip text={t('effectOperatorTooltip')} />
               <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
               {(['AND', 'OR'] as const).map((op) => (
                 <button
@@ -427,61 +394,34 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
             </div>
           )}
 
-            {/* ── Effet Principal ── */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">
-                {t('effectMainHeader')}
-              </span>
-              {slots.map((slot, i) => (
+          {([
+            { label: t('effectMainHeader'),    slots: slots,        actions: mainSlot,    allT: mainTriggerOptions,    allC: mainConditionOptions,    allE: mainEffectOptions    },
+            { label: t('effectSupportHeader'), slots: supportSlots, actions: supportSlot, allT: supportTriggerOptions, allC: supportConditionOptions, allE: supportEffectOptions },
+          ]).map(({ label, slots: sectionSlots, actions, allT, allC, allE }) => (
+            <div key={label} className="flex flex-col gap-2">
+              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">{label}</span>
+              {sectionSlots.map((slot, i) => (
                 <EffectSlotRow
                   key={i}
                   slot={slot}
                   index={i}
-                  allTriggers={mainTriggerOptions}
-                  allConditions={mainConditionOptions}
-                  allEffects={mainEffectOptions}
-                  locale={locale}
-                  onUpdate={(partial) => updateSlot(i, partial)}
-                  onRemove={() => removeSlot(i)}
+                  allTriggers={allT}
+                  allConditions={allC}
+                  allEffects={allE}
+                  onUpdate={(partial) => actions.update(i, partial)}
+                  onRemove={() => actions.remove(i)}
                   t={t}
                 />
               ))}
               <button
                 type="button"
-                onClick={addSlot}
+                onClick={actions.add}
                 className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
               >
                 + {t('effectAddSlot')}
               </button>
             </div>
-
-            {/* ── Support ── */}
-            <div className="flex flex-col gap-2">
-              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">
-                {t('effectSupportHeader')}
-              </span>
-              {supportSlots.map((slot, i) => (
-                <EffectSlotRow
-                  key={i}
-                  slot={slot}
-                  index={i}
-                  allTriggers={supportTriggerOptions}
-                  allConditions={supportConditionOptions}
-                  allEffects={supportEffectOptions}
-                  locale={locale}
-                  onUpdate={(partial) => updateSupportSlot(i, partial)}
-                  onRemove={() => removeSupportSlot(i)}
-                  t={t}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={addSupportSlot}
-                className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
-              >
-                + {t('effectAddSlot')}
-              </button>
-            </div>
+          ))}
 
         </div>
       )}

@@ -69,6 +69,7 @@
     "effectSupportHeader": "Support",
     "effectSupport": "Support",
     "effectOperator": "Operator",
+    "effectOperatorTooltip": "AND: card must have ALL defined slots\nOR: card must have AT LEAST ONE of the slots",
     "effectAddSlot": "Add effect slot",
     "effectRemove": "Remove",
     "effectTriggerLabel": "Trigger (t)",

@@ -93,6 +93,12 @@ export interface EffectChainItem {
   en: string;
 }
 
+export interface SlotFacetsResponse {
+  triggers:   Record<string, number>;
+  conditions: Record<string, number>;
+  effects:    Record<string, number>;
+}
+
 export interface ApiKeyword {
   code: string;
   translations: Record<string, string>;
