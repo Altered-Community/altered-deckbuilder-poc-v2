@@ -394,34 +394,42 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
             </div>
           )}
 
-          {([
-            { label: t('effectMainHeader'),    slots: slots,        actions: mainSlot,    allT: mainTriggerOptions,    allC: mainConditionOptions,    allE: mainEffectOptions    },
-            { label: t('effectSupportHeader'), slots: supportSlots, actions: supportSlot, allT: supportTriggerOptions, allC: supportConditionOptions, allE: supportEffectOptions },
-          ]).map(({ label, slots: sectionSlots, actions, allT, allC, allE }) => (
-            <div key={label} className="flex flex-col gap-2">
-              <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">{label}</span>
-              {sectionSlots.map((slot, i) => (
-                <EffectSlotRow
-                  key={i}
-                  slot={slot}
-                  index={i}
-                  allTriggers={allT}
-                  allConditions={allC}
-                  allEffects={allE}
-                  onUpdate={(partial) => actions.update(i, partial)}
-                  onRemove={() => actions.remove(i)}
-                  t={t}
-                />
-              ))}
-              <button
-                type="button"
-                onClick={actions.add}
-                className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
-              >
-                + {t('effectAddSlot')}
-              </button>
-            </div>
-          ))}
+          {(() => {
+            const isAnd = (filters.effectSlotsOperator ?? 'AND') === 'AND';
+            return ([
+              { label: t('effectMainHeader'),    slots: slots,        actions: mainSlot,    allT: mainTriggerOptions,    allC: mainConditionOptions,    allE: mainEffectOptions,    limit: isAnd ? 3 : null },
+              { label: t('effectSupportHeader'), slots: supportSlots, actions: supportSlot, allT: supportTriggerOptions, allC: supportConditionOptions, allE: supportEffectOptions, limit: isAnd ? 1 : null },
+            ]).map(({ label, slots: sectionSlots, actions, allT, allC, allE, limit }) => {
+              const canAdd = limit === null || sectionSlots.length < limit;
+              return (
+                <div key={label} className="flex flex-col gap-2">
+                  <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">{label}</span>
+                  {sectionSlots.map((slot, i) => (
+                    <EffectSlotRow
+                      key={i}
+                      slot={slot}
+                      index={i}
+                      allTriggers={allT}
+                      allConditions={allC}
+                      allEffects={allE}
+                      onUpdate={(partial) => actions.update(i, partial)}
+                      onRemove={() => actions.remove(i)}
+                      t={t}
+                    />
+                  ))}
+                  {canAdd && (
+                    <button
+                      type="button"
+                      onClick={actions.add}
+                      className="border border-dashed border-c-border rounded-md py-1.5 text-xs text-c-text-muted hover:text-c-text hover:border-c-text-muted transition text-center"
+                    >
+                      + {t('effectAddSlot')}
+                    </button>
+                  )}
+                </div>
+              );
+            });
+          })()}
 
         </div>
       )}
