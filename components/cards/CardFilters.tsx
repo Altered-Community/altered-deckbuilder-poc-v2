@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslations, useLocale } from 'next-intl';
 import { fetchSets, fetchFactions, fetchKeywords, fetchTriggers, fetchEffects, fetchConditions, fetchSlotFacets } from '@/lib/api/cardApi';
 import { FACTIONS, CARD_TYPES, RARITIES } from '@/lib/types/constants';
@@ -56,6 +56,7 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, on
   const triggerId   = slot.trigger   ?? '';
   const conditionId = slot.condition ?? '';
   const effectId    = slot.output    ?? '';
+  const queryClient = useQueryClient();
 
   const { data: facets } = useQuery({
     queryKey: ['slot-facets', triggerId, conditionId, effectId],
@@ -63,6 +64,13 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, on
     enabled:  !!triggerId || !!conditionId || !!effectId,
     staleTime: Infinity,
   });
+
+  const getFacets = (t?: string, c?: string, e?: string) =>
+    queryClient.fetchQuery({
+      queryKey: ['slot-facets', t ?? '', c ?? '', e ?? ''],
+      queryFn:  () => fetchSlotFacets(t, c, e),
+      staleTime: Infinity,
+    });
 
   const filterByFacet = (all: { value: string; label: string }[], facet?: Record<string, number>) => {
     if (!facet || !Object.keys(facet).length) return all;
@@ -84,46 +92,46 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, on
 
     if (value) {
       if (field === 'trigger') {
-        const f = await fetchSlotFacets(value, conditionId || undefined);
+        const f = await getFacets(value, conditionId || undefined);
         if (!slot.condition) {
           const prefillCond = singleId(f.conditions);
           if (prefillCond) {
             partial.condition = prefillCond;
             if (!slot.output) {
-              const f2 = await fetchSlotFacets(value, prefillCond);
+              const f2 = await getFacets(value, prefillCond);
               const p = singleId(f2.effects); if (p) partial.output = p;
             }
           } else if (!slot.output) {
             const p = singleId(f.effects); if (p) partial.output = p;
           }
         } else if (!slot.output) {
-          const f2 = await fetchSlotFacets(value, conditionId);
+          const f2 = await getFacets(value, conditionId);
           const p = singleId(f2.effects); if (p) partial.output = p;
         }
       }
 
       if (field === 'condition') {
         if (!slot.trigger) {
-          const f = await fetchSlotFacets(undefined, value);
+          const f = await getFacets(undefined, value);
           const prefillTrigger = singleId(f.triggers);
           if (prefillTrigger) partial.trigger = prefillTrigger;
           if (!slot.output) {
-            const f2 = await fetchSlotFacets(prefillTrigger ?? undefined, value);
+            const f2 = await getFacets(prefillTrigger ?? undefined, value);
             const p = singleId(f2.effects); if (p) partial.output = p;
           }
         } else if (!slot.output) {
-          const f = await fetchSlotFacets(triggerId, value);
+          const f = await getFacets(triggerId, value);
           const p = singleId(f.effects); if (p) partial.output = p;
         }
       }
 
       if (field === 'output') {
         if (!slot.trigger && !slot.condition) {
-          const f = await fetchSlotFacets(undefined, undefined, value);
+          const f = await getFacets(undefined, undefined, value);
           const prefillTrigger = singleId(f.triggers);
           if (prefillTrigger) {
             partial.trigger = prefillTrigger;
-            const f2 = await fetchSlotFacets(prefillTrigger, undefined, value);
+            const f2 = await getFacets(prefillTrigger, undefined, value);
             const prefillCond = singleId(f2.conditions);
             if (prefillCond) partial.condition = prefillCond;
           } else {
@@ -131,10 +139,10 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, on
             if (prefillCond) partial.condition = prefillCond;
           }
         } else if (!slot.trigger) {
-          const f = await fetchSlotFacets(undefined, conditionId, value);
+          const f = await getFacets(undefined, conditionId, value);
           const p = singleId(f.triggers); if (p) partial.trigger = p;
         } else if (!slot.condition) {
-          const f = await fetchSlotFacets(triggerId, undefined, value);
+          const f = await getFacets(triggerId, undefined, value);
           const p = singleId(f.conditions); if (p) partial.condition = p;
         }
       }
@@ -144,30 +152,30 @@ function EffectSlotRow({ slot, index, allTriggers, allConditions, allEffects, on
   };
 
   return (
-    <div className="border border-c-border rounded-md p-2 flex flex-col gap-2 bg-c-surface">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-c-text-secondary">Effect [{index}]</span>
-        <button type="button" onClick={onRemove} className="text-xs text-c-text-subtle hover:text-red-400 transition">
-          {t('effectRemove')}
-        </button>
-      </div>
-      <div className="grid grid-cols-3 gap-2">
+    <div className="flex items-center gap-2 px-2 py-1.5 bg-c-surface border border-c-border rounded-md">
+      <span className="text-[11px] font-semibold text-c-text-muted w-4 shrink-0 text-right">{index + 1}.</span>
+      <div className="grid grid-cols-3 gap-1.5 flex-1">
         {([
           { field: 'trigger'   as const, options: triggerOptions,   label: t('effectTriggerLabel'),   value: triggerId   },
           { field: 'condition' as const, options: conditionOptions,  label: t('effectConditionLabel'), value: conditionId },
           { field: 'output'    as const, options: effectOptions,     label: t('effectOutputLabel'),    value: effectId    },
         ]).map(({ field, options, label, value }) => (
-          <div key={field} className="flex flex-col gap-1">
-            <span className="text-[10px] text-c-text-muted">{label}</span>
-            <SingleSelect
-              options={options}
-              value={value}
-              onChange={(v) => handleChange(field, v)}
-              placeholder={label}
-            />
-          </div>
+          <SingleSelect
+            key={field}
+            options={options}
+            value={value}
+            onChange={(v) => handleChange(field, v)}
+            placeholder={label}
+          />
         ))}
       </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="shrink-0 w-5 h-5 flex items-center justify-center rounded text-c-text-muted hover:text-red-400 hover:bg-red-400/10 transition"
+      >
+        ×
+      </button>
     </div>
   );
 }
@@ -373,37 +381,38 @@ export default function CardFiltersPanel({ filters, onChange, onReset, selectedR
       {activeTab === 'effects' && (
         <div className="flex flex-col gap-3">
 
-          {totalSlots > 1 && (
-            <div className="flex items-center gap-1 ml-auto">
-              <Tooltip text={t('effectOperatorTooltip')} />
-              <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
-              {(['AND', 'OR'] as const).map((op) => (
-                <button
-                  key={op}
-                  type="button"
-                  onClick={() => onChange({ ...filters, effectSlotsOperator: op, page: 1 })}
-                  className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
-                    (filters.effectSlotsOperator ?? 'AND') === op
-                      ? 'bg-blue-500 text-white'
-                      : 'bg-c-input text-c-text-muted hover:text-c-text'
-                  }`}
-                >
-                  {op}
-                </button>
-              ))}
-            </div>
-          )}
-
           {(() => {
             const isAnd = (filters.effectSlotsOperator ?? 'AND') === 'AND';
             return ([
-              { label: t('effectMainHeader'),    slots: slots,        actions: mainSlot,    allT: mainTriggerOptions,    allC: mainConditionOptions,    allE: mainEffectOptions,    limit: isAnd ? 3 : null },
-              { label: t('effectSupportHeader'), slots: supportSlots, actions: supportSlot, allT: supportTriggerOptions, allC: supportConditionOptions, allE: supportEffectOptions, limit: isAnd ? 1 : null },
-            ]).map(({ label, slots: sectionSlots, actions, allT, allC, allE, limit }) => {
+              { label: t('effectMainHeader'),    slots: slots,        actions: mainSlot,    allT: mainTriggerOptions,    allC: mainConditionOptions,    allE: mainEffectOptions,    limit: isAnd ? 3 : null, showOperator: true  },
+              { label: t('effectSupportHeader'), slots: supportSlots, actions: supportSlot, allT: supportTriggerOptions, allC: supportConditionOptions, allE: supportEffectOptions, limit: isAnd ? 1 : null, showOperator: false },
+            ]).map(({ label, slots: sectionSlots, actions, allT, allC, allE, limit, showOperator }) => {
               const canAdd = limit === null || sectionSlots.length < limit;
               return (
                 <div key={label} className="flex flex-col gap-2">
-                  <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider">{label}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-[11px] font-semibold text-c-text-muted uppercase tracking-wider flex-1">{label}</span>
+                    {showOperator && totalSlots > 1 && (
+                      <>
+                        <Tooltip text={t('effectOperatorTooltip')} />
+                        <span className="text-xs text-c-text-muted">{t('effectOperator')}</span>
+                        {(['AND', 'OR'] as const).map((op) => (
+                          <button
+                            key={op}
+                            type="button"
+                            onClick={() => onChange({ ...filters, effectSlotsOperator: op, page: 1 })}
+                            className={`px-2 py-0.5 rounded text-xs font-semibold transition ${
+                              (filters.effectSlotsOperator ?? 'AND') === op
+                                ? 'bg-blue-500 text-white'
+                                : 'bg-c-input text-c-text-muted hover:text-c-text'
+                            }`}
+                          >
+                            {op}
+                          </button>
+                        ))}
+                      </>
+                    )}
+                  </div>
                   {sectionSlots.map((slot, i) => (
                     <EffectSlotRow
                       key={i}
