@@ -77,6 +77,12 @@ export async function getDecks(locale = 'fr', page = 1): Promise<ApiPaginatedRes
   return normalizePaginated<ApiDeck>(await res.json());
 }
 
+const PUBLIC_DECK_ORDER_FIELDS = {
+  recent: 'createdAt',
+  upvotes: 'upvoteCount',
+  views: 'viewCount',
+} as const;
+
 export async function getPublicDecks(
   locale = 'fr',
   page = 1,
@@ -84,7 +90,7 @@ export async function getPublicDecks(
 ): Promise<ApiPaginatedResponse<ApiDeck>> {
   const params = new URLSearchParams({ locale, page: String(page) });
   if (filters.cardName) params.set('cardName', filters.cardName);
-  if (filters.sortBy) params.set('sortBy', filters.sortBy);
+  if (filters.sortBy) params.set(`order[${PUBLIC_DECK_ORDER_FIELDS[filters.sortBy]}]`, 'desc');
   if (filters.hero) params.set('hero', filters.hero);
   if (filters.faction) params.set('faction', filters.faction);
   const token = await tryGetToken();
